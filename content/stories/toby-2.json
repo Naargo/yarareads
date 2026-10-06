@@ -13,57 +13,113 @@
   "pages": [
     {
       "text": "The next day, Julia has to go to class. \"Stay in the play house,\" she said. \"I will be back after lunch.\"",
-      "picture": "the girl with a school backpack waving goodbye to the dragon in the playhouse",
+      "picture": "the next morning: Julia with her purple backpack on, waving goodbye on her way to class; Toby peeking out of the playhouse door",
       "setting": "backyard",
-      "image": "toby-2/1.jpg"
+      "image": "toby-2/1.jpg",
+      "time": "a sunny morning",
+      "cast": [
+        "julia",
+        "toby",
+        "playhouse",
+        "backpack"
+      ]
     },
     {
       "text": "Toby waits and waits.",
-      "picture": "the dragon alone in the playhouse, chin on his paws, bored",
+      "picture": "Toby alone, lying in the playhouse doorway with his chin on his paws, bored, waiting; Julia's red scooter parked on the lawn near the playhouse, both wheels fine",
       "setting": "backyard",
-      "image": "toby-2/2.jpg"
+      "image": "toby-2/2.jpg",
+      "time": "midday",
+      "cast": [
+        "toby",
+        "playhouse",
+        "scooter"
+      ]
     },
     {
       "text": "After class, Julia runs to the backyard. \"Toby! I am back!\"",
-      "picture": "the girl running into the backyard with her backpack, happy",
+      "picture": "Julia running out of the back door and across the lawn toward the playhouse, backpack bouncing, happy, calling out",
       "setting": "backyard",
-      "image": "toby-2/3.jpg"
+      "image": "toby-2/3.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "playhouse",
+        "backpack"
+      ]
     },
     {
       "text": "But then she stops. Her scooter is on its side, and the wheel is bent!",
-      "picture": "a scooter lying on its side with a bent wheel",
+      "picture": "Julia stopped short, shocked; in front of her the red scooter lies on its side on the lawn near the playhouse, its front wheel badly bent",
       "setting": "backyard",
-      "image": "toby-2/4.jpg"
+      "image": "toby-2/4.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "playhouse",
+        "scooter"
+      ]
     },
     {
       "text": "\"Toby, did you do this?\"",
-      "picture": "the girl with hands on hips",
+      "picture": "Julia with her hands on her hips, frowning at Toby, who stands by the playhouse; the red scooter with its bent wheel lies on the grass between them",
       "setting": "backyard",
-      "image": "toby-2/5.jpg"
+      "image": "toby-2/5.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "toby",
+        "playhouse",
+        "scooter"
+      ]
     },
     {
       "text": "Toby looks down at his feet. He is so, so sad. A big tear drips off his nose.",
-      "picture": "the dragon looking down, very sad, a tear on his nose",
+      "picture": "Toby looking down at his feet, very very sad, a big tear dripping off his nose; the red scooter with the bent wheel on the grass beside him",
       "setting": "backyard",
-      "image": "toby-2/6.jpg"
+      "image": "toby-2/6.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "toby",
+        "playhouse",
+        "scooter"
+      ]
     },
     {
       "text": "Julia huffs. \"That was my best scooter!\" She stomps off into the house.",
-      "picture": "the girl stomping off, annoyed",
+      "picture": "Julia stomping across the lawn toward the back door, cross, huffing, fists clenched; Toby small and sad by the playhouse behind her",
       "setting": "backyard",
-      "image": "toby-2/7.jpg"
+      "image": "toby-2/7.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "toby",
+        "playhouse"
+      ]
     },
     {
       "text": "But Julia can not stay cross for long.",
-      "picture": "the girl standing in the open back door of her family's big house, looking back across the garden at the small pink playhouse in the distance, her cross face softening",
+      "picture": "Julia standing in the open back door of the house, looking back across the lawn at the playhouse in the far corner, her cross face softening into a small smile",
       "setting": "backyard",
-      "image": "toby-2/8.jpg"
+      "image": "toby-2/8.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "playhouse"
+      ]
     },
     {
       "text": "Soon she is back with her kite. \"Come on, Toby,\" she said. \"Let's play.\"",
-      "picture": "the girl holding a kite, smiling at the dragon peeking out of the playhouse",
+      "picture": "Julia walking back across the lawn holding her kite, smiling; Toby peeking out of the playhouse, his face lifting",
       "setting": "backyard",
-      "image": "toby-2/9.jpg"
+      "image": "toby-2/9.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "toby",
+        "playhouse",
+        "kite"
+      ]
     }
   ]
 }

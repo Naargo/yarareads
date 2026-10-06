@@ -13,51 +13,95 @@
   "pages": [
     {
       "text": "Each day after class, Julia and Toby sneak off to the wood.",
-      "picture": "the girl and the dragon sneaking into the woods in the afternoon",
+      "picture": "after class: Julia and Toby tiptoeing through the wooden garden gate into the woods, glancing back toward the house, sneaking off",
       "setting": "woods",
-      "image": "toby-5/1.jpg"
+      "image": "toby-5/1.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "toby"
+      ]
     },
     {
       "text": "\"I bet floating is like feelings,\" said Julia. \"When you get upset, things zoom up. So let's start there.\"",
-      "picture": "the girl explaining like a teacher, the dragon listening in a woodland clearing",
+      "picture": "in the clearing: Julia explaining like a teacher, one finger raised; Toby sitting on the grass listening carefully",
       "setting": "woods",
-      "image": "toby-5/2.jpg"
+      "image": "toby-5/2.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "toby"
+      ]
     },
     {
       "text": "\"Toby, lift up that tin can.\" Toby looks at the can. He huffs. He puffs. Not a thing.",
-      "picture": "the dragon straining to stare at a tin can on a tree stump",
+      "picture": "a tin can standing on the mossy stump; Toby staring at it, straining, cheeks puffed out; Julia watching; nothing moves",
       "setting": "woods",
-      "image": "toby-5/3.jpg"
+      "image": "toby-5/3.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "toby",
+        "tincan"
+      ]
     },
     {
       "text": "Toby gets cross. And the can zooms up, up, up, and lands in a tree!",
-      "picture": "a tin can flying up into a tall tree, the dragon cross",
+      "picture": "Toby cross, spikes up; the tin can shooting up and getting stuck high in the branches of the big oak; Julia gaping up at it",
       "setting": "woods",
-      "image": "toby-5/4.jpg"
+      "image": "toby-5/4.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "toby",
+        "tincan"
+      ]
     },
     {
       "text": "\"Now that stick,\" said Julia. Toby looks hard at the stick.",
-      "picture": "the dragon staring hard at a stick on the ground",
+      "picture": "Toby staring hard at a stick on the ground, spikes flat; Julia pointing at the stick; the tin can still stuck high up in the big oak",
       "setting": "woods",
-      "image": "toby-5/5.jpg"
+      "image": "toby-5/5.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "toby",
+        "tincan"
+      ]
     },
     {
       "text": "The stick shoots up and bonks Julia on the chin! \"Ow! Toby!\"",
-      "picture": "a stick bonking the girl on the chin, comic",
+      "picture": "comic: a stick flying up and bonking Julia on the chin, Julia staggering back with a hand on her chin; Toby wincing",
       "setting": "woods",
-      "image": "toby-5/6.jpg"
+      "image": "toby-5/6.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "toby"
+      ]
     },
     {
       "text": "Toby droops. \"I am no good at this,\" he said.",
-      "picture": "the dragon slumped, sad",
+      "picture": "Toby slumped on the grass, wings drooping, very sad; Julia kneeling beside him, patting his back",
       "setting": "woods",
-      "image": "toby-5/7.jpg"
+      "image": "toby-5/7.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "toby"
+      ]
     },
     {
       "text": "Day after day, it is the same. Cans zoom off. Sticks smash. Not one thing floats the right way.",
-      "picture": "a montage of cans and sticks flying everywhere in the woods",
+      "picture": "chaos in the clearing: tin cans and sticks flying every which way, one splashing into the pond; Julia ducking; Toby cross with his spikes up",
       "setting": "woods",
-      "image": "toby-5/8.jpg"
+      "image": "toby-5/8.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "toby",
+        "tincan"
+      ]
     }
   ]
 }

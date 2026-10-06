@@ -13,84 +13,135 @@
   "pages": [
     {
       "text": "The next day, they rush back to the wood. \"Do it again!\" said Julia.",
-      "picture": "the girl and dragon running into the woods, excited",
+      "picture": "the next day: Julia and Toby running through the garden gate into the woods, excited",
       "setting": "woods",
-      "image": "toby-7/1.jpg"
+      "image": "toby-7/1.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "toby"
+      ]
     },
     {
       "text": "Toby looks at the branch. It lifts and drifts and lands in her hand. Then a stick. Then a tin can.",
-      "picture": "a branch, a stick and a tin can floating gently into the girl's hands",
+      "picture": "in the clearing: the small leafy branch, a stick and a tin can drifting gently through the air into Julia's hands; Toby calm and focused, watching them",
       "setting": "woods",
-      "image": "toby-7/2.jpg"
+      "image": "toby-7/2.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "toby",
+        "branch",
+        "tincan"
+      ]
     },
     {
       "text": "\"Now me,\" said Julia. She stands as still as a rock.",
-      "picture": "the girl standing very still with her eyes closed",
+      "picture": "Julia standing very still with her eyes shut and her arms by her sides; Toby in front of her, calm and focused",
       "setting": "woods",
-      "image": "toby-7/3.jpg"
+      "image": "toby-7/3.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "toby"
+      ]
     },
     {
       "text": "Toby looks at Julia. And then her feet lift off the grass.",
-      "picture": "the girl's feet lifting off the grass",
+      "picture": "Julia's red sneakers lifting off the grass, her face surprised; Toby calm and concentrating, gazing at her",
       "setting": "woods",
-      "image": "toby-7/4.jpg"
+      "image": "toby-7/4.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "toby"
+      ]
     },
     {
       "text": "Up, up, up she floats! Higher than the gate. Higher than the play house.",
-      "picture": "the girl floating high above the backyard, the playhouse small below",
+      "picture": "high above the garden gate: Julia floating up, arms out; below, the backyard with the playhouse small in its corner, and the woods behind; Toby small at the gate, looking up",
       "setting": "backyard",
-      "image": "toby-7/5.jpg"
+      "image": "toby-7/5.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "toby",
+        "playhouse"
+      ]
     },
     {
       "text": "\"Whoa!\" said Julia. \"Toby, I am floating! I am floating up high!\"",
-      "picture": "the girl floating in the air, arms out, delighted",
-      "setting": "backyard",
-      "image": "toby-7/6.jpg"
+      "picture": "Julia high in the sky above the clearing, arms out, delighted, laughing; Toby far below, calm and focused",
+      "setting": "woods",
+      "image": "toby-7/6.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "toby"
+      ]
     },
     {
       "text": "Toby looks up at her, and she glides this way and that. She glides past the treetops, and the birds glide with her.",
-      "picture": "the girl gliding past treetops with birds, the dragon below guiding her",
+      "picture": "Julia gliding past the treetops with birds gliding beside her; Toby below in the clearing, looking up, calm, steering her with his gaze",
       "setting": "woods",
-      "image": "toby-7/7.jpg"
+      "image": "toby-7/7.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "toby"
+      ]
     },
     {
       "text": "She loops the loop! She spins! She dips down to the pond and zooms back up!",
-      "picture": "the girl doing a loop in the sky over a pond",
+      "picture": "Julia looping the loop in the air above the pond, shown once, with a curving trail of sparkles behind her to show the loop; Toby below by the pond, looking up",
       "setting": "woods",
-      "image": "toby-7/8.jpg"
+      "image": "toby-7/8.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "toby"
+      ]
     },
     {
       "text": "\"This is the best day!\" Julia yells. \"Again! Again!\"",
-      "picture": "the girl laughing in midair, the dragon looking up proudly",
+      "picture": "Julia laughing in mid-air, arms up, \"Again!\"; Toby below looking up at her with a small proud smile, still focused",
       "setting": "woods",
-      "image": "toby-7/9.jpg"
+      "image": "toby-7/9.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "toby"
+      ]
     },
     {
       "text": "Far away, on top of Super-Tall Peak, it is dark. In a deep cave, a big black dragon wakes up.",
-      "picture": "a dark cave high on a mountain at night, a huge black dragon opening its eyes",
+      "picture": "far away on Super-Tall Peak: the huge black dragon lying in the deep dark cave, one eye opening, glowing red; cold moonlight at the cave mouth",
       "setting": "cave",
       "cast": [
         "blackdragon"
       ],
-      "image": "toby-7/10.jpg"
+      "image": "toby-7/10.jpg",
+      "time": "night"
     },
     {
       "text": "Its claws scrape the rock. Smoke curls from its nose.",
-      "picture": "huge black claws scraping rock, smoke curling from nostrils in the dark",
+      "picture": "close-up in the dark cave: the black dragon's huge claws scraping the rock, smoke curling from its nostrils",
       "setting": "cave",
       "cast": [
         "blackdragon"
       ],
-      "image": "toby-7/11.jpg"
+      "image": "toby-7/11.jpg",
+      "time": "night"
     },
     {
       "text": "\"Toby,\" it hisses. \"I can feel you. You can not hide from me.\"",
-      "picture": "the black dragon's glowing red eyes in the dark cave, menacing",
+      "picture": "the black dragon's narrow glowing red eyes in the darkness of the cave, looking straight out, menacing",
       "setting": "cave",
       "cast": [
         "blackdragon"
       ],
-      "image": "toby-7/12.jpg"
+      "image": "toby-7/12.jpg",
+      "time": "night"
     }
   ]
 }

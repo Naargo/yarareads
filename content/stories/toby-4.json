@@ -13,69 +13,141 @@
   "pages": [
     {
       "text": "The next day, Julia gets back from class. Her best cup is in bits on the grass.",
-      "picture": "a broken teacup in pieces on the grass by the playhouse",
+      "picture": "the next day after class: Julia with her backpack, looking down at her best teacup in pieces on the grass by the playhouse door",
       "setting": "backyard",
-      "image": "toby-4/1.jpg"
+      "image": "toby-4/1.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "playhouse",
+        "teacup",
+        "backpack"
+      ]
     },
     {
       "text": "\"Not again, Toby!\" Toby just looks sad. Julia sighs.",
-      "picture": "the girl sighing, the dragon looking sad",
+      "picture": "Julia sighing, eyes rolled up, \"not again\"; Toby sitting by the playhouse looking sad; the broken teacup pieces on the grass between them",
       "setting": "backyard",
-      "image": "toby-4/2.jpg"
+      "image": "toby-4/2.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "toby",
+        "playhouse",
+        "teacup"
+      ]
     },
     {
       "text": "Then one day, Julia runs back fast and peeks in at the play house.",
-      "picture": "the girl tiptoeing and peeking into the playhouse doorway",
+      "picture": "another day: Julia tiptoeing fast across the lawn with her backpack on and peeking into the playhouse doorway",
       "setting": "backyard",
-      "image": "toby-4/3.jpg"
+      "image": "toby-4/3.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "playhouse",
+        "backpack"
+      ]
     },
     {
       "text": "A big bee buzzes at Toby's nose. Buzz! Buzz!",
-      "picture": "a bee buzzing around the dragon's nose inside the playhouse",
+      "picture": "looking in through the playhouse door: Toby inside among Julia's toys, a fat fuzzy bumblebee buzzing at his nose, Toby going cross-eyed at it",
       "setting": "backyard",
-      "image": "toby-4/4.jpg"
+      "image": "toby-4/4.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "toby",
+        "playhouse",
+        "toys"
+      ]
     },
     {
       "text": "Toby gets cross. His spikes stick up.",
-      "picture": "the dragon cross, his spikes bristling like a porcupine",
+      "picture": "Toby cross in the playhouse doorway, every spike on his back standing straight up like a porcupine, eyes narrowed at the bee; the toys behind him starting to tremble",
       "setting": "backyard",
-      "image": "toby-4/5.jpg"
+      "image": "toby-4/5.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "toby",
+        "playhouse",
+        "toys"
+      ]
     },
     {
       "text": "And then her dolls zoom up, high, high, high! Her drum zooms up. Her tea set zooms up!",
-      "picture": "dolls, a toy drum and a tea set shooting high into the air above the playhouse",
+      "picture": "the dolls, the toy drum and the tea set shooting straight up out of the playhouse, high into the sky, fast, with whoosh lines; Toby in the doorway, spikes up, cross; Julia on the lawn, frozen, looking up",
       "setting": "backyard",
-      "image": "toby-4/6.jpg"
+      "image": "toby-4/6.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "toby",
+        "playhouse",
+        "toys"
+      ]
     },
     {
       "text": "Crash! Bang! Smash! They all come down.",
-      "picture": "toys crashing down onto the grass",
+      "picture": "the toys crashing down onto the lawn: the tea set smashing, the drum bouncing, the dolls tumbling, bits everywhere; Julia and Toby ducking",
       "setting": "backyard",
-      "image": "toby-4/7.jpg"
+      "image": "toby-4/7.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "toby",
+        "playhouse",
+        "toys"
+      ]
     },
     {
       "text": "Julia's chin drops. \"Whoa!\"",
-      "picture": "the girl staring, mouth open in amazement",
+      "picture": "Julia staring, mouth wide open, chin dropped, amazed, not angry; broken toys all over the grass around her",
       "setting": "backyard",
-      "image": "toby-4/8.jpg"
+      "image": "toby-4/8.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "playhouse",
+        "toys"
+      ]
     },
     {
       "text": "\"Toby, you did that! That is so, so cool! Do it on me! Make me float!\"",
-      "picture": "the girl jumping up and down with excitement",
+      "picture": "Julia jumping up and down with excitement, pointing at Toby; Toby, spikes flat again, startled; broken toys on the grass",
       "setting": "backyard",
-      "image": "toby-4/9.jpg"
+      "image": "toby-4/9.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "toby",
+        "playhouse",
+        "toys"
+      ]
     },
     {
       "text": "Toby looks down. \"I can not,\" he said. \"I can not help it. I just get upset, and things zoom up and smash.\"",
-      "picture": "the dragon looking down sadly",
+      "picture": "Toby looking down sadly among the broken toys, a tear on his nose; Julia beside him, listening",
       "setting": "backyard",
-      "image": "toby-4/10.jpg"
+      "image": "toby-4/10.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "toby",
+        "playhouse",
+        "toys"
+      ]
     },
     {
       "text": "Julia thinks hard. Then she grins. \"Then we will fix it,\" she said.",
-      "picture": "the girl with a determined grin",
+      "picture": "Julia with a determined grin and one finger up, she has an idea; Toby looking up at her, a little hopeful",
       "setting": "backyard",
-      "image": "toby-4/11.jpg"
+      "image": "toby-4/11.jpg",
+      "time": "a sunny afternoon",
+      "cast": [
+        "julia",
+        "toby",
+        "playhouse"
+      ]
     }
   ]
 }

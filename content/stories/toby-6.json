@@ -13,71 +13,118 @@
   "pages": [
     {
       "text": "Day six. Toby gets upset, and a log zooms into the pond. Splash!",
-      "picture": "a log splashing into a woodland pond",
+      "picture": "day six: a fallen log zooming through the air and landing in the pond with a big splash; Toby on the bank, cross, spikes up; Julia shielding her face from the spray",
       "setting": "woods",
-      "image": "toby-6/1.jpg"
-    },
-    {
-      "text": "Day nine. A branch shoots up and lands on the play house. Crunch!",
-      "picture": "a branch crashing onto the pink playhouse roof, the girl and the dragon watching in dismay",
-      "setting": "backyard",
-      "image": "toby-6/2.jpg",
+      "image": "toby-6/1.jpg",
+      "time": "a sunny afternoon",
       "cast": [
         "julia",
         "toby"
       ]
     },
     {
+      "text": "Day nine. A branch shoots up and lands on the play house. Crunch!",
+      "picture": "day nine: a big leafy branch crashing down onto the playhouse's green roof, crunch, bits flying; Julia and Toby by the garden gate, aghast",
+      "setting": "backyard",
+      "image": "toby-6/2.jpg",
+      "cast": [
+        "julia",
+        "toby",
+        "playhouse"
+      ],
+      "time": "a sunny afternoon"
+    },
+    {
       "text": "Day ten. Toby sits on a log and sighs. \"I can not do it,\" he said. \"I give up.\"",
-      "picture": "the dragon sitting on a log, giving up",
+      "picture": "day ten: Toby sitting on the fallen log in the clearing, slumped, sighing, giving up",
       "setting": "woods",
-      "image": "toby-6/3.jpg"
+      "image": "toby-6/3.jpg",
+      "time": "late afternoon, low golden light",
+      "cast": [
+        "toby"
+      ]
     },
     {
       "text": "\"No, you can,\" said Julia. But she is fed up too.",
-      "picture": "the girl sitting on the log beside the dragon, both tired and fed up",
+      "picture": "Julia sitting on the fallen log beside Toby, both tired and fed up, Julia with her chin in her hand",
       "setting": "woods",
       "image": "toby-6/4.jpg",
       "cast": [
         "julia",
         "toby"
-      ]
+      ],
+      "time": "late afternoon, low golden light"
     },
     {
       "text": "It is dusk. Julia sits on the grass with her hand up, flat. \"Just one last go,\" she said.",
-      "picture": "dusk in the woods, the girl sitting with her palm up",
+      "picture": "Julia sitting on the grass with her hand held out flat, palm up, \"just one last go\"; a small leafy branch lies on the grass in front of her; Toby sitting a little way off on the fallen log",
       "setting": "woods",
-      "image": "toby-6/5.jpg"
+      "image": "toby-6/5.jpg",
+      "time": "dusk: pink and orange sky, the light fading, long shadows",
+      "cast": [
+        "julia",
+        "toby",
+        "branch"
+      ]
     },
     {
       "text": "Toby is not looking at the branch. He is looking at Julia. He is not cross. He is not sad.",
-      "picture": "the dragon looking gently at the girl, calm",
+      "picture": "Toby looking gently at Julia, not at the branch; calm, spikes smooth, a soft face; Julia sitting with her palm up",
       "setting": "woods",
-      "image": "toby-6/6.jpg"
+      "image": "toby-6/6.jpg",
+      "time": "dusk: pink and orange sky, the light fading, long shadows",
+      "cast": [
+        "julia",
+        "toby"
+      ]
     },
     {
       "text": "And then the branch lifts up. It drifts this way. It drifts that way.",
-      "picture": "a branch gently floating in the dusk air, glowing softly",
+      "picture": "the small leafy branch floating gently up in the dusk air, drifting this way and that, glowing softly; Julia's open hand below it; Toby calmly watching Julia",
       "setting": "woods",
-      "image": "toby-6/7.jpg"
+      "image": "toby-6/7.jpg",
+      "time": "dusk: pink and orange sky, the light fading, long shadows",
+      "cast": [
+        "julia",
+        "toby",
+        "branch"
+      ]
     },
     {
       "text": "It floats down, soft as a leaf, and lands in Julia's hand.",
-      "picture": "the branch landing softly in the girl's open hand",
+      "picture": "the small leafy branch landing softly in Julia's open hand, light as a leaf; Julia's face amazed",
       "setting": "woods",
-      "image": "toby-6/8.jpg"
+      "image": "toby-6/8.jpg",
+      "time": "dusk: pink and orange sky, the light fading, long shadows",
+      "cast": [
+        "julia",
+        "toby",
+        "branch"
+      ]
     },
     {
       "text": "Julia looks at the branch. Toby looks at the branch. \"Toby!\" said Julia. \"You did it!\"",
-      "picture": "both staring at the branch in her hand, amazed",
+      "picture": "Julia and Toby both staring at the branch in her hand, amazed; Julia shouting with joy",
       "setting": "woods",
-      "image": "toby-6/9.jpg"
+      "image": "toby-6/9.jpg",
+      "time": "dusk: pink and orange sky, the light fading, long shadows",
+      "cast": [
+        "julia",
+        "toby",
+        "branch"
+      ]
     },
     {
       "text": "Toby blinks. \"I did it,\" he said. \"I did it! But how?\"",
-      "picture": "the dragon blinking in amazement",
+      "picture": "Toby blinking in amazement, big eyes, a wondering look; Julia holding the branch up to him",
       "setting": "woods",
-      "image": "toby-6/10.jpg"
+      "image": "toby-6/10.jpg",
+      "time": "dusk: pink and orange sky, the light fading, long shadows",
+      "cast": [
+        "julia",
+        "toby",
+        "branch"
+      ]
     }
   ]
 }

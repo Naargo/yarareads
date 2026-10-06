@@ -115,7 +115,8 @@ if (cmd === 'sheet') {
       const place = !page.setting ? ''
         : setting ? `Image ${refs.length} shows the place where this happens: ${art.settings[setting].look} Keep the same place, layout and landmarks, seen from whatever angle suits the scene; it does not need to show all of it.`
         : `The place: ${art.settings[page.setting].look}`;
-      const prompt = `${art.style} ${who} ${others} ${place} Scene: ${page.picture}. The words on this page of the story are: "${page.text}"`.replace(/ +/g, ' ');
+      const when = page.time ? `Time of day: ${page.time}.` : '';
+      const prompt = `${art.style} ${who} ${others} ${place} ${when} Scene: ${page.picture}. The words on this page of the story are: "${page.text}"`.replace(/ +/g, ' ');
       writeFileSync(join(out, `${n}.jpg`), await webJpeg(await draw(prompt, refs, art.size), art.size[0]));
       page.image = `${id}/${n}.jpg`;
       delete page.draftImage;

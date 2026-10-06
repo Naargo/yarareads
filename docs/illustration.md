@@ -82,6 +82,21 @@ Julia and Toby: `backyard` (cream house, back step, lawn, playhouse in the far c
 
 Before settings, pages whose `picture` named no place came out on a plain cream background (chapter 1 pages 5-10).
 
+## Page briefs
+
+Every page of Julia and Toby carries a full brief, written by reading the whole book the way an art director would:
+
+- `cast`: exactly who and what is in the picture. Characters with sheets go in as references; props (scooter,
+  backpack, kite, paints, teacup, toys, tin can, branch) are `object` cast entries described in words, so the scooter
+  stays red from chapter to chapter.
+- `setting` and `time` ("a sunny afternoon", "dusk: pink and orange sky..."), so a scene keeps its place and light.
+- `picture`: names, not "the girl", and the state of things carried over from earlier pages: paint still on Toby,
+  the bent wheel, the tin can stuck in the oak, Toby calm and focused (not happy) while Julia floats.
+
+Why not send the whole book to the image model: it costs little, but image models follow long prompts loosely and
+pull in things from other pages. The continuity is worked out once, in text, where it can be read and corrected.
+When writing a new chapter, write its briefs the same way, reading the chapters before it.
+
 ## Per-page cast
 
 A page can list its cast explicitly, `"cast": ["julia", "toby"]`, which overrides match words. Use it when matching
@@ -139,13 +154,14 @@ their sheet; changing a sheet means redrawing every page they appear in.
 
 - **All 7 chapters drawn with gpt-image-2** and live (Oct 6): $0.24 of tests, $0.60 for chapter 1, $0.15 for the
   three setting pictures, $3.97 for chapters 2-7 and one redraw. That used the whole $5 week.
-- Redraw queue (about $0.50, next week):
-  - ch1 p5-10: drawn before settings existed, so they sit on a plain cream background, and p9 put the playhouse
-    in the woods. Both are fixed in the JSON (settings, `cast` on p9); just redraw.
-  - ch6 p2: a strange girl (pink top) instead of Julia. Cast and picture fixed in the JSON; redraw.
-  - ch2 p3-7 and all of ch3: drawn before the backyard brought the playhouse sheet along, so the playhouse there is a
-    wooden cottage with a heart on the door. Only redraw if Eli minds.
-  - ch7 p8 ("loops the loop") shows four Julias, a motion sequence. Might confuse; Eli to judge.
+- Redraw queue (14 pages, about $1, next week): pages whose picture contradicts its brief.
+  `node tools/illustrate.mjs pages toby-1 5 6 7 8 9 10`, `toby-2 4`, `toby-3 5`, `toby-6 2 6 8 9 10`, `toby-7 8`.
+  - ch1 p5-10: drawn before settings, plain cream backgrounds; p9 has the playhouse in the woods.
+  - ch2 p4: the scooter is purple (red in chapter 1).
+  - ch3 p5: Toby has no paint on him right after the paint went everywhere.
+  - ch6 p2: a stranger girl instead of Julia. ch6 p6, 8-10: drawn in daylight, but it's dusk.
+  - ch7 p8: four Julias (a motion sequence) for one loop.
+  - Optional (~$1): ch2 p3-7 and ch3, where the playhouse is a wooden heart-door cottage.
 - The FLUX drafts (~$8) are in git history: `content/pictures/toby-v1-*` and earlier versions of `content/pictures/toby-N/`.
 - Problems seen with FLUX on the rewrite, to check with the new model:
   - Text painted into a picture despite "no text" (ch4 p7, "Crash! Bang! Smash!").

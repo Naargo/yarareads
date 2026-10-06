@@ -35,6 +35,46 @@
         "black dragon"
       ],
       "look": "a huge, ancient black dragon, many times bigger than a house, with jagged horns, cracked dark scales like cooled lava, ragged bat wings, long curved claws and narrow glowing red eyes. Menacing and frightening, nothing cute or friendly about it, but not gory."
+    },
+    "scooter": {
+      "match": [],
+      "look": "Julia's scooter: a red kick scooter with a red handlebar, black grips and small grey wheels.",
+      "object": true
+    },
+    "backpack": {
+      "match": [],
+      "look": "Julia's purple backpack.",
+      "object": true
+    },
+    "kite": {
+      "match": [],
+      "look": "Julia's kite: a red and yellow diamond kite with a long tail of little bows.",
+      "object": true
+    },
+    "paints": {
+      "match": [],
+      "look": "Julia's paints: small pots of poster paint (pink, blue, green, yellow), brushes and a jar of water.",
+      "object": true
+    },
+    "teacup": {
+      "match": [],
+      "look": "Julia's best teacup: white china with little pink roses.",
+      "object": true
+    },
+    "toys": {
+      "match": [],
+      "look": "Julia's toys: two rag dolls, a red and blue toy drum, and a little white tea set with pink roses.",
+      "object": true
+    },
+    "tincan": {
+      "match": [],
+      "look": "a plain silver tin can with no label.",
+      "object": true
+    },
+    "branch": {
+      "match": [],
+      "look": "a small leafy branch, about as long as Julia's arm.",
+      "object": true
     }
   },
   "settings": {
@@ -49,9 +89,6 @@
     },
     "cave": {
       "look": "a huge dark cave near the top of Super-Tall Peak, a very tall, pointy, bare grey mountain: rough black rock walls, a rocky floor scattered with boulders and scorch marks, a wide cave mouth looking out on a cold night sky. Dark and frightening, lit only faintly."
-    },
-    "peak": {
-      "look": "Super-Tall Peak: a very tall, thin, pointy grey mountain far away on the horizon, much taller than the hills around it, with a dark cave mouth near the very top."
     }
   }
 }
