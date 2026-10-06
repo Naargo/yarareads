@@ -1,4 +1,5 @@
-// Illustrations with FLUX.2 on Cloudflare Workers AI (no extra API key: uses CLOUDFLARE_API_TOKEN).
+// Illustrations with OpenAI's gpt-image-2 via OpenRouter (OPENROUTER_API_TOKEN). About 6 cents and 30 s a page at medium.
+// (Before Oct 2026 we used FLUX.2 [dev] on Workers AI; gpt-image-2 keeps characters closer and follows scenes better.)
 //
 // Consistency comes from character sheets: each cast member gets an approved reference image,
 // passed to every page that shows them. Art direction lives in content/art/<series>.json.
@@ -17,29 +18,39 @@ import { join } from 'node:path';
 import sharp from 'sharp';
 
 const root = new URL('..', import.meta.url).pathname;
-const ACCOUNT = '7485eb8ab648601f411b650cd794bce3';
-const MODEL = '@cf/black-forest-labs/flux-2-dev';
+const MODEL = 'openai/gpt-image-2';
+const QUALITY = 'medium';
+const PARALLEL = 5; // pages drawn at once // low ~1 cent, medium ~5, high ~17 per picture (plus ~1 cent of reference input)
 const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
-// FLUX returns near-lossless JPEGs (~400 KB). Quality 80 is visually identical at reading size and ~5x smaller.
-export const webJpeg = (buf) => sharp(buf).jpeg({ quality: 80, progressive: true, mozjpeg: true }).toBuffer();
+// Models return big PNGs (gpt-image-2: 1536x1152, ~2.5 MB). Resized to the art size at quality 80 they're ~60 KB
+// and look the same at reading size.
+export const webJpeg = (buf, width = 1024) =>
+  sharp(buf).resize({ width, withoutEnlargement: true }).jpeg({ quality: 80, progressive: true, mozjpeg: true }).toBuffer();
 
-async function draw(prompt, refs = [], [width, height] = [1024, 768], seed) {
-  const form = new FormData();
-  form.append('prompt', prompt);
-  form.append('width', String(width));
-  form.append('height', String(height));
-  if (seed !== undefined) form.append('seed', String(seed));
-  refs.forEach((file, i) => form.append(`input_image_${i}`, new Blob([readFileSync(file)], { type: 'image/jpeg' }), `ref${i}.jpg`));
+let spent = 0;
+async function draw(prompt, refs = [], [width, height] = [1024, 768]) {
+  const body = JSON.stringify({
+    model: MODEL,
+    prompt,
+    quality: QUALITY,
+    aspect_ratio: width > height ? '4:3' : width < height ? '3:4' : '1:1',
+    input_references: refs.map((file) => ({ type: 'image_url', image_url: { url: `data:image/jpeg;base64,${readFileSync(file).toString('base64')}` } })),
+    n: 1,
+  });
   for (let attempt = 1; ; attempt++) {
-    const res = await fetch(`https://api.cloudflare.com/client/v4/accounts/${ACCOUNT}/ai/run/${MODEL}`, {
+    const res = await fetch('https://openrouter.ai/api/v1/images', {
       method: 'POST',
-      headers: { authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}` },
-      body: form,
+      headers: { authorization: `Bearer ${process.env.OPENROUTER_API_TOKEN}`, 'content-type': 'application/json' },
+      body,
     });
     const data = await res.json().catch(() => ({}));
-    if (data.success) return Buffer.from(data.result.image, 'base64');
-    if (attempt >= 3) throw new Error(`FLUX failed: ${res.status} ${JSON.stringify(data.errors || data).slice(0, 300)}`);
+    const image = data.data?.[0]?.b64_json;
+    if (image) {
+      spent += data.usage?.cost || 0;
+      return Buffer.from(image, 'base64');
+    }
+    if (attempt >= 3) throw new Error(`${MODEL} failed: ${res.status} ${JSON.stringify(data.error || data).slice(0, 300)}`);
     await new Promise((r) => setTimeout(r, 2000 * attempt));
   }
 }
@@ -68,9 +79,9 @@ if (cmd === 'sheet') {
     ? `${art.style} Reference sheet: ${c.look} The object alone, empty, no people or animals, three-quarter view, on a plain warm off-white background, centered.`
     : `${art.style} Character reference sheet: ${c.look} Shown full body, standing, facing three-quarters toward the viewer, on a plain warm off-white background. One single figure, centered.`;
   for (let i = 1; i <= Number(n); i++) {
-    const img = await draw(prompt, [], [768, 1024], 1000 + i);
-    writeFileSync(join(dir, 'candidates', `${id}-${i}.jpg`), img);
-    console.log(`candidate ${id}-${i}`);
+    const img = await draw(prompt, [], [768, 1024]);
+    writeFileSync(join(dir, 'candidates', `${id}-${i}.jpg`), await webJpeg(img, 768));
+    console.log(`candidate ${id}-${i}  $${spent.toFixed(2)} so far`);
   }
 } else if (cmd === 'pages') {
   const [id, ...which] = args;
@@ -83,17 +94,23 @@ if (cmd === 'sheet') {
   const pages = which.includes('--missing')
     ? story.pages.map((p, i) => (p.image ? 0 : i + 1)).filter(Boolean)
     : which.length ? which.map(Number) : story.pages.map((_, i) => i + 1);
-  for (const n of pages) {
-    const page = story.pages[n - 1];
-    const cast = castFor(page, art).filter((c) => existsSync(join(dir, `${c}.jpg`))).slice(0, 4);
-    const refs = cast.map((c) => join(dir, `${c}.jpg`));
-    const who = cast.map((c, i) => `Image ${i + 1} is the reference for ${art.cast[c].look} Keep this exact design, colours and outfit.`).join(' ');
-    const prompt = `${art.style} ${who} Scene: ${page.picture}. The words on this page of the story are: "${page.text}"`;
-    writeFileSync(join(out, `${n}.jpg`), await webJpeg(await draw(prompt, refs, art.size)));
-    page.image = `${id}/${n}.jpg`;
-    writeFileSync(file, JSON.stringify(story, null, 2) + '\n');
-    console.log(`${id} page ${n}  [${cast.join(', ') || 'no cast'}]`);
-  }
+  // Pages are independent, so draw several at once (each takes ~30 s). The story file is rewritten as each one lands.
+  const queue = [...pages];
+  const worker = async () => {
+    for (let n; (n = queue.shift()) !== undefined; ) {
+      const page = story.pages[n - 1];
+      const cast = castFor(page, art).filter((c) => existsSync(join(dir, `${c}.jpg`))).slice(0, 4);
+      const refs = cast.map((c) => join(dir, `${c}.jpg`));
+      const who = cast.map((c, i) => `Image ${i + 1} is the reference for ${art.cast[c].look} Keep this exact design, colours and outfit.`).join(' ');
+      const prompt = `${art.style} ${who} Scene: ${page.picture}. The words on this page of the story are: "${page.text}"`;
+      writeFileSync(join(out, `${n}.jpg`), await webJpeg(await draw(prompt, refs, art.size), art.size[0]));
+      page.image = `${id}/${n}.jpg`;
+      delete page.draftImage;
+      writeFileSync(file, JSON.stringify(story, null, 2) + '\n');
+      console.log(`${id} page ${n}  [${cast.join(', ') || 'no cast'}]  $${spent.toFixed(2)} so far`);
+    }
+  };
+  await Promise.all(Array.from({ length: PARALLEL }, worker));
 } else if (cmd === 'cover') {
   const [id, n] = args;
   const file = join(root, 'content/stories', `${id}.json`);
@@ -102,5 +119,5 @@ if (cmd === 'sheet') {
   writeFileSync(file, JSON.stringify(story, null, 2) + '\n');
   console.log(`${id} cover = page ${n}`);
 } else {
-  console.log(readFileSync(new URL(import.meta.url), 'utf8').split('\n').slice(0, 15).join('\n'));
+  console.log(readFileSync(new URL(import.meta.url), 'utf8').split('\n').slice(0, 16).join('\n'));
 }

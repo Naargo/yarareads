@@ -22,15 +22,20 @@ node tools/push.mjs --images                                # upload to R2 and p
 
 ## The model
 
-- **FLUX.2 [dev]** on **Cloudflare Workers AI**: `@cf/black-forest-labs/flux-2-dev`. Runs on Eli's Cloudflare
-  account with `CLOUDFLARE_API_TOKEN`; no other API key needed. About 7-10 seconds per picture.
-- Chosen because it accepts **reference images** (up to 4), which is the whole consistency strategy.
-  flux-1-schnell (also on the account) makes nice single pictures but can't take references.
-- Call: `POST https://api.cloudflare.com/client/v4/accounts/<account>/ai/run/@cf/black-forest-labs/flux-2-dev`,
-  **multipart form**: `prompt`, `width`, `height`, optional `seed`, and `input_image_0` ... `input_image_3` as files.
-  The response is JSON: `result.image` is a base64 JPEG.
-- Other image models on the account (for reference): flux-2-klein-4b/9b, SDXL, Leonardo phoenix and lucid-origin.
-- Cost: check Workers AI pricing before a big run. Around 60 pictures for six chapters is small either way.
+- **gpt-image-2** (OpenAI) via **OpenRouter**, since Oct 2026. Key: `OPENROUTER_API_TOKEN` in the environment
+  (it has a $5/week limit). About 30 seconds per picture; `pages` draws 5 at once, so a chapter takes about a minute.
+- Call: `POST https://openrouter.ai/api/v1/images` (the dedicated image endpoint: chat/completions refuses this model),
+  JSON body: `model`, `prompt`, `quality` (`medium`), `aspect_ratio` (`4:3`, sheets `3:4`), `n: 1`, and
+  `input_references`: up to 16 `{ type: "image_url", image_url: { url: "data:image/jpeg;base64,..." } }`.
+  The response has `data[0].b64_json` (a 1536x1152 PNG) and `usage.cost` in dollars; the tool prints the running total.
+- **Cost at medium:** $0.049 of output per picture, plus about half a cent to a cent per reference sheet:
+  5-7 cents a page. Low is ~1 cent, high ~17 (OpenAI: 1536x1024 low $0.005, medium $0.041, high $0.165).
+  Medium looked right for soft watercolor; we haven't needed high.
+- Why it replaced FLUX.2 [dev] on Workers AI (~7 cents a page, the first ~120 pictures): characters stay on-model
+  (Julia's puffs, freckles, dungarees and red sneakers on every page), it draws the scene that's described rather
+  than a figure on a blank background, and it kept text out. A dragon with no reference came out a real dragon,
+  where FLUX drew a bear. FLUX is still on the Cloudflare account (`@cf/black-forest-labs/flux-2-dev`, multipart form,
+  `input_image_0..3`) if it's ever needed again; see this file's git history for the old tool.
 
 ## Art direction file
 
@@ -90,8 +95,8 @@ Lessons:
 
 ## After drawing
 
-- **Compression.** FLUX returns near-lossless JPEGs (~400 KB). `illustrate.mjs` re-saves at quality 80 with
-  mozjpeg (via `sharp`): ~60 KB, visually identical at reading size. `node tools/shrink.mjs` does the same for
+- **Compression.** gpt-image-2 returns 1536x1152 PNGs (~2.5 MB). `illustrate.mjs` resizes to the art size (1024 wide)
+  and re-saves at JPEG quality 80 with mozjpeg (via `sharp`): ~60-100 KB, visually identical at reading size. `node tools/shrink.mjs` does the same for
   pictures added another way. 48 pictures went from 17 MB to 2.8 MB.
 - Files: `content/pictures/<story-id>/<page>.jpg`, and the tool sets `page.image` = `"<story-id>/<page>.jpg"`
   in the story JSON. Committed to git (the repo is private).
@@ -103,18 +108,18 @@ Lessons:
 ## Review and redraws
 
 Eli and Tom review in the app. To redraw a page: improve its `picture` description if the problem is content
-(wrong action, missing object), then `node tools/illustrate.mjs pages <story> <page>` (a new random seed each
-time) and `node tools/push.mjs --images`. If a character drifts off-model, strengthen their `look` or redraw
+(wrong action, missing object), then `node tools/illustrate.mjs pages <story> <page>` (each call draws
+afresh) and `node tools/push.mjs --images`. If a character drifts off-model, strengthen their `look` or redraw
 their sheet; changing a sheet means redrawing every page they appear in.
 
 ## Status (Oct 2026)
 
-- **On hold.** Eli wants a better model and to mind spend. Likely next: Gemini's image model via OpenRouter
-  (needs `OPENROUTER_API_KEY` in the environment), with character sheets as references as before.
+- **Switched to gpt-image-2** (above). Tested 4 pages for $0.24, then drew chapter 1 for real. Next: Eli reviews
+  chapter 1 in the app, then the remaining six chapters (~$4 at medium, so they fit the weekly limit).
 - Julia and Toby was rewritten (7 chapters, Tom's notes) and published **text only**. Every page's FLUX picture is
   parked as `draftImage` (not shown in the app); `illustrate.mjs pages <id> --missing` treats those pages as undrawn.
   Drafts: `content/pictures/toby-v1-*` (first draft) and `content/pictures/toby-N/` (rewrite, FLUX). Cost so far ~$8.
-- Problems seen with FLUX on the rewrite, to fix with the new model:
+- Problems seen with FLUX on the rewrite, to check with the new model:
   - Text painted into a picture despite "no text" (ch4 p7, "Crash! Bang! Smash!").
   - **Cast detection matched "dragon" to Toby** on the ominous black-dragon pages (ch7 p10-12), so cute Toby appeared
     in the dark cave. The black dragon needs its own cast entry and sheet, and `match` words must not collide
