@@ -65,6 +65,29 @@ node tools/push.mjs --images                                # upload to R2 and p
 Julia's look is ours, not Tom's; he can change it (edit `look`, redraw her sheet, then redraw the pages she's in).
 All candidates are kept in `candidates/` so a different pick is just a copy.
 
+## Settings (places)
+
+Pages set in the same place should look like the same place, so places get reference pictures too.
+`settings` in the art file has one entry per recurring place with a `look`; `node tools/illustrate.mjs sheet "<series>" <setting> 1`
+draws an empty landscape view of it, and the pick is copied to `content/art/<series>/<setting>.jpg` like a character sheet.
+Each page names its place: `"setting": "backyard"`. The setting picture is passed as the last reference, with
+"keep the same place, layout and landmarks, seen from whatever angle suits the scene". A setting without a picture
+(Super-Tall Peak, seen once) is described in words only.
+A setting's `with` lists cast that always comes along: the backyard brings the playhouse sheet, because without it
+the model copied the playhouse from the backyard picture (a wooden cottage with a heart on the door).
+
+Julia and Toby: `backyard` (cream house, back step, lawn, playhouse in the far corner, wooden fence and gate),
+`woods` (the clearing past the gate: big oak, mossy stump, fallen log, small pond), `cave` (the black dragon's cave),
+`peak` (words only).
+
+Before settings, pages whose `picture` named no place came out on a plain cream background (chapter 1 pages 5-10).
+
+## Per-page cast
+
+A page can list its cast explicitly, `"cast": ["julia", "toby"]`, which overrides match words. Use it when matching
+gets it wrong: chapter 1 page 9 mentions the play house in its text but happens in the woods, and the black dragon
+pages (ch7 p10-12) must not get Toby's sheet. A cast member with no sheet (the black dragon) is described in words.
+
 ## Prompts
 
 **Sheet:** `<style> Character reference sheet: <look> Shown full body, standing, facing three-quarters toward the
@@ -76,7 +99,7 @@ Image 2 is ... Scene: <page.picture>. The words on this page of the story are: "
 - The scene comes from the page's `picture` field in the story JSON. Write it as a short visual description
   (who, doing what, where, mood): "the dragon looking down guiltily". It's the main lever for a better picture.
 - The page text is included for context (emotion, objects mentioned).
-- References are passed in cast order, at most 4.
+- References are passed in cast order, then the setting (gpt-image-2 takes up to 16).
 
 ## Cast detection (who's on a page)
 
@@ -114,16 +137,20 @@ their sheet; changing a sheet means redrawing every page they appear in.
 
 ## Status (Oct 2026)
 
-- **Switched to gpt-image-2** (above). Tested 4 pages for $0.24, then drew chapter 1 for real. Next: Eli reviews
-  chapter 1 in the app, then the remaining six chapters (~$4 at medium, so they fit the weekly limit).
-- Julia and Toby was rewritten (7 chapters, Tom's notes) and published **text only**. Every page's FLUX picture is
-  parked as `draftImage` (not shown in the app); `illustrate.mjs pages <id> --missing` treats those pages as undrawn.
-  Drafts: `content/pictures/toby-v1-*` (first draft) and `content/pictures/toby-N/` (rewrite, FLUX). Cost so far ~$8.
+- **All 7 chapters drawn with gpt-image-2** and live (Oct 6): $0.24 of tests, $0.60 for chapter 1, $0.15 for the
+  three setting pictures, $3.97 for chapters 2-7 and one redraw. That used the whole $5 week.
+- Redraw queue (about $0.50, next week):
+  - ch1 p5-10: drawn before settings existed, so they sit on a plain cream background, and p9 put the playhouse
+    in the woods. Both are fixed in the JSON (settings, `cast` on p9); just redraw.
+  - ch6 p2: a strange girl (pink top) instead of Julia. Cast and picture fixed in the JSON; redraw.
+  - ch2 p3-7 and all of ch3: drawn before the backyard brought the playhouse sheet along, so the playhouse there is a
+    wooden cottage with a heart on the door. Only redraw if Eli minds.
+  - ch7 p8 ("loops the loop") shows four Julias, a motion sequence. Might confuse; Eli to judge.
+- The FLUX drafts (~$8) are in git history: `content/pictures/toby-v1-*` and earlier versions of `content/pictures/toby-N/`.
 - Problems seen with FLUX on the rewrite, to check with the new model:
   - Text painted into a picture despite "no text" (ch4 p7, "Crash! Bang! Smash!").
   - **Cast detection matched "dragon" to Toby** on the ominous black-dragon pages (ch7 p10-12), so cute Toby appeared
-    in the dark cave. The black dragon needs its own cast entry and sheet, and `match` words must not collide
-    ("big black dragon" vs "dragon"). Consider explicit per-page `cast` lists instead of keyword matching.
+    in the dark cave. Fixed with per-page `cast` (above) and a `blackdragon` cast entry described in words.
   - The black dragon itself came out bear-like.
 - Mittu and the Yellow Mango: pictures are scans from the book (see CLAUDE.md, books from home), not generated.
 

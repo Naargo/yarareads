@@ -60,8 +60,10 @@ function loadArt(series) {
   return { art: JSON.parse(readFileSync(file, 'utf8')), dir: join(root, 'content/art', slug(series)) };
 }
 
-// Who's in a page: cast members whose match words appear in the scene description or the text.
+// Who's in a page: the page's own `cast` list if it has one, else cast members whose match words appear in the
+// scene description or the text.
 function castFor(page, art) {
+  if (page.cast) return page.cast;
   const words = ` ${`${page.picture || ''} ${page.text}`.toLowerCase().replace(/['’]s\b/g, '').replace(/[^a-z ]/g, ' ')} `;
   return Object.entries(art.cast)
     .filter(([, c]) => c.match.some((m) => words.includes(` ${m} `)))
@@ -73,14 +75,17 @@ const [cmd, ...args] = process.argv.slice(2);
 if (cmd === 'sheet') {
   const [series, id, n = 4] = args;
   const { art, dir } = loadArt(series);
-  const c = art.cast[id];
+  const c = art.cast[id] || art.settings[id];
   mkdirSync(join(dir, 'candidates'), { recursive: true });
-  const prompt = c.object
+  const place = !art.cast[id];
+  const prompt = place
+    ? `${art.style} Reference picture of a place, wide view, empty, no people or animals: ${c.look}`
+    : c.object
     ? `${art.style} Reference sheet: ${c.look} The object alone, empty, no people or animals, three-quarter view, on a plain warm off-white background, centered.`
     : `${art.style} Character reference sheet: ${c.look} Shown full body, standing, facing three-quarters toward the viewer, on a plain warm off-white background. One single figure, centered.`;
   for (let i = 1; i <= Number(n); i++) {
-    const img = await draw(prompt, [], [768, 1024]);
-    writeFileSync(join(dir, 'candidates', `${id}-${i}.jpg`), await webJpeg(img, 768));
+    const size = place ? art.size : [768, 1024];
+    writeFileSync(join(dir, 'candidates', `${id}-${i}.jpg`), await webJpeg(await draw(prompt, [], size), size[0]));
     console.log(`candidate ${id}-${i}  $${spent.toFixed(2)} so far`);
   }
 } else if (cmd === 'pages') {
@@ -99,15 +104,23 @@ if (cmd === 'sheet') {
   const worker = async () => {
     for (let n; (n = queue.shift()) !== undefined; ) {
       const page = story.pages[n - 1];
-      const cast = castFor(page, art).filter((c) => existsSync(join(dir, `${c}.jpg`))).slice(0, 4);
-      const refs = cast.map((c) => join(dir, `${c}.jpg`));
-      const who = cast.map((c, i) => `Image ${i + 1} is the reference for ${art.cast[c].look} Keep this exact design, colours and outfit.`).join(' ');
-      const prompt = `${art.style} ${who} Scene: ${page.picture}. The words on this page of the story are: "${page.text}"`;
+      // References: the sheet of everyone on the page, then the page's setting. Cast without a sheet is described in words.
+      // A setting's `with` (the playhouse in the backyard) always comes along, so the place keeps its landmarks right.
+      const cast = [...new Set([...castFor(page, art), ...(art.settings?.[page.setting]?.with || [])])];
+      const drawn = cast.filter((c) => existsSync(join(dir, `${c}.jpg`)));
+      const setting = page.setting && existsSync(join(dir, `${page.setting}.jpg`)) ? page.setting : null;
+      const refs = [...drawn, ...(setting ? [setting] : [])].map((c) => join(dir, `${c}.jpg`));
+      const who = drawn.map((c, i) => `Image ${i + 1} is the reference for ${art.cast[c].look} Keep this exact design, colours and outfit.`).join(' ');
+      const others = cast.filter((c) => !drawn.includes(c)).map((c) => `Also in the scene: ${art.cast[c].look}`).join(' ');
+      const place = !page.setting ? ''
+        : setting ? `Image ${refs.length} shows the place where this happens: ${art.settings[setting].look} Keep the same place, layout and landmarks, seen from whatever angle suits the scene; it does not need to show all of it.`
+        : `The place: ${art.settings[page.setting].look}`;
+      const prompt = `${art.style} ${who} ${others} ${place} Scene: ${page.picture}. The words on this page of the story are: "${page.text}"`.replace(/ +/g, ' ');
       writeFileSync(join(out, `${n}.jpg`), await webJpeg(await draw(prompt, refs, art.size), art.size[0]));
       page.image = `${id}/${n}.jpg`;
       delete page.draftImage;
       writeFileSync(file, JSON.stringify(story, null, 2) + '\n');
-      console.log(`${id} page ${n}  [${cast.join(', ') || 'no cast'}]  $${spent.toFixed(2)} so far`);
+      console.log(`${id} page ${n}  [${[...cast, page.setting].filter(Boolean).join(', ') || 'no cast'}]  $${spent.toFixed(2)} so far`);
     }
   };
   await Promise.all(Array.from({ length: PARALLEL }, worker));

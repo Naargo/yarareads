@@ -29,6 +29,29 @@
       ],
       "look": "Julia's playhouse: a small children's plastic playhouse, pink walls with a little window and door, and a green roof.",
       "object": true
+    },
+    "blackdragon": {
+      "match": [
+        "black dragon"
+      ],
+      "look": "a huge, ancient black dragon, many times bigger than a house, with jagged horns, cracked dark scales like cooled lava, ragged bat wings, long curved claws and narrow glowing red eyes. Menacing and frightening, nothing cute or friendly about it, but not gory."
+    }
+  },
+  "settings": {
+    "backyard": {
+      "look": "Julia's backyard: a big green lawn, the back of her family's cream-colored two-storey house with a white back door and a stone back step, a flower bed along a low wooden fence, the small pink playhouse with its green roof in the far corner of the lawn, and a wooden garden gate in the fence leading to the woods beyond.",
+      "with": [
+        "playhouse"
+      ]
+    },
+    "woods": {
+      "look": "the woods just past Julia's garden gate: a sunny clearing with one big old oak tree in the middle, a mossy tree stump, a fallen log, soft grass and ferns, and a small round pond at the edge of the clearing, tall trees all around."
+    },
+    "cave": {
+      "look": "a huge dark cave near the top of Super-Tall Peak, a very tall, pointy, bare grey mountain: rough black rock walls, a rocky floor scattered with boulders and scorch marks, a wide cave mouth looking out on a cold night sky. Dark and frightening, lit only faintly."
+    },
+    "peak": {
+      "look": "Super-Tall Peak: a very tall, thin, pointy grey mountain far away on the horizon, much taller than the hills around it, with a dark cave mouth near the very top."
     }
   }
 }
