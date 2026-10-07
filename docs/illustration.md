@@ -210,7 +210,8 @@ their sheet; changing a sheet means redrawing every page they appear in.
 - Board edits (Oct 7, $0.45): ch3 p2 (Julia painted on Toby instead of on paper), ch4 p6-7 (the toys whirled
   inside the playhouse instead of zooming sky-high), ch5 p1 (the playhouse in the woods).
 - Kept as they are: the playhouse near the gate in chapter 7, and the scooter is pink.
-- Library covers are still the drawn motifs; `illustrate.mjs cover` can switch any chapter to a page picture.
+- Covers are page pictures (Oct 7), chosen to be distinct per chapter without giving the plot away: ch1 p4, ch2 p2, ch3 p2,
+  ch4 p4 (the bee, not the twist), ch5 p3, ch6 p5 (dusk, not the branch), ch7 p7 (never the black dragon).
 - Earlier pictures (FLUX drafts, then per-page gpt-image-2) are in git history.
 - Sounding out and TTS (roadmap 4) is next, now the pictures are done.
 
