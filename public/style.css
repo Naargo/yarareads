@@ -384,3 +384,40 @@ button { border: none; background: none; cursor: pointer; padding: 0; }
 .take .play .icon { font-size: 18px; }
 .star-btn { width: 40px; height: 40px; display: grid; place-items: center; }
 .star-btn .star { width: 26px; height: 26px; }
+
+/* ---------- Grown-ups tabs ---------- */
+
+.tabs {
+  display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
+  margin: -8px -16px 18px; padding: 4px 16px 6px;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tabs a {
+  flex-shrink: 0; text-decoration: none; color: var(--ink-soft);
+  font-size: 17px; font-weight: 600; padding: 10px 16px; border-radius: 99px;
+  box-shadow: 0 0 0 2px var(--line) inset; background: var(--card);
+}
+.tabs a.on { background: var(--dusk); color: #fff; box-shadow: 0 4px 0 #29234f; }
+
+/* ---------- Voice ---------- */
+
+.tryword { margin: 0 0 14px; }
+.voices { display: flex; flex-direction: column; }
+.voicerow { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-top: 2px solid var(--paper-2); }
+.voicerow:first-child { border-top: none; }
+.voicerow .try { width: 52px; height: 48px; border-radius: 14px; display: grid; place-items: center; font-size: 22px; flex-shrink: 0; }
+.voicerow .pick { flex: 1; text-align: left; padding: 8px 0; font-size: 18px; }
+.voicerow .pick b { font-weight: 600; }
+.voicerow.chosen .pick b { color: var(--dusk); }
+.voicerow .inuse { display: inline-flex; align-items: center; gap: 6px; color: var(--moss); font-weight: 600; font-size: 15px; }
+.warm-status { margin-left: 12px; }
+
+/* A speaker button waiting for its audio: the icon dims and a ring spins. */
+.speak { position: relative; }
+.speak.waiting .icon { opacity: 0.25; }
+.speak.waiting::after {
+  content: ''; position: absolute; inset: 0; margin: auto; width: 26px; height: 26px;
+  border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--dusk);
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }

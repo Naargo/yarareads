@@ -30,12 +30,62 @@ let inventory;
 const getInventory = async () => inventory || (inventory = await api('inventory'));
 let storyCache = {};
 const getStory = async (id) => storyCache[id] || (storyCache[id] = await api('stories/' + id));
+let settings;
+const getSettings = async () => settings || (settings = await api('settings'));
 const forgetContent = () => {
   inventory = null;
   storyCache = {};
+  settings = null;
 };
 
 // ---------- Speech (single words only) ----------
+// Words are spoken by a Cloudflare voice (chosen in grown-ups), generated once and cached in R2 by the
+// worker. The word card starts fetching as it opens, so the audio is usually ready by the time the
+// sounding out ends. It plays through Web Audio: iOS only allows sound that starts inside a tap, so the
+// tap resumes the audio context (unlockAudio), and the word can then play seconds later from a timer.
+// The browser's own voice is the fallback if the worker can't say a word.
+
+let audioCtx, playing;
+const ctx = () => audioCtx || (audioCtx = new (window.AudioContext || window.webkitAudioContext)());
+function unlockAudio() {
+  if (ctx().state === 'suspended') audioCtx.resume();
+  primeSpeech(); // for the fallback voice
+}
+function stopAudio() {
+  try { playing?.stop(); } catch {}
+  playing = null;
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+}
+
+const sayKey = (word) => word.toLowerCase().replace(/[^a-z' -]/g, '').trim();
+const wordAudio = new Map(); // "voice|word" -> Promise<AudioBuffer | null>
+function loadWord(word, voice) {
+  const w = sayKey(word), k = `${voice}|${w}`;
+  if (!wordAudio.has(k)) {
+    wordAudio.set(k, fetch(`/api/say?word=${encodeURIComponent(w)}&voice=${encodeURIComponent(voice)}`)
+      .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(r.status))))
+      .then((bytes) => new Promise((ok, fail) => ctx().decodeAudioData(bytes, ok, fail))) // callback form: older Safari
+      .catch(() => { wordAudio.delete(k); return null; }));
+  }
+  return wordAudio.get(k);
+}
+const prefetchWord = (word) => getSettings().then((s) => loadWord(word, s.voice)).catch(() => {});
+
+// Say a word; `button` shows a spinner if the audio isn't ready yet. Resolves when it starts playing.
+async function sayWord(word, button, voice) {
+  voice ||= (await getSettings().catch(() => ({}))).voice;
+  const pending = voice ? loadWord(word, voice) : Promise.resolve(null);
+  const spin = setTimeout(() => button?.classList.add('waiting'), 120);
+  const buffer = await pending;
+  clearTimeout(spin);
+  button?.classList.remove('waiting');
+  stopAudio();
+  if (!buffer) return speak(word);
+  playing = ctx().createBufferSource();
+  playing.buffer = buffer;
+  playing.connect(audioCtx.destination);
+  playing.start();
+}
 
 let voice;
 function pickVoice() {
@@ -50,8 +100,7 @@ if ('speechSynthesis' in window) {
   speechSynthesis.onvoiceschanged = pickVoice;
 }
 
-// iOS only lets a page speak if speech starts inside a tap. Sounding out says the word seconds
-// after the tap (from a timer), so the tap first speaks a silent utterance to unlock speech.
+// The fallback voice needs the same unlock on iOS: a silent utterance inside the tap.
 function primeSpeech() {
   if (!('speechSynthesis' in window)) return;
   const u = new SpeechSynthesisUtterance(' ');
@@ -108,11 +157,11 @@ let grownUp = session.get('grownUp') === '1';
 
 async function route() {
   closePop();
-  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  stopAudio();
   const [, view, id, page] = location.hash.split('/');
   try {
     if (view === 'read' && id) await showReader(id, Number(page) || 0);
-    else if (view === 'grownups') grownUp ? await showGrownups() : showGate();
+    else if (view === 'grownups') grownUp ? await showGrownups(id) : showGate();
     else if (view === 'sounds') grownUp ? await showSoundLab() : showGate();
     else await showLibrary();
   } catch (e) {
@@ -330,6 +379,7 @@ function openPop(el, story, inv) {
       ${badge ? `<div class="badge">${badge}</div>` : ''}
       <div class="actions"><button class="press speak" data-a="say" aria-label="Say it">${ICONS.speaker}</button></div>`;
   }
+  prefetchWord(word); // ready by the end of the sounding out, usually
   document.body.appendChild(pop);
   fitPop(pop);
   if (info.parts) drawLinks(pop, info.parts);
@@ -337,11 +387,15 @@ function openPop(el, story, inv) {
 
   // One speaker button. If the word can be sounded out, it always is (tiles light in turn) before
   // the word is said, so the voice never reads a word for her without the sounding out.
-  pop.querySelector('[data-a=say]')?.addEventListener('click', () => speak(word));
+  const say = pop.querySelector('[data-a=say]');
+  if (say) say.onclick = () => {
+    unlockAudio();
+    sayWord(word, say);
+  };
   const sound = pop.querySelector('[data-a=sound]');
   if (sound) sound.onclick = () => {
-    primeSpeech();
-    soundOut(pop, word, info.parts);
+    unlockAudio();
+    soundOut(pop, word, info.parts, sound);
   };
 }
 
@@ -384,7 +438,7 @@ function drawLinks(p, parts) {
 }
 
 // Light up each sound in turn (a silent-e vowel lights with its e), then blend: say the whole word.
-function soundOut(p, word, parts) {
+function soundOut(p, word, parts, button) {
   if (p.dataset.busy) return; // one sounding-out at a time
   p.dataset.busy = '1';
   const chips = [...p.querySelectorAll('.chip')];
@@ -394,9 +448,9 @@ function soundOut(p, word, parts) {
     chips[i].classList.add('lit');
     if (isSplit(parts[i])) chips[partner(parts, i)].classList.add('lit');
   }, n * 650));
-  setTimeout(() => {
+  setTimeout(async () => {
     chips.forEach((c) => c.classList.add('lit'));
-    speak(word);
+    await sayWord(word, button);
     delete p.dataset.busy;
   }, steps.length * 650);
 }
@@ -430,10 +484,21 @@ async function showEnd(story) {
 }
 
 // ---------- Grown-ups ----------
+// Tabs, one job each: #/grownups/<tab>. Practise is first because it's what you check most.
 
-async function showGrownups() {
-  const [inv, list, progress] = await Promise.all([getInventory(), api('stories'), api('progress')]);
-  const stories = await Promise.all(list.map((s) => getStory(s.id)));
+const TABS = [
+  ['practise', 'Practise'],
+  ['sounds', 'Sounds'],
+  ['words', 'Words'],
+  ['books', 'Books'],
+  ['voice', 'Voice'],
+  ['app', 'App'],
+];
+
+async function showGrownups(tab) {
+  if (!TABS.some(([t]) => t === tab)) tab = TABS[0][0];
+  const [inv, list, progress, prefs] = await Promise.all([getInventory(), api('stories'), api('progress'), getSettings()]);
+  const stories = tab === 'books' || tab === 'voice' ? await Promise.all(list.map((s) => getStory(s.id))) : [];
 
   const tiles = (entries) => entries.map(([g]) =>
     `<button class="tile ${inv.graphemes.includes(g) ? 'on' : ''}" data-g="${esc(g)}">${esc(letters(g))}${
@@ -446,33 +511,35 @@ async function showGrownups() {
       <button class="press">${ICONS.plus} Add</button>
     </form>`;
 
-  app.innerHTML = `
-    <div class="admin">
-      <header>
-        <h1>Grown-ups</h1>
-        <button class="done press" data-act="done">${ICONS.check} Done</button>
-      </header>
-
+  const panels = {
+    practise: () => `
+      <section class="panel">
+        <h2>Practise</h2>
+        <p>The words she taps most for help. These are the ones to practise together.</p>
+        <div class="wordlist">${progress.taps.map((t) => `<span class="wordchip plain">${esc(t.word)}<span class="count">×${t.taps}</span></span>`).join('') || '<span class="days">Nothing yet.</span>'}</div>
+        <h3>Recent days</h3>
+        <div class="days">${progress.days.map((d) => `${esc(d.day)}: ${d.pages} pages, ${d.stories} books`).join('<br>') || 'Nothing yet.'}</div>
+      </section>`,
+    sounds: () => `
       <section class="panel">
         <h2>Sounds she knows <small>${inv.graphemes.length} on</small></h2>
         <p>Tap a sound to switch it on or off. Books only use sounds that are on, and a word with a sound that's off stops being one she can sound out.</p>
         ${CATALOG_GROUPS.map(([title, entries]) => `<h3>${esc(title)}</h3><div class="tiles">${tiles(entries)}</div>`).join('')}
-      </section>
-
+      </section>`,
+    words: () => `
       <section class="panel">
         <h2>Tricky words <small>${inv.tricky.length}</small></h2>
         <p>Words she reads on sight, without sounding out.</p>
         <div class="wordlist">${words('tricky')}</div>
         ${adder('tricky', 'Add a tricky word')}
       </section>
-
       <section class="panel">
         <h2>Names <small>${inv.names.length}</small></h2>
         <p>Characters' names. She can read these anywhere.</p>
         <div class="wordlist">${words('names')}</div>
         ${adder('names', 'Add a name')}
-      </section>
-
+      </section>`,
+    books: () => `
       <section class="panel">
         <h2>Books</h2>
         <p>Whether each book is still readable with what she knows.</p>
@@ -495,49 +562,73 @@ async function showGrownups() {
             </div>
           </div>`;
         }).join('')}
+      </section>`,
+    voice: () => `
+      <section class="panel">
+        <h2>Voice</h2>
+        <p>The voice that says a word after the sounding out, and says tricky words. Type a word, tap a voice's
+          speaker to hear it, and tap a name to use that voice.</p>
+        <form class="adder tryword"><input name="w" value="dragon" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Word to try"></form>
+        <div class="voices">
+          ${Object.entries(prefs.voices).map(([id, v]) => `
+            <div class="voicerow ${id === prefs.voice ? 'chosen' : ''}">
+              <button class="press speak try" data-voice="${esc(id)}" aria-label="Hear ${esc(v.label)}">${ICONS.speaker}</button>
+              <button class="pick" data-voice="${esc(id)}"><b>${esc(v.label)}</b> <span class="muted">${esc(v.about)}</span></button>
+              ${id === prefs.voice ? `<span class="inuse">${ICONS.check} In use</span>` : ''}
+            </div>`).join('')}
+        </div>
       </section>
-
+      <section class="panel">
+        <h2>Get the books ready</h2>
+        <p>Each word is made once, the first time it's needed, then kept. This makes every word in the books now,
+          in the voice in use, so she never waits.</p>
+        <button class="press check" data-act="warm">Get every book word ready</button>
+        <span class="muted warm-status"></span>
+      </section>
       <section class="panel">
         <h2>Sound lab</h2>
         <p>Recordings of each phonics sound for the sound buttons. Listen to the candidates and pick the ones that sound right.</p>
         <button class="press check" data-act="lab">Open the sound lab</button>
-      </section>
-
+      </section>`,
+    app: () => `
       <section class="panel">
         <h2>App <small>version ${esc(version || 'unknown')}</small></h2>
         <p>The app updates itself, and new books and pictures appear whenever the library opens. If something still looks out of date:</p>
         <button class="press check" data-act="update">Refresh now</button>
-      </section>
+      </section>`,
+  };
 
-      <section class="panel">
-        <h2>Practise</h2>
-        <p>The words she taps most for help. These are the ones to practise together.</p>
-        <div class="wordlist">${progress.taps.map((t) => `<span class="wordchip plain">${esc(t.word)}<span class="count">×${t.taps}</span></span>`).join('') || '<span class="days">Nothing yet.</span>'}</div>
-        <h3>Recent days</h3>
-        <div class="days">${progress.days.map((d) => `${esc(d.day)}: ${d.pages} pages, ${d.stories} books`).join('<br>') || 'Nothing yet.'}</div>
-      </section>
+  app.innerHTML = `
+    <div class="admin">
+      <header>
+        <h1>Grown-ups</h1>
+        <button class="done press" data-act="done">${ICONS.check} Done</button>
+      </header>
+      <nav class="tabs">${TABS.map(([t, label]) => `<a href="#/grownups/${t}" class="${t === tab ? 'on' : ''}">${label}</a>`).join('')}</nav>
+      ${panels[tab]()}
     </div>`;
 
   const save = async () => {
     await api('inventory', { method: 'PUT', body: inv });
     toast('Saved');
     const y = scrollY;
-    await showGrownups();
+    await showGrownups(tab);
     scrollTo(0, y);
   };
-  app.querySelector('[data-act=done]').onclick = () => (location.hash = '#/');
-  app.querySelector('[data-act=lab]').onclick = () => (location.hash = '#/sounds');
+  const on = (sel, fn) => app.querySelectorAll(sel).forEach((el) => (el.onclick = (e) => fn(el, e)));
+  on('[data-act=done]', () => (location.hash = '#/'));
+  on('[data-act=lab]', () => (location.hash = '#/sounds'));
   // A full reload: fresh code, books, pictures and sounds. Lands back here in grown-ups.
-  app.querySelector('[data-act=update]').onclick = () => location.reload();
-  app.querySelectorAll('.tile').forEach((t) => (t.onclick = () => {
+  on('[data-act=update]', () => location.reload());
+  on('.tile', (t) => {
     const g = t.dataset.g;
     inv.graphemes = inv.graphemes.includes(g) ? inv.graphemes.filter((x) => x !== g) : [...inv.graphemes, g];
     save();
-  }));
-  app.querySelectorAll('[data-remove]').forEach((b) => (b.onclick = () => {
+  });
+  on('[data-remove]', (b) => {
     inv[b.dataset.remove] = inv[b.dataset.remove].filter((w) => w !== b.dataset.w);
     save();
-  }));
+  });
   app.querySelectorAll('[data-add]').forEach((f) => (f.onsubmit = (e) => {
     e.preventDefault();
     const w = f.w.value.trim();
@@ -545,6 +636,44 @@ async function showGrownups() {
     inv[f.dataset.add] = [...inv[f.dataset.add], w];
     save();
   }));
+
+  if (tab === 'voice') {
+    const tryWord = () => app.querySelector('.tryword input').value.trim() || 'dragon';
+    app.querySelector('.tryword').onsubmit = (e) => {
+      e.preventDefault();
+      const b = app.querySelector(`.try[data-voice="${prefs.voice}"]`);
+      unlockAudio();
+      sayWord(tryWord(), b, prefs.voice);
+    };
+    on('.try', (b) => {
+      unlockAudio();
+      sayWord(tryWord(), b, b.dataset.voice);
+    });
+    on('.pick', async (b) => {
+      await api('settings', { method: 'PUT', body: { voice: b.dataset.voice } });
+      settings = null;
+      toast(`${prefs.voices[b.dataset.voice].label} is the voice now`);
+      await showGrownups('voice');
+    });
+    // Every word in every book, made in the voice in use (a few at a time; cached ones are quick).
+    on('[data-act=warm]', async (b) => {
+      const all = [...new Set(stories.flatMap((s) => s.pages.flatMap((p) => tokenize(p.text).filter(isWord))).map(sayKey))].filter(Boolean);
+      const status = app.querySelector('.warm-status');
+      b.disabled = true;
+      let done = 0, failed = 0;
+      const queue = [...all];
+      const worker = async () => {
+        for (let w; (w = queue.shift()); ) {
+          const r = await fetch(`/api/say?word=${encodeURIComponent(w)}&voice=${encodeURIComponent(prefs.voice)}`).catch(() => null);
+          if (!r?.ok) failed++;
+          status.textContent = `${++done} of ${all.length}${failed ? `, ${failed} failed` : ''}`;
+        }
+      };
+      await Promise.all([1, 2, 3, 4].map(worker));
+      status.textContent = failed ? `Done, but ${failed} failed. Try again.` : `All ${all.length} words ready.`;
+      b.disabled = false;
+    });
+  }
 }
 
 // ---------- Sound lab (grown-ups) ----------
@@ -556,7 +685,7 @@ const EXAMPLES = {
   b: 'bat', d: 'dog', g: 'got', a: 'ant', e: 'egg', i: 'ink', o: 'on', u: 'up', ai: 'rain', ee: 'see',
   igh: 'night', oa: 'boat', oo: 'moon', ar: 'car', or: 'fork', ur: 'fur', ow: 'cow', oi: 'coin', ch: 'chip', th: 'thin',
 };
-const VOICE_NAMES = { pandora: 'Voice 1', athena: 'Voice 2', melo: 'Voice 3' };
+const VOICE_NAMES = { pandora: 'Voice 1', athena: 'Voice 2', melo: 'Voice 3', 'gpt-mini': 'Voice 4', gpt: 'Voice 5' };
 let labAudio;
 
 async function showSoundLab() {
@@ -591,7 +720,7 @@ async function showSoundLab() {
           </div>
         </section>`).join('') || '<section class="panel"><p>No candidates yet: run node tools/sounds.mjs.</p></section>'}
     </div>`;
-  app.querySelector('[data-act=back]').onclick = () => (location.hash = '#/grownups');
+  app.querySelector('[data-act=back]').onclick = () => (location.hash = '#/grownups/voice');
   app.querySelectorAll('.play').forEach((b) => (b.onclick = () => {
     labAudio?.pause();
     labAudio = new Audio(`/api/sounds/${b.dataset.key}`);

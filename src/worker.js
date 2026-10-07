@@ -14,6 +14,46 @@ function cookie(request, name) {
   return match && match[1];
 }
 
+// Voices for words, from Cloudflare Workers AI. Ids are "<model>:<speaker>"; the grown-ups Voice tab lists these.
+// Aura is Deepgram's (mp3); MeloTTS returns base64 WAV in JSON.
+const VOICES = {
+  'aura-2:pandora': { model: '@cf/deepgram/aura-2-en', speaker: 'pandora', label: 'Pandora', about: 'British woman' },
+  'aura-2:draco': { model: '@cf/deepgram/aura-2-en', speaker: 'draco', label: 'Draco', about: 'British man' },
+  'aura-1:athena': { model: '@cf/deepgram/aura-1', speaker: 'athena', label: 'Athena', about: 'British woman, older model' },
+  'aura-1:helios': { model: '@cf/deepgram/aura-1', speaker: 'helios', label: 'Helios', about: 'British man, older model' },
+  'aura-2:theia': { model: '@cf/deepgram/aura-2-en', speaker: 'theia', label: 'Theia', about: 'Australian woman' },
+  'aura-2:hyperion': { model: '@cf/deepgram/aura-2-en', speaker: 'hyperion', label: 'Hyperion', about: 'Australian man' },
+  'aura-2:luna': { model: '@cf/deepgram/aura-2-en', speaker: 'luna', label: 'Luna', about: 'American woman' },
+  'aura-2:asteria': { model: '@cf/deepgram/aura-2-en', speaker: 'asteria', label: 'Asteria', about: 'American woman' },
+  'aura-2:apollo': { model: '@cf/deepgram/aura-2-en', speaker: 'apollo', label: 'Apollo', about: 'American man' },
+  'melo:en': { model: '@cf/myshell-ai/melotts', label: 'Melo', about: 'Open-source voice' },
+};
+const DEFAULT_VOICE = 'aura-2:pandora';
+
+// Say one word in a voice: from the R2 cache (tts/<voice>/<word>.<ext>), or generated once and stored.
+async function sayWord(env, voiceId, word) {
+  const voice = VOICES[voiceId];
+  const ext = voiceId.startsWith('melo') ? 'wav' : 'mp3';
+  const type = ext === 'wav' ? 'audio/wav' : 'audio/mpeg';
+  const key = `tts/${voiceId.replace(':', '-')}/${encodeURIComponent(word)}.${ext}`;
+  const cached = await env.PICTURES.get(key);
+  if (cached) return { body: cached.body, type };
+  const out = voice.speaker
+    ? await env.AI.run(voice.model, { text: word, speaker: voice.speaker, encoding: 'mp3' })
+    : await env.AI.run(voice.model, { prompt: word, lang: 'en' });
+  let bytes;
+  if (out instanceof ReadableStream) bytes = await new Response(out).arrayBuffer();
+  else if (out?.audio) bytes = Uint8Array.from(atob(out.audio), (c) => c.charCodeAt(0));
+  else bytes = out;
+  await env.PICTURES.put(key, bytes, { httpMetadata: { contentType: type } });
+  return { body: bytes, type };
+}
+
+async function setting(env, key, fallback) {
+  const row = await env.DB.prepare('SELECT value FROM settings WHERE key = ?').bind(key).first();
+  return row ? row.value : fallback;
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -88,6 +128,31 @@ export default {
       } else {
         await env.DB.prepare('DELETE FROM sound_picks WHERE sound = ?').bind(s).run();
       }
+      return json({ ok: true });
+    }
+
+    // A word, spoken. The voice is the grown-ups' choice unless ?voice= asks for another (the Voice tab's test).
+    if (path === '/api/say' && request.method === 'GET') {
+      const word = (url.searchParams.get('word') || '').toLowerCase().replace(/[^a-z' -]/g, '').trim().slice(0, 40);
+      if (!word) return json({ error: 'no word' }, { status: 400 });
+      const asked = url.searchParams.get('voice');
+      const voiceId = VOICES[asked] ? asked : await setting(env, 'voice', DEFAULT_VOICE);
+      try {
+        const { body, type } = await sayWord(env, VOICES[voiceId] ? voiceId : DEFAULT_VOICE, word);
+        return new Response(body, { headers: { 'content-type': type, 'cache-control': 'private, max-age=86400' } });
+      } catch (e) {
+        return json({ error: String(e.message || e).slice(0, 200) }, { status: 502 });
+      }
+    }
+
+    if (path === '/api/settings' && request.method === 'GET') {
+      return json({ voice: await setting(env, 'voice', DEFAULT_VOICE), voices: VOICES });
+    }
+    if (path === '/api/settings' && request.method === 'PUT') {
+      const { voice } = await request.json();
+      if (!VOICES[voice]) return json({ error: 'bad voice' }, { status: 400 });
+      await env.DB.prepare('INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)')
+        .bind('voice', voice).run();
       return json({ ok: true });
     }
 

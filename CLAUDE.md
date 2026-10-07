@@ -47,7 +47,8 @@ Never loosen the inventory to make a story pass.
   character sheets in content/art/ as references) writes web-quality JPEGs (~60 KB); `node tools/shrink.mjs` for others.
 - Page pictures are served from R2 (bucket `yara-reads-pictures`) at `/api/pictures/<key>`, behind the PIN.
 - `public/`: the app (no build step). `art.js` holds the icons, logo and cover motifs; `fonts/` are self-hosted Andika (reading) and Fredoka (UI).
-- `src/worker.js`: API. `/api/login`, `/api/stories`, `/api/stories/:id`, `/api/pictures/<key>`, `/api/inventory` (GET/PUT), `/api/events`, `/api/progress`.
+- `src/worker.js`: API. `/api/login`, `/api/stories`, `/api/stories/:id`, `/api/pictures/<key>`, `/api/inventory` (GET/PUT), `/api/events`, `/api/progress`,
+  `/api/say?word=&voice=` (a spoken word), `/api/settings` (GET/PUT: the voice), `/api/sounds/<key>` and `/api/sound-picks` (Sound lab).
 - `migrations/`: D1 schema. Stories are stored with each word's pronunciations (`story.words`), so the app classifies words against the live inventory at read time.
 - Events (open, page, tap, finish) go to the `events` table. Taps are the signal for which words to practise.
 
@@ -75,7 +76,15 @@ The reader is exactly one screen tall: the picture shrinks first, then `fitPage`
 Word cards shrink their tiles (`--chip`) for long words instead of scrolling, so the whole word stays visible.
 Word cards have **one speaker button**. If the word has tiles, it always sounds it out first (tiles light in turn) and only
 then says the word: Eli doesn't want the voice reading words for her without the sounding out. Tricky words just get said.
-iOS only allows speech started inside a tap, so the tap speaks a silent utterance first (`primeSpeech`) to unlock the delayed word.
+
+**Word voice.** Words are spoken by a Cloudflare Workers AI voice (Deepgram Aura; `VOICES` in worker.js, chosen in grown-ups > Voice,
+stored in D1 `settings`). `/api/say` generates a word once and caches it in R2 under `tts/<voice>/<word>.mp3` (~0.5-1 s new, ~10 ms cached).
+The word card starts fetching when it opens, so the audio is ready by the end of the sounding out (650 ms a sound); if not,
+the speaker button shows a spinner. Audio plays through Web Audio: iOS only allows sound started inside a tap, so the tap
+resumes the AudioContext (`unlockAudio`) and the word can play later from a timer. Browser speech is only the fallback.
+Grown-ups > Voice can make every book word in advance ("Get every book word ready"). Cost is negligible (Aura ~$0.03 per 1k characters).
+
+The grown-ups section is tabbed (`#/grownups/<tab>`: Practise, Sounds, Words, Books, Voice, App).
 
 Content changes need only `tools/push.mjs`, no deploy.
 
@@ -86,10 +95,10 @@ Content changes need only `tools/push.mjs`, no deploy.
    ~~Silent e (split digraphs), coverage tool.~~
    Next: more stories. AI writes, the checker validates, and we loop until clean. Vocabulary queue: docs/vocabulary.md.
 3. Pictures: generate per page from `picture`, keeping characters consistent; store in R2.
-4. Real phoneme audio. In progress: `tools/sounds.mjs` generates TTS candidates per sound (Deepgram Aura-2 "pandora", Aura-1
-   "athena", MeloTTS; several spellings each) into R2 `sounds/candidates/`; the grown-ups **Sound lab** (`#/sounds`) plays them
-   and stores Eli's pick per sound in D1 `sound_picks`. Sounds no voice gets right will need Eli's own recordings.
-   Speech recognition (Whisper) can't pre-screen: it hallucinates on isolated sounds.
+4. Real phoneme audio. ~~Word voice (Cloudflare TTS, cached).~~ AI can't make pure phonics sounds well: `tools/sounds.mjs`
+   (TTS voices given spellings like "sss", "tuh") and `tools/sounds-describe.mjs` (gpt-audio given a description of the sound)
+   are in the **Sound lab** (`#/sounds`, picks in D1 `sound_picks`), but Eli concluded (Oct 7) that the sounds will be
+   **recorded by Tom or Eli** from a recording sheet, then cut into one file per sound. Whisper can't pre-screen isolated sounds.
 5. ~~Books from home, with pictures (first: Mittu and the Yellow Mango).~~ Next: show which *sounds* a book needs, not just words.
 6. Practise: grow the grown-ups "Practise" panel into something Eli can work through with her.
 
