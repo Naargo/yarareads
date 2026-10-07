@@ -31,6 +31,16 @@
     "key": "candidates/s/melo-2.wav",
     "voice": "melo",
     "text": "ssss."
+   },
+   {
+    "key": "candidates/s/gpt-mini-1.wav",
+    "voice": "gpt-mini",
+    "text": "described"
+   },
+   {
+    "key": "candidates/s/gpt-1.wav",
+    "voice": "gpt",
+    "text": "described"
    }
   ]
  },
@@ -66,6 +76,16 @@
     "key": "candidates/m/melo-2.wav",
     "voice": "melo",
     "text": "mmmm."
+   },
+   {
+    "key": "candidates/m/gpt-mini-1.wav",
+    "voice": "gpt-mini",
+    "text": "described"
+   },
+   {
+    "key": "candidates/m/gpt-1.wav",
+    "voice": "gpt",
+    "text": "described"
    }
   ]
  },
@@ -101,6 +121,16 @@
     "key": "candidates/f/melo-2.wav",
     "voice": "melo",
     "text": "ffff."
+   },
+   {
+    "key": "candidates/f/gpt-mini-1.wav",
+    "voice": "gpt-mini",
+    "text": "described"
+   },
+   {
+    "key": "candidates/f/gpt-1.wav",
+    "voice": "gpt",
+    "text": "described"
    }
   ]
  },
@@ -136,6 +166,16 @@
     "key": "candidates/sh/melo-2.wav",
     "voice": "melo",
     "text": "sh!"
+   },
+   {
+    "key": "candidates/sh/gpt-mini-1.wav",
+    "voice": "gpt-mini",
+    "text": "described"
+   },
+   {
+    "key": "candidates/sh/gpt-1.wav",
+    "voice": "gpt",
+    "text": "described"
    }
   ]
  },
@@ -171,6 +211,16 @@
     "key": "candidates/n/melo-2.wav",
     "voice": "melo",
     "text": "nnnn."
+   },
+   {
+    "key": "candidates/n/gpt-mini-1.wav",
+    "voice": "gpt-mini",
+    "text": "described"
+   },
+   {
+    "key": "candidates/n/gpt-1.wav",
+    "voice": "gpt",
+    "text": "described"
    }
   ]
  },
@@ -206,6 +256,16 @@
     "key": "candidates/l/melo-2.wav",
     "voice": "melo",
     "text": "llll."
+   },
+   {
+    "key": "candidates/l/gpt-mini-1.wav",
+    "voice": "gpt-mini",
+    "text": "described"
+   },
+   {
+    "key": "candidates/l/gpt-1.wav",
+    "voice": "gpt",
+    "text": "described"
    }
   ]
  },
@@ -241,6 +301,16 @@
     "key": "candidates/z/melo-2.wav",
     "voice": "melo",
     "text": "bzzz"
+   },
+   {
+    "key": "candidates/z/gpt-mini-1.wav",
+    "voice": "gpt-mini",
+    "text": "described"
+   },
+   {
+    "key": "candidates/z/gpt-1.wav",
+    "voice": "gpt",
+    "text": "described"
    }
   ]
  },
@@ -276,6 +346,16 @@
     "key": "candidates/v/melo-2.wav",
     "voice": "melo",
     "text": "vvvv."
+   },
+   {
+    "key": "candidates/v/gpt-mini-1.wav",
+    "voice": "gpt-mini",
+    "text": "described"
+   },
+   {
+    "key": "candidates/v/gpt-1.wav",
+    "voice": "gpt",
+    "text": "described"
    }
   ]
  },
@@ -326,6 +406,16 @@
     "key": "candidates/t/melo-3.wav",
     "voice": "melo",
     "text": "t!"
+   },
+   {
+    "key": "candidates/t/gpt-mini-1.wav",
+    "voice": "gpt-mini",
+    "text": "described"
+   },
+   {
+    "key": "candidates/t/gpt-1.wav",
+    "voice": "gpt",
+    "text": "described"
    }
   ]
  },
@@ -376,6 +466,16 @@
     "key": "candidates/p/melo-3.wav",
     "voice": "melo",
     "text": "p!"
+   },
+   {
+    "key": "candidates/p/gpt-mini-1.wav",
+    "voice": "gpt-mini",
+    "text": "described"
+   },
+   {
+    "key": "candidates/p/gpt-1.wav",
+    "voice": "gpt",
+    "text": "described"
    }
   ]
  },
@@ -426,6 +526,16 @@
     "key": "candidates/k/melo-3.wav",
     "voice": "melo",
     "text": "k!"
+   },
+   {
+    "key": "candidates/k/gpt-mini-1.wav",
+    "voice": "gpt-mini",
+    "text": "described"
+   },
+   {
+    "key": "candidates/k/gpt-1.wav",
+    "voice": "gpt",
+    "text": "described"
    }
   ]
  },
@@ -461,6 +571,16 @@
     "key": "candidates/b/melo-2.wav",
     "voice": "melo",
     "text": "buh"
+   },
+   {
+    "key": "candidates/b/gpt-mini-1.wav",
+    "voice": "gpt-mini",
+    "text": "described"
+   },
+   {
+    "key": "candidates/b/gpt-1.wav",
+    "voice": "gpt",
+    "text": "described"
    }
   ]
  },
@@ -496,6 +616,16 @@
     "key": "candidates/d/melo-2.wav",
     "voice": "melo",
     "text": "duh"
+   },
+   {
+    "key": "candidates/d/gpt-1.wav",
+    "voice": "gpt",
+    "text": "described"
+   },
+   {
+    "key": "candidates/d/gpt-mini-1.wav",
+    "voice": "gpt-mini",
+    "text": "described"
    }
   ]
  },
@@ -531,6 +661,16 @@
     "key": "candidates/g/melo-2.wav",
     "voice": "melo",
     "text": "guh"
+   },
+   {
+    "key": "candidates/g/gpt-mini-1.wav",
+    "voice": "gpt-mini",
+    "text": "described"
+   },
+   {
+    "key": "candidates/g/gpt-1.wav",
+    "voice": "gpt",
+    "text": "described"
    }
   ]
  },
@@ -581,6 +721,16 @@
     "key": "candidates/a/melo-3.wav",
     "voice": "melo",
     "text": "æ"
+   },
+   {
+    "key": "candidates/a/gpt-mini-1.wav",
+    "voice": "gpt-mini",
+    "text": "described"
+   },
+   {
+    "key": "candidates/a/gpt-1.wav",
+    "voice": "gpt",
+    "text": "described"
    }
   ]
  },
@@ -616,6 +766,16 @@
     "key": "candidates/e/melo-2.wav",
     "voice": "melo",
     "text": "e"
+   },
+   {
+    "key": "candidates/e/gpt-1.wav",
+    "voice": "gpt",
+    "text": "described"
+   },
+   {
+    "key": "candidates/e/gpt-mini-1.wav",
+    "voice": "gpt-mini",
+    "text": "described"
    }
   ]
  },
@@ -651,6 +811,16 @@
     "key": "candidates/i/melo-2.wav",
     "voice": "melo",
     "text": "i"
+   },
+   {
+    "key": "candidates/i/gpt-mini-1.wav",
+    "voice": "gpt-mini",
+    "text": "described"
+   },
+   {
+    "key": "candidates/i/gpt-1.wav",
+    "voice": "gpt",
+    "text": "described"
    }
   ]
  },
@@ -701,6 +871,16 @@
     "key": "candidates/o/melo-3.wav",
     "voice": "melo",
     "text": "ah"
+   },
+   {
+    "key": "candidates/o/gpt-mini-1.wav",
+    "voice": "gpt-mini",
+    "text": "described"
+   },
+   {
+    "key": "candidates/o/gpt-1.wav",
+    "voice": "gpt",
+    "text": "described"
    }
   ]
  },
@@ -736,6 +916,16 @@
     "key": "candidates/u/melo-2.wav",
     "voice": "melo",
     "text": "u"
+   },
+   {
+    "key": "candidates/u/gpt-mini-1.wav",
+    "voice": "gpt-mini",
+    "text": "described"
+   },
+   {
+    "key": "candidates/u/gpt-1.wav",
+    "voice": "gpt",
+    "text": "described"
    }
   ]
  },
@@ -771,6 +961,16 @@
     "key": "candidates/ai/melo-2.wav",
     "voice": "melo",
     "text": "aye"
+   },
+   {
+    "key": "candidates/ai/gpt-mini-1.wav",
+    "voice": "gpt-mini",
+    "text": "described"
+   },
+   {
+    "key": "candidates/ai/gpt-1.wav",
+    "voice": "gpt",
+    "text": "described"
    }
   ]
  },
@@ -806,6 +1006,16 @@
     "key": "candidates/ee/melo-2.wav",
     "voice": "melo",
     "text": "eee"
+   },
+   {
+    "key": "candidates/ee/gpt-mini-1.wav",
+    "voice": "gpt-mini",
+    "text": "described"
+   },
+   {
+    "key": "candidates/ee/gpt-1.wav",
+    "voice": "gpt",
+    "text": "described"
    }
   ]
  },
@@ -841,6 +1051,16 @@
     "key": "candidates/igh/melo-2.wav",
     "voice": "melo",
     "text": "igh"
+   },
+   {
+    "key": "candidates/igh/gpt-mini-1.wav",
+    "voice": "gpt-mini",
+    "text": "described"
+   },
+   {
+    "key": "candidates/igh/gpt-1.wav",
+    "voice": "gpt",
+    "text": "described"
    }
   ]
  },
@@ -876,6 +1096,16 @@
     "key": "candidates/oa/melo-2.wav",
     "voice": "melo",
     "text": "oa"
+   },
+   {
+    "key": "candidates/oa/gpt-mini-1.wav",
+    "voice": "gpt-mini",
+    "text": "described"
+   },
+   {
+    "key": "candidates/oa/gpt-1.wav",
+    "voice": "gpt",
+    "text": "described"
    }
   ]
  },
@@ -911,6 +1141,16 @@
     "key": "candidates/oo/melo-2.wav",
     "voice": "melo",
     "text": "ooo"
+   },
+   {
+    "key": "candidates/oo/gpt-mini-1.wav",
+    "voice": "gpt-mini",
+    "text": "described"
+   },
+   {
+    "key": "candidates/oo/gpt-1.wav",
+    "voice": "gpt",
+    "text": "described"
    }
   ]
  },
@@ -946,6 +1186,16 @@
     "key": "candidates/ar/melo-2.wav",
     "voice": "melo",
     "text": "ah"
+   },
+   {
+    "key": "candidates/ar/gpt-mini-1.wav",
+    "voice": "gpt-mini",
+    "text": "described"
+   },
+   {
+    "key": "candidates/ar/gpt-1.wav",
+    "voice": "gpt",
+    "text": "described"
    }
   ]
  },
@@ -981,6 +1231,16 @@
     "key": "candidates/or/melo-2.wav",
     "voice": "melo",
     "text": "aw"
+   },
+   {
+    "key": "candidates/or/gpt-mini-1.wav",
+    "voice": "gpt-mini",
+    "text": "described"
+   },
+   {
+    "key": "candidates/or/gpt-1.wav",
+    "voice": "gpt",
+    "text": "described"
    }
   ]
  },
@@ -1016,6 +1276,16 @@
     "key": "candidates/ur/melo-2.wav",
     "voice": "melo",
     "text": "er"
+   },
+   {
+    "key": "candidates/ur/gpt-mini-1.wav",
+    "voice": "gpt-mini",
+    "text": "described"
+   },
+   {
+    "key": "candidates/ur/gpt-1.wav",
+    "voice": "gpt",
+    "text": "described"
    }
   ]
  },
@@ -1051,6 +1321,16 @@
     "key": "candidates/ow/melo-2.wav",
     "voice": "melo",
     "text": "ouch"
+   },
+   {
+    "key": "candidates/ow/gpt-mini-1.wav",
+    "voice": "gpt-mini",
+    "text": "described"
+   },
+   {
+    "key": "candidates/ow/gpt-1.wav",
+    "voice": "gpt",
+    "text": "described"
    }
   ]
  },
@@ -1086,6 +1366,16 @@
     "key": "candidates/oi/melo-2.wav",
     "voice": "melo",
     "text": "oi"
+   },
+   {
+    "key": "candidates/oi/gpt-mini-1.wav",
+    "voice": "gpt-mini",
+    "text": "described"
+   },
+   {
+    "key": "candidates/oi/gpt-1.wav",
+    "voice": "gpt",
+    "text": "described"
    }
   ]
  },
@@ -1121,6 +1411,16 @@
     "key": "candidates/ch/melo-2.wav",
     "voice": "melo",
     "text": "chuh"
+   },
+   {
+    "key": "candidates/ch/gpt-mini-1.wav",
+    "voice": "gpt-mini",
+    "text": "described"
+   },
+   {
+    "key": "candidates/ch/gpt-1.wav",
+    "voice": "gpt",
+    "text": "described"
    }
   ]
  },
@@ -1156,6 +1456,16 @@
     "key": "candidates/th/melo-2.wav",
     "voice": "melo",
     "text": "thh"
+   },
+   {
+    "key": "candidates/th/gpt-mini-1.wav",
+    "voice": "gpt-mini",
+    "text": "described"
+   },
+   {
+    "key": "candidates/th/gpt-1.wav",
+    "voice": "gpt",
+    "text": "described"
    }
   ]
  }
