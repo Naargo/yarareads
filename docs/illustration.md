@@ -37,6 +37,29 @@ node tools/push.mjs --images                                # upload to R2 and p
   where FLUX drew a bear. FLUX is still on the Cloudflare account (`@cf/black-forest-labs/flux-2-dev`, multipart form,
   `input_image_0..3`) if it's ever needed again; see this file's git history for the old tool.
 
+## Boards (whole-chapter grids), Oct 2026
+
+The experiment that beat page-by-page drawing: give gpt-image-2 a whole chapter's raw text plus the character sheets,
+and ask for ONE 4x4 grid of 16 panels. Drawn together, the panels keep their continuity without anyone spelling it out:
+in chapter 6, once dusk fell it stayed dusk in every later panel, which per-page drawing never managed even with briefs.
+
+```
+node tools/illustrate.mjs board toby-1                    # -> content/art/julia-and-toby/boards/toby-1.jpg
+node tools/illustrate.mjs board toby-2 toby-1             # earlier boards as references, chosen by content
+node tools/illustrate.mjs pick toby-2 1=1 2=3 3=4 ...     # page=panel (panels 1-16, row by row)
+node tools/push.mjs --images
+```
+
+- **Always 4x4, at 3072x2304** (OpenAI's pixel budget; 3840x2880 is refused). Panels are about 756x564 and are scaled
+  up to 1024x768. One fixed grid keeps panel proportions the same everywhere; 16 panels for 8-12 pages leaves spares,
+  and the best panel for each page is picked by eye. The model pads extra panels with in-between beats.
+- **About $0.50 a board**, so ~4-6 cents a page.
+- **Earlier boards as references** (Eli's idea) carry continuity between chapters: places, props, the playhouse.
+  Pick them by content: the previous chapter, plus any chapter whose places or characters come back.
+- Only character sheets go in, not setting pictures: the backyard picture drew the playhouse wrong and the board copied it.
+- `pick` cuts panels along the white gutters (it fails loudly if it doesn't find a 4x4 grid) and records `panel` on the page.
+- 3x3 left a blank band; 5x5 made thumbnails and padded the story with repeats.
+
 ## Art direction file
 
 `content/art/julia-and-toby.json`:

@@ -12,6 +12,11 @@
 //                                                            -> content/pictures/<story-id>/<page>.jpg
 //   node tools/illustrate.mjs cover <story-id> <page>       use that page's picture as the cover
 //
+// Boards: a whole chapter drawn as one 4x4 grid of 16 panels, so light, props and places carry from panel to panel.
+//   node tools/illustrate.mjs board <story-id> [board-id ...]   draw the board, with earlier boards as references
+//                                                            -> content/art/<series>/boards/<story-id>.jpg (+ a numbered preview)
+//   node tools/illustrate.mjs pick <story-id> <page>=<panel> ...   use panel (1-16, row by row) as the page's picture
+//
 // Then `node tools/push.mjs --images` uploads them.
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
@@ -34,7 +39,8 @@ async function draw(prompt, refs = [], [width, height] = [1024, 768]) {
     model: MODEL,
     prompt,
     quality: QUALITY,
-    aspect_ratio: width > height ? '4:3' : width < height ? '3:4' : '1:1',
+    // Big sizes (boards) go as exact pixels, up to OpenAI's budget of about 3072x2304; small ones as an aspect ratio.
+    ...(width > 2000 ? { size: `${width}x${height}` } : { aspect_ratio: width > height ? '4:3' : width < height ? '3:4' : '1:1' }),
     input_references: refs.map((file) => ({ type: 'image_url', image_url: { url: `data:image/jpeg;base64,${readFileSync(file).toString('base64')}` } })),
     n: 1,
   });
@@ -125,6 +131,74 @@ if (cmd === 'sheet') {
     }
   };
   await Promise.all(Array.from({ length: PARALLEL }, worker));
+} else if (cmd === 'board') {
+  // The chapter's raw text, the cast sheets and earlier boards; the model works out the scenes itself.
+  const [id, ...withBoards] = args;
+  const story = JSON.parse(readFileSync(join(root, 'content/stories', `${id}.json`), 'utf8'));
+  const { art, dir } = loadArt(story.series);
+  const boards = join(dir, 'boards');
+  mkdirSync(boards, { recursive: true });
+  const sheets = Object.keys(art.cast).filter((c) => existsSync(join(dir, `${c}.jpg`)));
+  const refs = [...sheets.map((c) => join(dir, `${c}.jpg`)), ...withBoards.map((b) => join(boards, `${b}.jpg`))];
+  const said = [
+    ...sheets.map((c, i) => `Image ${i + 1} is ${art.cast[c].look} Keep this exact design.`),
+    ...withBoards.map((b, i) => `Image ${sheets.length + i + 1} is the board for an earlier chapter of the same book: keep its places, objects, colours and style.`),
+  ].join(' ');
+  const unsheeted = Object.entries(art.cast).filter(([c, v]) => !sheets.includes(c) && !v.object).map(([, v]) => `If the story has ${v.look.replace(/^an? /, 'a ')}`).join(' ');
+  const text = story.pages.map((p, i) => `Page ${i + 1}: ${p.text}`).join('\n');
+  const prompt = `${art.style}
+
+Illustrate this chapter of a children's picture book as ONE image: a 4 by 4 grid of 16 equal picture-book panels, read left to
+right, top to bottom, following the story in order. Each panel is its own complete 4:3 illustration of one moment.
+Thin plain white gutters between panels. No panel borders, no numbers, no captions, no speech bubbles, no text of any kind.
+Keep the characters, places, objects, light and time of day consistent from panel to panel, as one illustrator drawing one book.
+
+Reference images: ${said} ${unsheeted}
+
+The chapter, "${story.title}":
+${text}`;
+  const png = await draw(prompt, refs, [3072, 2304]);
+  // Boards are kept as JPEG at full size: they're references for later boards and the source of every page picture.
+  await sharp(png).jpeg({ quality: 88, mozjpeg: true }).toFile(join(boards, `${id}.jpg`));
+  console.log(`${id} board  $${spent.toFixed(2)}`);
+} else if (cmd === 'pick') {
+  // Cut a panel out of the board along its white gutters, scale it to the page size.
+  const [id, ...picks] = args;
+  const file = join(root, 'content/stories', `${id}.json`);
+  const story = JSON.parse(readFileSync(file, 'utf8'));
+  const { art, dir } = loadArt(story.series);
+  const board = join(dir, 'boards', `${id}.jpg`);
+  const { data, info } = await sharp(board).greyscale().raw().toBuffer({ resolveWithObject: true });
+  const W = info.width, H = info.height;
+  const white = (v) => v > 235;
+  // A gutter column/row is one that's almost all white.
+  const colWhite = (x) => { let n = 0; for (let y = 0; y < H; y += 4) n += white(data[y * W + x]); return n / (H / 4) > 0.97; };
+  const rowWhite = (y) => { let n = 0; for (let x = 0; x < W; x += 4) n += white(data[y * W + x]); return n / (W / 4) > 0.97; };
+  const spans = (len, isWhite) => {
+    const out = []; let start = null;
+    for (let i = 0; i <= len; i++) {
+      const w = i === len || isWhite(i);
+      if (!w && start === null) start = i;
+      if (w && start !== null) { if (i - start > len / 10) out.push([start, i]); start = null; }
+    }
+    return out;
+  };
+  const cols = spans(W, colWhite), rows = spans(H, rowWhite);
+  if (cols.length !== 4 || rows.length !== 4) throw new Error(`expected a 4x4 grid, found ${cols.length}x${rows.length}`);
+  const out = join(root, 'content/pictures', id);
+  mkdirSync(out, { recursive: true });
+  for (const pick of picks) {
+    const [page, panel] = pick.split('=').map(Number);
+    const [x0, x1] = cols[(panel - 1) % 4], [y0, y1] = rows[Math.floor((panel - 1) / 4)];
+    const inset = 3; // trims any anti-aliased gutter edge
+    const cut = await sharp(board).extract({ left: x0 + inset, top: y0 + inset, width: x1 - x0 - 2 * inset, height: y1 - y0 - 2 * inset })
+      .resize(art.size[0], art.size[1], { fit: 'cover' }).toBuffer();
+    writeFileSync(join(out, `${page}.jpg`), await webJpeg(cut, art.size[0]));
+    story.pages[page - 1].image = `${id}/${page}.jpg`;
+    story.pages[page - 1].panel = panel;
+    console.log(`${id} page ${page} = panel ${panel}`);
+  }
+  writeFileSync(file, JSON.stringify(story, null, 2) + '\n');
 } else if (cmd === 'cover') {
   const [id, n] = args;
   const file = join(root, 'content/stories', `${id}.json`);
