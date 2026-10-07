@@ -21,7 +21,7 @@
         "julia",
         "scooter"
       ],
-      "panel": 1
+      "panel": "1"
     },
     {
       "text": "Then she hears a yelp. \"Yelp! Yelp!\" It is from the wood.",
@@ -33,7 +33,7 @@
         "julia",
         "scooter"
       ],
-      "panel": 2
+      "panel": "2"
     },
     {
       "text": "Julia hops up on the gate and jumps down. Then she runs to the wood.",
@@ -44,7 +44,7 @@
       "cast": [
         "julia"
       ],
-      "panel": 3
+      "panel": "3"
     },
     {
       "text": "Under a tree sits a dragon. He is white, and his scales shine pink and green and blue.",
@@ -55,7 +55,7 @@
       "cast": [
         "toby"
       ],
-      "panel": 4
+      "panel": "4"
     },
     {
       "text": "The dragon looks up. A big tear drips down his nose.",
@@ -66,7 +66,7 @@
       "cast": [
         "toby"
       ],
-      "panel": 5
+      "panel": "5"
     },
     {
       "text": "\"I am Toby,\" he said. \"I ran away from home.\"",
@@ -78,7 +78,7 @@
         "julia",
         "toby"
       ],
-      "panel": 7
+      "panel": "7"
     },
     {
       "text": "\"Is your home far?\" asked Julia. \"It is a cave on top of Super-Tall Peak,\" said Toby.",
@@ -90,7 +90,7 @@
         "toby"
       ],
       "time": "a sunny morning",
-      "panel": 8
+      "panel": "8"
     },
     {
       "text": "\"But what made you run away?\" asked Julia. Toby looks down at his feet. He will not say.",
@@ -102,7 +102,7 @@
         "julia",
         "toby"
       ],
-      "panel": 9
+      "panel": "9"
     },
     {
       "text": "Julia pats his nose. \"You can stay with me,\" she said. \"I have a play house!\"",
@@ -114,7 +114,7 @@
         "toby"
       ],
       "time": "a sunny morning",
-      "panel": 10
+      "panel": "10"
     },
     {
       "text": "Toby squeezes into the play house. He just fits. \"Hush!\" said Julia. \"Mum must not see you.\"",
@@ -127,7 +127,7 @@
         "toby",
         "playhouse"
       ],
-      "panel": 12
+      "panel": "12"
     }
   ]
 }

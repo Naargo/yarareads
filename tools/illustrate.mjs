@@ -15,8 +15,11 @@
 // Boards: a whole chapter drawn as one 4x4 grid of 16 panels, so light, props and places carry from panel to panel.
 //   node tools/illustrate.mjs board <story-id> [board-id ...]   draw the board, with earlier boards as references
 //                                                            -> content/art/<series>/boards/<story-id>.jpg (and a numbered preview)
-//   node tools/illustrate.mjs preview <story-id>              numbered preview: boards/<story-id>-numbered.jpg
-//   node tools/illustrate.mjs pick <story-id> <page>=<panel> ...   use panel (1-16, row by row) as the page's picture
+//   node tools/illustrate.mjs edit <story-id> <panel>[,<panel>] "<change>"   redraw the board with those panels changed
+//                                                            -> boards/<story-id>.2.jpg, .3.jpg ... (the original stays)
+//   node tools/illustrate.mjs preview <board>                 numbered preview: boards/<board>-numbered.jpg
+//   node tools/illustrate.mjs pick <story-id> <page>=<panel> ...   use panel (1-16, row by row) as the page's picture;
+//                                                            <page>=<edit>:<panel> takes it from an edit (7=2:6)
 //
 // Then `node tools/push.mjs --images` uploads them.
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
@@ -78,7 +81,7 @@ function castFor(page, art) {
 }
 
 // A board at half size with each panel's number in its corner, for choosing panels.
-async function preview(dir, id) {
+async function preview(dir, stem) {
   const W = 1536, H = 1152;
   const nums = Array.from({ length: 16 }, (_, i) => {
     const x = (i % 4) * (W / 4) + 14, y = Math.floor(i / 4) * (H / 4) + 14;
@@ -86,7 +89,7 @@ async function preview(dir, id) {
       `<text x="${x + 29}" y="${y + 34}" font-family="sans-serif" font-size="30" font-weight="bold" fill="#fff" text-anchor="middle">${i + 1}</text>`;
   }).join('');
   const svg = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">${nums}</svg>`);
-  await sharp(join(dir, 'boards', `${id}.jpg`)).resize(W, H).composite([{ input: svg }]).jpeg({ quality: 82 }).toFile(join(dir, 'boards', `${id}-numbered.jpg`));
+  await sharp(join(dir, 'boards', `${stem}.jpg`)).resize(W, H).composite([{ input: svg }]).jpeg({ quality: 82 }).toFile(join(dir, 'boards', `${stem}-numbered.jpg`));
 }
 
 const [cmd, ...args] = process.argv.slice(2);
@@ -180,8 +183,34 @@ ${text}`;
   await sharp(png).jpeg({ quality: 88, mozjpeg: true }).toFile(join(boards, `${id}.jpg`));
   await preview(dir, id);
   console.log(`${id} board  $${spent.toFixed(2)}`);
+} else if (cmd === 'edit') {
+  // No masks on this endpoint, so an "inpaint" is the whole board redrawn with the board itself as the reference.
+  // Only the changed panels are used, so drift elsewhere doesn't matter; the model still sees the whole chapter.
+  const [id, panelList, change] = args;
+  const story = JSON.parse(readFileSync(join(root, 'content/stories', `${id}.json`), 'utf8'));
+  const { art, dir } = loadArt(story.series);
+  const boards = join(dir, 'boards');
+  const panels = panelList.split(',').map(Number);
+  const where = panels.map((n) => `panel ${n} (row ${Math.ceil(n / 4)}, column ${((n - 1) % 4) + 1})`).join(' and ');
+  const sheets = Object.keys(art.cast).filter((c) => existsSync(join(dir, `${c}.jpg`)));
+  const refs = [join(boards, `${id}.jpg`), ...sheets.map((c) => join(dir, `${c}.jpg`))];
+  const prompt = `${art.style}
+
+Image 1 is a 4 by 4 board of 16 picture-book panels for one chapter, read left to right, top to bottom.
+Draw this same board again: the same 16 panels in the same places, each copied as closely as you can (composition,
+characters, colours, light, style), with thin plain white gutters and no text of any kind. Change only ${where}: ${change}
+The other images are the character references: ${sheets.map((c, i) => `image ${i + 2} is ${art.cast[c].match[0]}`).join(', ')}.
+
+The chapter, "${story.title}":
+${story.pages.map((p, i) => `Page ${i + 1}: ${p.text}`).join('\n')}`;
+  let n = 2;
+  while (existsSync(join(boards, `${id}.${n}.jpg`))) n++;
+  const png = await draw(prompt, refs, [3072, 2304]);
+  await sharp(png).jpeg({ quality: 88, mozjpeg: true }).toFile(join(boards, `${id}.${n}.jpg`));
+  await preview(dir, `${id}.${n}`);
+  console.log(`${id} edit ${n}: ${where}  $${spent.toFixed(2)}`);
 } else if (cmd === 'preview') {
-  const story = JSON.parse(readFileSync(join(root, 'content/stories', `${args[0]}.json`), 'utf8'));
+  const story = JSON.parse(readFileSync(join(root, 'content/stories', `${args[0].split('.')[0]}.json`), 'utf8'));
   await preview(loadArt(story.series).dir, args[0]);
 } else if (cmd === 'pick') {
   // Cut a panel out of the board along its white gutters, scale it to the page size.
@@ -189,36 +218,43 @@ ${text}`;
   const file = join(root, 'content/stories', `${id}.json`);
   const story = JSON.parse(readFileSync(file, 'utf8'));
   const { art, dir } = loadArt(story.series);
-  const board = join(dir, 'boards', `${id}.jpg`);
-  const { data, info } = await sharp(board).greyscale().raw().toBuffer({ resolveWithObject: true });
-  const W = info.width, H = info.height;
-  const white = (v) => v > 235;
-  // A gutter column/row is one that's almost all white.
-  const colWhite = (x) => { let n = 0; for (let y = 0; y < H; y += 4) n += white(data[y * W + x]); return n / (H / 4) > 0.97; };
-  const rowWhite = (y) => { let n = 0; for (let x = 0; x < W; x += 4) n += white(data[y * W + x]); return n / (W / 4) > 0.97; };
-  const spans = (len, isWhite) => {
-    const out = []; let start = null;
-    for (let i = 0; i <= len; i++) {
-      const w = i === len || isWhite(i);
-      if (!w && start === null) start = i;
-      if (w && start !== null) { if (i - start > len / 10) out.push([start, i]); start = null; }
-    }
-    return out;
+  // Find the 4x4 grid along the white gutters of a board (the original, or an edit).
+  const grid = async (board) => {
+    const { data, info } = await sharp(board).greyscale().raw().toBuffer({ resolveWithObject: true });
+    const W = info.width, H = info.height;
+    const white = (v) => v > 235;
+    // A gutter column/row is one that's almost all white.
+    const colWhite = (x) => { let n = 0; for (let y = 0; y < H; y += 4) n += white(data[y * W + x]); return n / (H / 4) > 0.97; };
+    const rowWhite = (y) => { let n = 0; for (let x = 0; x < W; x += 4) n += white(data[y * W + x]); return n / (W / 4) > 0.97; };
+    const spans = (len, isWhite) => {
+      const out = []; let start = null;
+      for (let i = 0; i <= len; i++) {
+        const w = i === len || isWhite(i);
+        if (!w && start === null) start = i;
+        if (w && start !== null) { if (i - start > len / 10) out.push([start, i]); start = null; }
+      }
+      return out;
+    };
+    const cols = spans(W, colWhite), rows = spans(H, rowWhite);
+    if (cols.length !== 4 || rows.length !== 4) throw new Error(`${board}: expected a 4x4 grid, found ${cols.length}x${rows.length}`);
+    return { cols, rows };
   };
-  const cols = spans(W, colWhite), rows = spans(H, rowWhite);
-  if (cols.length !== 4 || rows.length !== 4) throw new Error(`expected a 4x4 grid, found ${cols.length}x${rows.length}`);
   const out = join(root, 'content/pictures', id);
   mkdirSync(out, { recursive: true });
   for (const pick of picks) {
-    const [page, panel] = pick.split('=').map(Number);
+    const [pageStr, from] = pick.split('=');
+    const [edit, panel] = from.includes(':') ? from.split(':').map(Number) : [null, Number(from)];
+    const page = Number(pageStr);
+    const board = join(dir, 'boards', edit ? `${id}.${edit}.jpg` : `${id}.jpg`);
+    const { cols, rows } = await grid(board);
     const [x0, x1] = cols[(panel - 1) % 4], [y0, y1] = rows[Math.floor((panel - 1) / 4)];
     const inset = 3; // trims any anti-aliased gutter edge
     const cut = await sharp(board).extract({ left: x0 + inset, top: y0 + inset, width: x1 - x0 - 2 * inset, height: y1 - y0 - 2 * inset })
       .resize(art.size[0], art.size[1], { fit: 'cover' }).toBuffer();
     writeFileSync(join(out, `${page}.jpg`), await webJpeg(cut, art.size[0]));
     story.pages[page - 1].image = `${id}/${page}.jpg`;
-    story.pages[page - 1].panel = panel;
-    console.log(`${id} page ${page} = panel ${panel}`);
+    story.pages[page - 1].panel = from; // "6", or "2:6" for panel 6 of edit 2
+    console.log(`${id} page ${page} = panel ${from}`);
   }
   writeFileSync(file, JSON.stringify(story, null, 2) + '\n');
 } else if (cmd === 'cover') {

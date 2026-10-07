@@ -23,7 +23,7 @@
         "playhouse",
         "backpack"
       ],
-      "panel": 1
+      "panel": "1"
     },
     {
       "text": "Toby waits and waits.",
@@ -36,7 +36,7 @@
         "playhouse",
         "scooter"
       ],
-      "panel": 6
+      "panel": "6"
     },
     {
       "text": "After class, Julia runs to the backyard. \"Toby! I am back!\"",
@@ -49,7 +49,7 @@
         "playhouse",
         "backpack"
       ],
-      "panel": 7
+      "panel": "7"
     },
     {
       "text": "But then she stops. Her scooter is on its side, and the wheel is bent!",
@@ -62,7 +62,7 @@
         "playhouse",
         "scooter"
       ],
-      "panel": 9
+      "panel": "9"
     },
     {
       "text": "\"Toby, did you do this?\"",
@@ -76,7 +76,7 @@
         "playhouse",
         "scooter"
       ],
-      "panel": 10
+      "panel": "10"
     },
     {
       "text": "Toby looks down at his feet. He is so, so sad. A big tear drips off his nose.",
@@ -89,7 +89,7 @@
         "playhouse",
         "scooter"
       ],
-      "panel": 11
+      "panel": "11"
     },
     {
       "text": "Julia huffs. \"That was my best scooter!\" She stomps off into the house.",
@@ -102,7 +102,7 @@
         "toby",
         "playhouse"
       ],
-      "panel": 12
+      "panel": "12"
     },
     {
       "text": "But Julia can not stay cross for long.",
@@ -114,7 +114,7 @@
         "julia",
         "playhouse"
       ],
-      "panel": 8
+      "panel": "8"
     },
     {
       "text": "Soon she is back with her kite. \"Come on, Toby,\" she said. \"Let's play.\"",
@@ -128,7 +128,7 @@
         "playhouse",
         "kite"
       ],
-      "panel": 16
+      "panel": "16"
     }
   ]
 }

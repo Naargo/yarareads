@@ -21,7 +21,7 @@
         "julia",
         "toby"
       ],
-      "panel": 1
+      "panel": "1"
     },
     {
       "text": "Day nine. A branch shoots up and lands on the play house. Crunch!",
@@ -34,7 +34,7 @@
         "playhouse"
       ],
       "time": "a sunny afternoon",
-      "panel": 2
+      "panel": "2"
     },
     {
       "text": "Day ten. Toby sits on a log and sighs. \"I can not do it,\" he said. \"I give up.\"",
@@ -45,7 +45,7 @@
       "cast": [
         "toby"
       ],
-      "panel": 3
+      "panel": "3"
     },
     {
       "text": "\"No, you can,\" said Julia. But she is fed up too.",
@@ -57,7 +57,7 @@
         "toby"
       ],
       "time": "late afternoon, low golden light",
-      "panel": 4
+      "panel": "4"
     },
     {
       "text": "It is dusk. Julia sits on the grass with her hand up, flat. \"Just one last go,\" she said.",
@@ -70,7 +70,7 @@
         "toby",
         "branch"
       ],
-      "panel": 5
+      "panel": "5"
     },
     {
       "text": "Toby is not looking at the branch. He is looking at Julia. He is not cross. He is not sad.",
@@ -82,7 +82,7 @@
         "julia",
         "toby"
       ],
-      "panel": 6
+      "panel": "6"
     },
     {
       "text": "And then the branch lifts up. It drifts this way. It drifts that way.",
@@ -95,7 +95,7 @@
         "toby",
         "branch"
       ],
-      "panel": 7
+      "panel": "7"
     },
     {
       "text": "It floats down, soft as a leaf, and lands in Julia's hand.",
@@ -108,7 +108,7 @@
         "toby",
         "branch"
       ],
-      "panel": 9
+      "panel": "9"
     },
     {
       "text": "Julia looks at the branch. Toby looks at the branch. \"Toby!\" said Julia. \"You did it!\"",
@@ -121,7 +121,7 @@
         "toby",
         "branch"
       ],
-      "panel": 12
+      "panel": "12"
     },
     {
       "text": "Toby blinks. \"I did it,\" he said. \"I did it! But how?\"",
@@ -134,7 +134,7 @@
         "toby",
         "branch"
       ],
-      "panel": 14
+      "panel": "14"
     }
   ]
 }

@@ -23,7 +23,7 @@
         "teacup",
         "backpack"
       ],
-      "panel": 1
+      "panel": "1"
     },
     {
       "text": "\"Not again, Toby!\" Toby just looks sad. Julia sighs.",
@@ -37,7 +37,7 @@
         "playhouse",
         "teacup"
       ],
-      "panel": 2
+      "panel": "2"
     },
     {
       "text": "Then one day, Julia runs back fast and peeks in at the play house.",
@@ -50,7 +50,7 @@
         "playhouse",
         "backpack"
       ],
-      "panel": 3
+      "panel": "3"
     },
     {
       "text": "A big bee buzzes at Toby's nose. Buzz! Buzz!",
@@ -63,7 +63,7 @@
         "playhouse",
         "toys"
       ],
-      "panel": 4
+      "panel": "4"
     },
     {
       "text": "Toby gets cross. His spikes stick up.",
@@ -76,7 +76,7 @@
         "playhouse",
         "toys"
       ],
-      "panel": 5
+      "panel": "5"
     },
     {
       "text": "And then her dolls zoom up, high, high, high! Her drum zooms up. Her tea set zooms up!",
@@ -90,7 +90,7 @@
         "playhouse",
         "toys"
       ],
-      "panel": 6
+      "panel": "2:6"
     },
     {
       "text": "Crash! Bang! Smash! They all come down.",
@@ -104,7 +104,7 @@
         "playhouse",
         "toys"
       ],
-      "panel": 7
+      "panel": "2:7"
     },
     {
       "text": "Julia's chin drops. \"Whoa!\"",
@@ -117,7 +117,7 @@
         "playhouse",
         "toys"
       ],
-      "panel": 8
+      "panel": "8"
     },
     {
       "text": "\"Toby, you did that! That is so, so cool! Do it on me! Make me float!\"",
@@ -131,7 +131,7 @@
         "playhouse",
         "toys"
       ],
-      "panel": 9
+      "panel": "9"
     },
     {
       "text": "Toby looks down. \"I can not,\" he said. \"I can not help it. I just get upset, and things zoom up and smash.\"",
@@ -145,7 +145,7 @@
         "playhouse",
         "toys"
       ],
-      "panel": 10
+      "panel": "10"
     },
     {
       "text": "Julia thinks hard. Then she grins. \"Then we will fix it,\" she said.",
@@ -158,7 +158,7 @@
         "toby",
         "playhouse"
       ],
-      "panel": 13
+      "panel": "13"
     }
   ]
 }

@@ -66,8 +66,16 @@ node tools/push.mjs --images
 - **Earlier boards as references** (Eli's idea) carry continuity between chapters: places, props, the playhouse.
   Pick them by content: the previous chapter, plus any chapter whose places or characters come back.
 - Only character sheets go in, not setting pictures: the backyard picture drew the playhouse wrong and the board copied it.
-- **Pick, don't redraw (Eli).** 16 panels for 8-12 pages means a few always miss; skip them and use the ones that
-  work. Redraw a board only if it fails as a whole.
+- **Pick first; edit the board for a real miss.** 16 panels for 8-12 pages means a few always miss: skip them and use
+  the ones that work. When a page has no good panel, edit the board rather than drawing that page alone:
+  ```
+  node tools/illustrate.mjs edit toby-4 6,7 "In panel 6, the toys shoot up OUT of the playhouse into the open sky..."
+  node tools/illustrate.mjs pick toby-4 6=2:6 7=2:7         # panels 6 and 7 of edit 2 (boards/toby-4.2.jpg)
+  ```
+  The endpoint has no masks, so `edit` passes the board itself as the reference and asks for the same board with only
+  those panels changed. It works like inpainting: on Oct 7 the other panels came back almost identical, and the new
+  panels match the chapter because the model sees all of it. ~$0.15 an edit. Describe the change in full sentences,
+  per panel. Boards fed to later chapters are the originals.
 - **Don't describe characters a chapter doesn't have.** Told what the black dragon looks like "if the story has" one,
   the chapter 5 board drew it in its last panel anyway, and chapter 6 copied it from that board. The tool now
   describes a sheetless character only when the chapter's text mentions it.
@@ -196,11 +204,12 @@ their sheet; changing a sheet means redrawing every page they appear in.
 ## Status (Oct 2026)
 
 - **All 7 chapters of Julia and Toby are drawn as boards** (Oct 7) and live; $1.06 for the seven boards at medium.
-  Each page's `panel` in the story JSON says which panel it uses; the numbered boards show them all.
+  Each page's `panel` in the story JSON says which panel it uses ("6", or "2:6" from edit 2); the numbered boards show them all.
 - Boards were fed: 2<-1, 3<-2, 4<-2,3, 5<-4,1, 6<-5, 7<-6,1. Chapter 7's board was the best: it found Super-Tall Peak
   and the black dragon on its own.
-- Known imperfections, kept (we pick, we don't redraw): the playhouse shows up in the woods in chapters 5 and 7;
-  in chapter 4 the toys whirl around inside the playhouse instead of zooming sky-high; the scooter is pink.
+- Board edits (Oct 7, $0.45): ch3 p2 (Julia painted on Toby instead of on paper), ch4 p6-7 (the toys whirled
+  inside the playhouse instead of zooming sky-high), ch5 p1 (the playhouse in the woods).
+- Kept as they are: the playhouse near the gate in chapter 7, and the scooter is pink.
 - Library covers are still the drawn motifs; `illustrate.mjs cover` can switch any chapter to a page picture.
 - Earlier pictures (FLUX drafts, then per-page gpt-image-2) are in git history.
 - Sounding out and TTS (roadmap 4) is next, now the pictures are done.

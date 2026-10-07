@@ -23,7 +23,7 @@
         "playhouse",
         "paints"
       ],
-      "panel": 1
+      "panel": "1"
     },
     {
       "text": "Toby sits as still as a rock. Julia paints his white scales, his tail and his big feet.",
@@ -37,7 +37,7 @@
         "playhouse",
         "paints"
       ],
-      "panel": 4
+      "panel": "2:2"
     },
     {
       "text": "\"It is the best painting!\" said Julia. \"Wait here. I will get a drink.\"",
@@ -51,7 +51,7 @@
         "playhouse",
         "paints"
       ],
-      "panel": 5
+      "panel": "5"
     },
     {
       "text": "When she gets back, the paint pots are on the grass. There is paint on the play house, on Toby, and on her painting!",
@@ -65,7 +65,7 @@
         "playhouse",
         "paints"
       ],
-      "panel": 7
+      "panel": "7"
     },
     {
       "text": "\"Toby! My painting!\"",
@@ -79,7 +79,7 @@
         "playhouse",
         "paints"
       ],
-      "panel": 9
+      "panel": "9"
     },
     {
       "text": "Toby looks down. His tail droops. He is too sad to say a thing.",
@@ -92,7 +92,7 @@
         "playhouse",
         "paints"
       ],
-      "panel": 10
+      "panel": "10"
     },
     {
       "text": "Julia stamps her foot. Then she sits on the back step and sulks.",
@@ -105,7 +105,7 @@
         "toby",
         "playhouse"
       ],
-      "panel": 12
+      "panel": "12"
     },
     {
       "text": "But Toby looks so sad. And he has pink paint on his nose.",
@@ -117,7 +117,7 @@
         "toby",
         "playhouse"
       ],
-      "panel": 13
+      "panel": "13"
     },
     {
       "text": "Julia grins. \"Toby, you have a pink nose!\" She wipes it off, and he grins back.",
@@ -130,7 +130,7 @@
         "toby",
         "playhouse"
       ],
-      "panel": 14
+      "panel": "14"
     }
   ]
 }
