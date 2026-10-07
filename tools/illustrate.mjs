@@ -14,7 +14,8 @@
 //
 // Boards: a whole chapter drawn as one 4x4 grid of 16 panels, so light, props and places carry from panel to panel.
 //   node tools/illustrate.mjs board <story-id> [board-id ...]   draw the board, with earlier boards as references
-//                                                            -> content/art/<series>/boards/<story-id>.jpg (+ a numbered preview)
+//                                                            -> content/art/<series>/boards/<story-id>.jpg (and a numbered preview)
+//   node tools/illustrate.mjs preview <story-id>              numbered preview: boards/<story-id>-numbered.jpg
 //   node tools/illustrate.mjs pick <story-id> <page>=<panel> ...   use panel (1-16, row by row) as the page's picture
 //
 // Then `node tools/push.mjs --images` uploads them.
@@ -74,6 +75,18 @@ function castFor(page, art) {
   return Object.entries(art.cast)
     .filter(([, c]) => c.match.some((m) => words.includes(` ${m} `)))
     .map(([id]) => id);
+}
+
+// A board at half size with each panel's number in its corner, for choosing panels.
+async function preview(dir, id) {
+  const W = 1536, H = 1152;
+  const nums = Array.from({ length: 16 }, (_, i) => {
+    const x = (i % 4) * (W / 4) + 14, y = Math.floor(i / 4) * (H / 4) + 14;
+    return `<rect x="${x}" y="${y}" width="58" height="46" rx="10" fill="#3b1f4a" opacity="0.85"/>` +
+      `<text x="${x + 29}" y="${y + 34}" font-family="sans-serif" font-size="30" font-weight="bold" fill="#fff" text-anchor="middle">${i + 1}</text>`;
+  }).join('');
+  const svg = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">${nums}</svg>`);
+  await sharp(join(dir, 'boards', `${id}.jpg`)).resize(W, H).composite([{ input: svg }]).jpeg({ quality: 82 }).toFile(join(dir, 'boards', `${id}-numbered.jpg`));
 }
 
 const [cmd, ...args] = process.argv.slice(2);
@@ -144,7 +157,12 @@ if (cmd === 'sheet') {
     ...sheets.map((c, i) => `Image ${i + 1} is ${art.cast[c].look} Keep this exact design.`),
     ...withBoards.map((b, i) => `Image ${sheets.length + i + 1} is the board for an earlier chapter of the same book: keep its places, objects, colours and style.`),
   ].join(' ');
-  const unsheeted = Object.entries(art.cast).filter(([c, v]) => !sheets.includes(c) && !v.object).map(([, v]) => `If the story has ${v.look.replace(/^an? /, 'a ')}`).join(' ');
+  // Characters without a sheet are described only if this chapter mentions them: told about the black dragon
+  // "if the story has" one, the chapter 5 board drew it anyway, two chapters early.
+  const chapterText = ` ${story.pages.map((p) => p.text).join(' ').toLowerCase().replace(/[^a-z ]/g, ' ')} `;
+  const unsheeted = Object.entries(art.cast)
+    .filter(([c, v]) => !sheets.includes(c) && !v.object && v.match.some((m) => chapterText.includes(` ${m} `)))
+    .map(([, v]) => `The ${v.match[0]} in this chapter is ${v.look}`).join(' ');
   const text = story.pages.map((p, i) => `Page ${i + 1}: ${p.text}`).join('\n');
   const prompt = `${art.style}
 
@@ -160,7 +178,11 @@ ${text}`;
   const png = await draw(prompt, refs, [3072, 2304]);
   // Boards are kept as JPEG at full size: they're references for later boards and the source of every page picture.
   await sharp(png).jpeg({ quality: 88, mozjpeg: true }).toFile(join(boards, `${id}.jpg`));
+  await preview(dir, id);
   console.log(`${id} board  $${spent.toFixed(2)}`);
+} else if (cmd === 'preview') {
+  const story = JSON.parse(readFileSync(join(root, 'content/stories', `${args[0]}.json`), 'utf8'));
+  await preview(loadArt(story.series).dir, args[0]);
 } else if (cmd === 'pick') {
   // Cut a panel out of the board along its white gutters, scale it to the page size.
   const [id, ...picks] = args;

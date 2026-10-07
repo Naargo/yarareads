@@ -22,7 +22,8 @@
         "playhouse",
         "teacup",
         "backpack"
-      ]
+      ],
+      "panel": 1
     },
     {
       "text": "\"Not again, Toby!\" Toby just looks sad. Julia sighs.",
@@ -35,7 +36,8 @@
         "toby",
         "playhouse",
         "teacup"
-      ]
+      ],
+      "panel": 2
     },
     {
       "text": "Then one day, Julia runs back fast and peeks in at the play house.",
@@ -47,7 +49,8 @@
         "julia",
         "playhouse",
         "backpack"
-      ]
+      ],
+      "panel": 3
     },
     {
       "text": "A big bee buzzes at Toby's nose. Buzz! Buzz!",
@@ -59,7 +62,8 @@
         "toby",
         "playhouse",
         "toys"
-      ]
+      ],
+      "panel": 4
     },
     {
       "text": "Toby gets cross. His spikes stick up.",
@@ -71,7 +75,8 @@
         "toby",
         "playhouse",
         "toys"
-      ]
+      ],
+      "panel": 5
     },
     {
       "text": "And then her dolls zoom up, high, high, high! Her drum zooms up. Her tea set zooms up!",
@@ -84,7 +89,8 @@
         "toby",
         "playhouse",
         "toys"
-      ]
+      ],
+      "panel": 6
     },
     {
       "text": "Crash! Bang! Smash! They all come down.",
@@ -97,7 +103,8 @@
         "toby",
         "playhouse",
         "toys"
-      ]
+      ],
+      "panel": 7
     },
     {
       "text": "Julia's chin drops. \"Whoa!\"",
@@ -109,7 +116,8 @@
         "julia",
         "playhouse",
         "toys"
-      ]
+      ],
+      "panel": 8
     },
     {
       "text": "\"Toby, you did that! That is so, so cool! Do it on me! Make me float!\"",
@@ -122,7 +130,8 @@
         "toby",
         "playhouse",
         "toys"
-      ]
+      ],
+      "panel": 9
     },
     {
       "text": "Toby looks down. \"I can not,\" he said. \"I can not help it. I just get upset, and things zoom up and smash.\"",
@@ -135,7 +144,8 @@
         "toby",
         "playhouse",
         "toys"
-      ]
+      ],
+      "panel": 10
     },
     {
       "text": "Julia thinks hard. Then she grins. \"Then we will fix it,\" she said.",
@@ -147,7 +157,8 @@
         "julia",
         "toby",
         "playhouse"
-      ]
+      ],
+      "panel": 13
     }
   ]
 }

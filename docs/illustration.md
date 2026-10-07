@@ -3,22 +3,31 @@
 How the pictures for Julia and Toby were made (Oct 2026), and how to do it again for more chapters
 or a new series. Tool: `tools/illustrate.mjs`. Everything it needs is in the repo.
 
-## The short version
+## The short version: illustrating a new chapter
 
-1. Write the art direction: `content/art/<series-slug>.json` (style + cast).
-2. Draw character-sheet candidates, pick one per cast member, copy it to `content/art/<series-slug>/<cast>.jpg`.
-3. Draw the pages: each page's `picture` description becomes a prompt, with the approved sheets of whoever
-   appears passed in as reference images. That's what keeps Toby looking like Toby on every page.
-4. Upload (`node tools/push.mjs --images`), then review in the app and redraw the misses.
+Chapters are drawn as **boards**: the whole chapter as one 4x4 grid of 16 panels, and then the best panel is picked
+for each page. Drawn together, the panels keep their own continuity (light, props, places); earlier boards passed
+in as references carry it from chapter to chapter. Details in "Boards" below.
 
-```
-node tools/illustrate.mjs sheet "Julia and Toby" toby 4     # 4 candidates -> content/art/julia-and-toby/candidates/
-cp content/art/julia-and-toby/candidates/toby-2.jpg content/art/julia-and-toby/toby.jpg
-node tools/illustrate.mjs pages toby-3                      # every page of chapter 3
-node tools/illustrate.mjs pages toby-3 5 7                  # just pages 5 and 7 (redraws)
-node tools/illustrate.mjs cover toby-3 5                    # page 5's picture as the library cover
-node tools/push.mjs --images                                # upload to R2 and publish
-```
+1. Write the chapter (it must pass `npm run check`) in `content/stories/toby-N.json`.
+2. Draw its board, with the earlier boards it needs as references: always the previous chapter, plus any
+   chapter whose places, characters or things come back (the woods from chapter 1, the playhouse from 2...).
+   ```
+   node tools/illustrate.mjs board toby-8 toby-7 toby-1      # ~2 min, ~$0.15
+   ```
+3. Look at `content/art/julia-and-toby/boards/toby-8-numbered.jpg` and choose a panel for each page. Panels the
+   story doesn't need are just spares. If the board is wrong (a character off-model, the wrong place), draw it again:
+   each run is different.
+   ```
+   node tools/illustrate.mjs pick toby-8 1=1 2=3 3=4 4=6 ...  # page=panel
+   node tools/illustrate.mjs cover toby-8 3                  # optional: page 3's picture as the library cover
+   node tools/push.mjs --images                              # upload and publish
+   ```
+4. Commit the board, its numbered preview, the pictures and the story JSON (which records each page's `panel`).
+5. Tell Eli which panels went where (send the numbered board); he and Tom review in the app.
+
+A new recurring character needs a sheet first (`illustrate.mjs sheet`, below) and a `cast` entry in the art file,
+so every board draws them the same way. A new recurring place doesn't: the first board that shows it becomes its reference.
 
 ## The model
 
@@ -37,7 +46,7 @@ node tools/push.mjs --images                                # upload to R2 and p
   where FLUX drew a bear. FLUX is still on the Cloudflare account (`@cf/black-forest-labs/flux-2-dev`, multipart form,
   `input_image_0..3`) if it's ever needed again; see this file's git history for the old tool.
 
-## Boards (whole-chapter grids), Oct 2026
+## Boards (whole-chapter grids)
 
 The experiment that beat page-by-page drawing: give gpt-image-2 a whole chapter's raw text plus the character sheets,
 and ask for ONE 4x4 grid of 16 panels. Drawn together, the panels keep their continuity without anyone spelling it out:
@@ -53,10 +62,15 @@ node tools/push.mjs --images
 - **Always 4x4, at 3072x2304** (OpenAI's pixel budget; 3840x2880 is refused). Panels are about 756x564 and are scaled
   up to 1024x768. One fixed grid keeps panel proportions the same everywhere; 16 panels for 8-12 pages leaves spares,
   and the best panel for each page is picked by eye. The model pads extra panels with in-between beats.
-- **About $0.50 a board**, so ~4-6 cents a page.
+- **About $0.15 a board at medium quality** (~1.5 cents a page); high was $0.50 and looked no better.
 - **Earlier boards as references** (Eli's idea) carry continuity between chapters: places, props, the playhouse.
   Pick them by content: the previous chapter, plus any chapter whose places or characters come back.
 - Only character sheets go in, not setting pictures: the backyard picture drew the playhouse wrong and the board copied it.
+- **Pick, don't redraw (Eli).** 16 panels for 8-12 pages means a few always miss; skip them and use the ones that
+  work. Redraw a board only if it fails as a whole.
+- **Don't describe characters a chapter doesn't have.** Told what the black dragon looks like "if the story has" one,
+  the chapter 5 board drew it in its last panel anyway, and chapter 6 copied it from that board. The tool now
+  describes a sheetless character only when the chapter's text mentions it.
 - `pick` cuts panels along the white gutters (it fails loudly if it doesn't find a 4x4 grid) and records `panel` on the page.
 - 3x3 left a blank band; 5x5 made thumbnails and padded the story with repeats.
 
@@ -88,7 +102,13 @@ node tools/push.mjs --images
 Julia's look is ours, not Tom's; he can change it (edit `look`, redraw her sheet, then redraw the pages she's in).
 All candidates are kept in `candidates/` so a different pick is just a copy.
 
-## Settings (places)
+## The per-page method (for one-off redraws)
+
+Before boards (Oct 6), every page was drawn on its own: `illustrate.mjs pages <story> [page ...]`, with the
+settings, page briefs and cast below steering each one. It still works for redrawing a single page, but its
+pictures don't share light or props with their neighbours the way board panels do.
+
+### Settings (places)
 
 Pages set in the same place should look like the same place, so places get reference pictures too.
 `settings` in the art file has one entry per recurring place with a `look`; `node tools/illustrate.mjs sheet "<series>" <setting> 1`
@@ -105,7 +125,7 @@ Julia and Toby: `backyard` (cream house, back step, lawn, playhouse in the far c
 
 Before settings, pages whose `picture` named no place came out on a plain cream background (chapter 1 pages 5-10).
 
-## Page briefs
+### Page briefs
 
 Every page of Julia and Toby carries a full brief, written by reading the whole book the way an art director would:
 
@@ -120,13 +140,13 @@ Why not send the whole book to the image model: it costs little, but image model
 pull in things from other pages. The continuity is worked out once, in text, where it can be read and corrected.
 When writing a new chapter, write its briefs the same way, reading the chapters before it.
 
-## Per-page cast
+### Per-page cast
 
 A page can list its cast explicitly, `"cast": ["julia", "toby"]`, which overrides match words. Use it when matching
 gets it wrong: chapter 1 page 9 mentions the play house in its text but happens in the woods, and the black dragon
 pages (ch7 p10-12) must not get Toby's sheet. A cast member with no sheet (the black dragon) is described in words.
 
-## Prompts
+### Prompts
 
 **Sheet:** `<style> Character reference sheet: <look> Shown full body, standing, facing three-quarters toward the
 viewer, on a plain warm off-white background. One single figure, centered.` Seeds 1001-1004 for the 4 candidates.
@@ -139,7 +159,7 @@ Image 2 is ... Scene: <page.picture>. The words on this page of the story are: "
 - The page text is included for context (emotion, objects mentioned).
 - References are passed in cast order, then the setting (gpt-image-2 takes up to 16).
 
-## Cast detection (who's on a page)
+### Cast detection (who's on a page)
 
 A cast member is included when one of its `match` words appears as a whole word in the page's `picture` or
 `text` (lowercased, possessive 's stripped). Julia matches julia/girl/she/her; Toby matches toby/dragon;
@@ -175,23 +195,15 @@ their sheet; changing a sheet means redrawing every page they appear in.
 
 ## Status (Oct 2026)
 
-- **All 7 chapters drawn with gpt-image-2** and live (Oct 6): $0.24 of tests, $0.60 for chapter 1, $0.15 for the
-  three setting pictures, $3.97 for chapters 2-7 and one redraw. That used the whole $5 week.
-- Redraw queue (14 pages, about $1, next week): pages whose picture contradicts its brief.
-  `node tools/illustrate.mjs pages toby-1 5 6 7 8 9 10`, `toby-2 4`, `toby-3 5`, `toby-6 2 6 8 9 10`, `toby-7 8`.
-  - ch1 p5-10: drawn before settings, plain cream backgrounds; p9 has the playhouse in the woods.
-  - ch2 p4: the scooter is purple (red in chapter 1).
-  - ch3 p5: Toby has no paint on him right after the paint went everywhere.
-  - ch6 p2: a stranger girl instead of Julia. ch6 p6, 8-10: drawn in daylight, but it's dusk.
-  - ch7 p8: four Julias (a motion sequence) for one loop.
-  - Optional (~$1): ch2 p3-7 and ch3, where the playhouse is a wooden heart-door cottage.
-- The FLUX drafts (~$8) are in git history: `content/pictures/toby-v1-*` and earlier versions of `content/pictures/toby-N/`.
-- Problems seen with FLUX on the rewrite, to check with the new model:
-  - Text painted into a picture despite "no text" (ch4 p7, "Crash! Bang! Smash!").
-  - **Cast detection matched "dragon" to Toby** on the ominous black-dragon pages (ch7 p10-12), so cute Toby appeared
-    in the dark cave. Fixed with per-page `cast` (above) and a `blackdragon` cast entry described in words.
-  - The black dragon itself came out bear-like.
-- Mittu and the Yellow Mango: pictures are scans from the book (see CLAUDE.md, books from home), not generated.
+- **All 7 chapters of Julia and Toby are drawn as boards** (Oct 7) and live; $1.06 for the seven boards at medium.
+  Each page's `panel` in the story JSON says which panel it uses; the numbered boards show them all.
+- Boards were fed: 2<-1, 3<-2, 4<-2,3, 5<-4,1, 6<-5, 7<-6,1. Chapter 7's board was the best: it found Super-Tall Peak
+  and the black dragon on its own.
+- Known imperfections, kept (we pick, we don't redraw): the playhouse shows up in the woods in chapters 5 and 7;
+  in chapter 4 the toys whirl around inside the playhouse instead of zooming sky-high; the scooter is pink.
+- Library covers are still the drawn motifs; `illustrate.mjs cover` can switch any chapter to a page picture.
+- Earlier pictures (FLUX drafts, then per-page gpt-image-2) are in git history.
+- Sounding out and TTS (roadmap 4) is next, now the pictures are done.
 
 ## A new series
 

@@ -20,7 +20,8 @@
       "cast": [
         "julia",
         "scooter"
-      ]
+      ],
+      "panel": 1
     },
     {
       "text": "Then she hears a yelp. \"Yelp! Yelp!\" It is from the wood.",
@@ -31,7 +32,8 @@
       "cast": [
         "julia",
         "scooter"
-      ]
+      ],
+      "panel": 2
     },
     {
       "text": "Julia hops up on the gate and jumps down. Then she runs to the wood.",
@@ -41,7 +43,8 @@
       "time": "a sunny morning",
       "cast": [
         "julia"
-      ]
+      ],
+      "panel": 3
     },
     {
       "text": "Under a tree sits a dragon. He is white, and his scales shine pink and green and blue.",
@@ -51,7 +54,8 @@
       "time": "a sunny morning",
       "cast": [
         "toby"
-      ]
+      ],
+      "panel": 4
     },
     {
       "text": "The dragon looks up. A big tear drips down his nose.",
@@ -61,7 +65,8 @@
       "time": "a sunny morning",
       "cast": [
         "toby"
-      ]
+      ],
+      "panel": 5
     },
     {
       "text": "\"I am Toby,\" he said. \"I ran away from home.\"",
@@ -72,7 +77,8 @@
       "cast": [
         "julia",
         "toby"
-      ]
+      ],
+      "panel": 7
     },
     {
       "text": "\"Is your home far?\" asked Julia. \"It is a cave on top of Super-Tall Peak,\" said Toby.",
@@ -83,7 +89,8 @@
         "julia",
         "toby"
       ],
-      "time": "a sunny morning"
+      "time": "a sunny morning",
+      "panel": 8
     },
     {
       "text": "\"But what made you run away?\" asked Julia. Toby looks down at his feet. He will not say.",
@@ -94,7 +101,8 @@
       "cast": [
         "julia",
         "toby"
-      ]
+      ],
+      "panel": 9
     },
     {
       "text": "Julia pats his nose. \"You can stay with me,\" she said. \"I have a play house!\"",
@@ -105,7 +113,8 @@
         "julia",
         "toby"
       ],
-      "time": "a sunny morning"
+      "time": "a sunny morning",
+      "panel": 10
     },
     {
       "text": "Toby squeezes into the play house. He just fits. \"Hush!\" said Julia. \"Mum must not see you.\"",
@@ -117,7 +126,8 @@
         "julia",
         "toby",
         "playhouse"
-      ]
+      ],
+      "panel": 12
     }
   ]
 }

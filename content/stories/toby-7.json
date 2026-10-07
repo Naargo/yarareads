@@ -20,7 +20,8 @@
       "cast": [
         "julia",
         "toby"
-      ]
+      ],
+      "panel": 1
     },
     {
       "text": "Toby looks at the branch. It lifts and drifts and lands in her hand. Then a stick. Then a tin can.",
@@ -33,7 +34,8 @@
         "toby",
         "branch",
         "tincan"
-      ]
+      ],
+      "panel": 2
     },
     {
       "text": "\"Now me,\" said Julia. She stands as still as a rock.",
@@ -44,7 +46,8 @@
       "cast": [
         "julia",
         "toby"
-      ]
+      ],
+      "panel": 5
     },
     {
       "text": "Toby looks at Julia. And then her feet lift off the grass.",
@@ -55,7 +58,8 @@
       "cast": [
         "julia",
         "toby"
-      ]
+      ],
+      "panel": 7
     },
     {
       "text": "Up, up, up she floats! Higher than the gate. Higher than the play house.",
@@ -67,7 +71,8 @@
         "julia",
         "toby",
         "playhouse"
-      ]
+      ],
+      "panel": 9
     },
     {
       "text": "\"Whoa!\" said Julia. \"Toby, I am floating! I am floating up high!\"",
@@ -78,7 +83,8 @@
       "cast": [
         "julia",
         "toby"
-      ]
+      ],
+      "panel": 10
     },
     {
       "text": "Toby looks up at her, and she glides this way and that. She glides past the treetops, and the birds glide with her.",
@@ -89,7 +95,8 @@
       "cast": [
         "julia",
         "toby"
-      ]
+      ],
+      "panel": 11
     },
     {
       "text": "She loops the loop! She spins! She dips down to the pond and zooms back up!",
@@ -100,7 +107,8 @@
       "cast": [
         "julia",
         "toby"
-      ]
+      ],
+      "panel": 12
     },
     {
       "text": "\"This is the best day!\" Julia yells. \"Again! Again!\"",
@@ -111,7 +119,8 @@
       "cast": [
         "julia",
         "toby"
-      ]
+      ],
+      "panel": 13
     },
     {
       "text": "Far away, on top of Super-Tall Peak, it is dark. In a deep cave, a big black dragon wakes up.",
@@ -121,7 +130,8 @@
         "blackdragon"
       ],
       "image": "toby-7/10.jpg",
-      "time": "night"
+      "time": "night",
+      "panel": 14
     },
     {
       "text": "Its claws scrape the rock. Smoke curls from its nose.",
@@ -131,7 +141,8 @@
         "blackdragon"
       ],
       "image": "toby-7/11.jpg",
-      "time": "night"
+      "time": "night",
+      "panel": 15
     },
     {
       "text": "\"Toby,\" it hisses. \"I can feel you. You can not hide from me.\"",
@@ -141,7 +152,8 @@
         "blackdragon"
       ],
       "image": "toby-7/12.jpg",
-      "time": "night"
+      "time": "night",
+      "panel": 16
     }
   ]
 }

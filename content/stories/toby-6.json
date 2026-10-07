@@ -20,7 +20,8 @@
       "cast": [
         "julia",
         "toby"
-      ]
+      ],
+      "panel": 1
     },
     {
       "text": "Day nine. A branch shoots up and lands on the play house. Crunch!",
@@ -32,7 +33,8 @@
         "toby",
         "playhouse"
       ],
-      "time": "a sunny afternoon"
+      "time": "a sunny afternoon",
+      "panel": 2
     },
     {
       "text": "Day ten. Toby sits on a log and sighs. \"I can not do it,\" he said. \"I give up.\"",
@@ -42,7 +44,8 @@
       "time": "late afternoon, low golden light",
       "cast": [
         "toby"
-      ]
+      ],
+      "panel": 3
     },
     {
       "text": "\"No, you can,\" said Julia. But she is fed up too.",
@@ -53,7 +56,8 @@
         "julia",
         "toby"
       ],
-      "time": "late afternoon, low golden light"
+      "time": "late afternoon, low golden light",
+      "panel": 4
     },
     {
       "text": "It is dusk. Julia sits on the grass with her hand up, flat. \"Just one last go,\" she said.",
@@ -65,7 +69,8 @@
         "julia",
         "toby",
         "branch"
-      ]
+      ],
+      "panel": 5
     },
     {
       "text": "Toby is not looking at the branch. He is looking at Julia. He is not cross. He is not sad.",
@@ -76,7 +81,8 @@
       "cast": [
         "julia",
         "toby"
-      ]
+      ],
+      "panel": 6
     },
     {
       "text": "And then the branch lifts up. It drifts this way. It drifts that way.",
@@ -88,7 +94,8 @@
         "julia",
         "toby",
         "branch"
-      ]
+      ],
+      "panel": 7
     },
     {
       "text": "It floats down, soft as a leaf, and lands in Julia's hand.",
@@ -100,7 +107,8 @@
         "julia",
         "toby",
         "branch"
-      ]
+      ],
+      "panel": 9
     },
     {
       "text": "Julia looks at the branch. Toby looks at the branch. \"Toby!\" said Julia. \"You did it!\"",
@@ -112,7 +120,8 @@
         "julia",
         "toby",
         "branch"
-      ]
+      ],
+      "panel": 12
     },
     {
       "text": "Toby blinks. \"I did it,\" he said. \"I did it! But how?\"",
@@ -124,7 +133,8 @@
         "julia",
         "toby",
         "branch"
-      ]
+      ],
+      "panel": 14
     }
   ]
 }

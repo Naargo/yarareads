@@ -20,7 +20,8 @@
       "cast": [
         "julia",
         "toby"
-      ]
+      ],
+      "panel": 1
     },
     {
       "text": "\"I bet floating is like feelings,\" said Julia. \"When you get upset, things zoom up. So let's start there.\"",
@@ -31,7 +32,8 @@
       "cast": [
         "julia",
         "toby"
-      ]
+      ],
+      "panel": 2
     },
     {
       "text": "\"Toby, lift up that tin can.\" Toby looks at the can. He huffs. He puffs. Not a thing.",
@@ -43,7 +45,8 @@
         "julia",
         "toby",
         "tincan"
-      ]
+      ],
+      "panel": 4
     },
     {
       "text": "Toby gets cross. And the can zooms up, up, up, and lands in a tree!",
@@ -55,7 +58,8 @@
         "julia",
         "toby",
         "tincan"
-      ]
+      ],
+      "panel": 6
     },
     {
       "text": "\"Now that stick,\" said Julia. Toby looks hard at the stick.",
@@ -67,7 +71,8 @@
         "julia",
         "toby",
         "tincan"
-      ]
+      ],
+      "panel": 8
     },
     {
       "text": "The stick shoots up and bonks Julia on the chin! \"Ow! Toby!\"",
@@ -78,7 +83,8 @@
       "cast": [
         "julia",
         "toby"
-      ]
+      ],
+      "panel": 9
     },
     {
       "text": "Toby droops. \"I am no good at this,\" he said.",
@@ -89,7 +95,8 @@
       "cast": [
         "julia",
         "toby"
-      ]
+      ],
+      "panel": 11
     },
     {
       "text": "Day after day, it is the same. Cans zoom off. Sticks smash. Not one thing floats the right way.",
@@ -101,7 +108,8 @@
         "julia",
         "toby",
         "tincan"
-      ]
+      ],
+      "panel": 14
     }
   ]
 }
