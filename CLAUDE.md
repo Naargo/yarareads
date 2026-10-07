@@ -78,7 +78,8 @@ Word cards have **one speaker button**. If the word has tiles, it always sounds 
 then says the word: Eli doesn't want the voice reading words for her without the sounding out. Tricky words just get said.
 
 **Word voice.** Words are spoken by a Cloudflare Workers AI voice (Deepgram Aura; `VOICES` in worker.js, chosen in grown-ups > Voice,
-stored in D1 `settings`). `/api/say` generates a word once and caches it in R2 under `tts/<voice>/<word>.mp3` (~0.5-1 s new, ~10 ms cached).
+stored in D1 `settings`). `/api/say` generates a word once and caches it in R2 under `tts2/<voice>/<word>.mp3` (~0.5-1 s new, ~10 ms cached).
+The word is sent as a sentence (`playing.`): a bare word gets its end clipped. Eli's voice is Hyperion (also the default).
 The word card starts fetching when it opens, so the audio is ready by the end of the sounding out (650 ms a sound); if not,
 the speaker button shows a spinner. Audio plays through Web Audio: iOS only allows sound started inside a tap, so the tap
 resumes the AudioContext (`unlockAudio`) and the word can play later from a timer. Browser speech is only the fallback.

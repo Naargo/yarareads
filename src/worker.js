@@ -28,19 +28,22 @@ const VOICES = {
   'aura-2:apollo': { model: '@cf/deepgram/aura-2-en', speaker: 'apollo', label: 'Apollo', about: 'American man' },
   'melo:en': { model: '@cf/myshell-ai/melotts', label: 'Melo', about: 'Open-source voice' },
 };
-const DEFAULT_VOICE = 'aura-2:pandora';
+const DEFAULT_VOICE = 'aura-2:hyperion'; // Eli's pick (Oct 7)
 
-// Say one word in a voice: from the R2 cache (tts/<voice>/<word>.<ext>), or generated once and stored.
+// Say one word in a voice: from the R2 cache (tts2/<voice>/<word>.<ext>), or generated once and stored.
+// The word goes in as a sentence ("playing."): as a bare word Aura stops mid-sound and clips the end
+// (Hyperion's "playing" ended at full volume, mid "ng"); with the full stop it fades out naturally.
+// tts/ holds the old, sometimes clipped bare-word audio; tts2/ is the fixed set.
 async function sayWord(env, voiceId, word) {
   const voice = VOICES[voiceId];
   const ext = voiceId.startsWith('melo') ? 'wav' : 'mp3';
   const type = ext === 'wav' ? 'audio/wav' : 'audio/mpeg';
-  const key = `tts/${voiceId.replace(':', '-')}/${encodeURIComponent(word)}.${ext}`;
+  const key = `tts2/${voiceId.replace(':', '-')}/${encodeURIComponent(word)}.${ext}`;
   const cached = await env.PICTURES.get(key);
   if (cached) return { body: cached.body, type };
   const out = voice.speaker
-    ? await env.AI.run(voice.model, { text: word, speaker: voice.speaker, encoding: 'mp3' })
-    : await env.AI.run(voice.model, { prompt: word, lang: 'en' });
+    ? await env.AI.run(voice.model, { text: `${word}.`, speaker: voice.speaker, encoding: 'mp3' })
+    : await env.AI.run(voice.model, { prompt: `${word}.`, lang: 'en' });
   let bytes;
   if (out instanceof ReadableStream) bytes = await new Response(out).arrayBuffer();
   else if (out?.audio) bytes = Uint8Array.from(atob(out.audio), (c) => c.charCodeAt(0));

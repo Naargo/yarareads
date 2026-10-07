@@ -83,8 +83,12 @@ async function sayWord(word, button, voice) {
   if (!buffer) return speak(word);
   playing = ctx().createBufferSource();
   playing.buffer = buffer;
-  playing.connect(audioCtx.destination);
-  playing.start();
+  // Fade the last 30 ms: some words stop at full volume, and a hard stop clicks.
+  const gain = audioCtx.createGain(), now = audioCtx.currentTime, end = now + buffer.duration;
+  gain.gain.setValueAtTime(1, Math.max(now, end - 0.03));
+  gain.gain.linearRampToValueAtTime(0, end);
+  playing.connect(gain).connect(audioCtx.destination);
+  playing.start(now);
 }
 
 let voice;
