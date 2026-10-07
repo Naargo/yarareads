@@ -173,10 +173,6 @@ button { border: none; background: none; cursor: pointer; padding: 0; }
   padding: 32px 28px;
   position: relative;
 }
-.sheet::before {
-  content: ''; position: absolute; inset: 12px; border-radius: 20px;
-  border: 2px dashed var(--line); pointer-events: none;
-}
 .text {
   font-family: var(--read);
   font-size: clamp(32px, 6.4vw, 56px);
@@ -192,22 +188,22 @@ button { border: none; background: none; cursor: pointer; padding: 0; }
 /* A word she can't read yet (books from home): quiet, so the page still reads as a page. */
 .text .w.new { text-decoration: underline dotted var(--ink-soft); text-decoration-thickness: 2px; text-underline-offset: 0.22em; }
 
-/* Pages with a picture: side by side when there's room, stacked otherwise. */
-.sheet.with-picture { flex-direction: column; gap: 22px; padding: 22px; }
-.sheet.with-picture .picture {
-  width: 100%; flex: 1 1 auto; min-height: 30%;
-  display: flex; justify-content: center; align-items: center;
-}
+/* Pages with a picture: the picture runs edge to edge in the card and fills whatever the text leaves
+   (cropped to fit, never letterboxed). Stacked on tall screens, side by side when there's room. */
+.sheet.with-picture { flex-direction: column; align-items: stretch; padding: 0; gap: 0; container-type: inline-size; }
+/* Never taller than the card is wide: a 4:3 picture loses at most a quarter of its width. */
+.sheet.with-picture .picture { flex: 1 1 auto; min-height: 34%; max-height: 100cqw; position: relative; }
+.sheet.with-picture .text { margin-block: auto; }
 .sheet.with-picture .picture img {
-  max-width: 100%; max-height: 100%; border-radius: 18px; display: block; object-fit: contain;
-  box-shadow: 0 0 0 2px var(--line);
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; object-position: center 40%; display: block;
 }
-.sheet.with-picture .text { flex: 0 0 auto; }
+.sheet.with-picture .text { flex: 0 0 auto; align-self: center; padding: 18px 24px 22px; }
 .sheet.with-picture .text { font-size: clamp(28px, 5vw, 44px); line-height: 1.7; }
 @media (min-width: 760px) and (min-aspect-ratio: 5/4) {
-  .sheet.with-picture { flex-direction: row; gap: 32px; padding: 28px; }
-  .sheet.with-picture .picture { flex: 1 1 50%; min-height: 0; height: 100%; }
-  .sheet.with-picture .text { flex: 1 1 50%; max-width: none; }
+  .sheet.with-picture { flex-direction: row; }
+  .sheet.with-picture .picture { flex: 1 1 55%; min-height: 0; }
+  .sheet.with-picture .text { flex: 1 1 45%; max-width: none; padding: 28px 32px; }
 }
 
 .nav { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
