@@ -32,7 +32,8 @@
   --cover-float: #3c3570;
 }
 
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+/* touch-action: manipulation turns off double-tap zoom (iOS ignores user-scalable=no) but keeps pinch and scroll. */
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 
 html, body {
   margin: 0;

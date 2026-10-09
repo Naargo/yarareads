@@ -77,6 +77,7 @@ Page pictures run edge to edge in the card and fill whatever space the text leav
 screen is tall, the left half in landscape. They never get taller than the card is wide, so a 4:3 picture loses at most a
 quarter of its width on a phone. No inner dashed border (Oct 2026).
 Word cards shrink their tiles (`--chip`) for long words instead of scrolling, so the whole word stays visible.
+Double-tap zoom is off (`touch-action: manipulation` on everything): quick taps on words kept zooming the iPad.
 Word cards have **one speaker button**. If the word has tiles, it always sounds it out first (tiles light in turn) and only
 then says the word: Eli doesn't want the voice reading words for her without the sounding out. Tricky words just get said.
 
