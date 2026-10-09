@@ -46,6 +46,9 @@ Never loosen the inventory to make a story pass.
 - Page pictures: **read docs/illustration.md** before making any. `node tools/illustrate.mjs` (gpt-image-2 via OpenRouter; a chapter is drawn as one 4x4 board, then a panel picked per page; approved
   character sheets in content/art/ as references) writes web-quality JPEGs (~60 KB); `node tools/shrink.mjs` for others.
 - Page pictures are served from R2 (bucket `yara-reads-pictures`) at `/api/pictures/<key>`, behind the PIN.
+  `push.mjs` stores each picture in the story as `<key>?v=<hash of the file>`, and versioned URLs are cached for a year
+  (immutable): a redrawn picture keeps its R2 key but gets a new URL, so every device shows the new one. Always re-push
+  stories after changing a picture (`push.mjs --images` does both).
 - `public/`: the app (no build step). `art.js` holds the icons, logo and cover motifs; `fonts/` are self-hosted Andika (reading) and Fredoka (UI).
 - `src/worker.js`: API. `/api/login`, `/api/stories`, `/api/stories/:id`, `/api/pictures/<key>`, `/api/inventory` (GET/PUT), `/api/events`, `/api/progress`,
   `/api/say?word=&voice=` (a spoken word), `/api/settings` (GET/PUT: the voice), `/api/sounds/<key>` and `/api/sound-picks` (Sound lab).

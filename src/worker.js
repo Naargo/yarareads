@@ -101,7 +101,9 @@ export default {
       return new Response(obj.body, {
         headers: {
           'content-type': obj.httpMetadata?.contentType || 'image/jpeg',
-          'cache-control': 'private, max-age=604800',
+          // Stories link pictures as <key>?v=<content hash>, so a versioned URL never changes and can be kept for good.
+          // An unversioned request (an old copy of the app) revalidates every time.
+          'cache-control': url.searchParams.has('v') ? 'private, max-age=31536000, immutable' : 'private, no-cache',
           etag: obj.httpEtag,
         },
       });

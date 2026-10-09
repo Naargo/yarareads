@@ -4,6 +4,7 @@
 // content/inventory.json. Run `node tools/pull.mjs` first so you check against the live one.
 // Usage: node tools/push.mjs [--local] [--inventory] [--images]   (--images uploads page pictures to R2)
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { compile, storyFiles, inventory, isHomeBook, imageFile } from './build.mjs';
 
@@ -15,6 +16,9 @@ if (process.argv.includes('--inventory')) {
 }
 let stories = 0;
 const images = new Set();
+// Pictures are cached on devices for a long time, and a redrawn picture keeps its R2 key, so the stored story
+// points at "toby-1/3.jpg?v=<hash of the file>": a new picture is a new URL, and every device fetches it.
+const versioned = (key) => key && `${key}?v=${createHash('sha1').update(readFileSync(imageFile(key))).digest('hex').slice(0, 10)}`;
 for (const file of storyFiles()) {
   const { story, unknown } = compile(JSON.parse(readFileSync(file, 'utf8')));
   for (const key of [story.coverImage, ...story.pages.map((p) => p.image)].filter(Boolean)) {
@@ -25,6 +29,8 @@ for (const file of storyFiles()) {
     console.error(`${story.id}: unreadable words: ${[...unknown.keys()].join(', ')}`);
     process.exit(1);
   }
+  story.coverImage = versioned(story.coverImage) || undefined;
+  for (const p of story.pages) if (p.image) p.image = versioned(p.image);
   stories++;
   sql.push(
     `INSERT OR REPLACE INTO stories (id, series, number, title, body, updated_at) VALUES (${q(story.id)}, ${q(story.series)}, ${story.number}, ${q(story.title)}, ${q(JSON.stringify(story))}, CURRENT_TIMESTAMP);`,
