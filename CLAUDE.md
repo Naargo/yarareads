@@ -76,9 +76,12 @@ Storybook at dusk: warm paper, plum ink, dragon ember and gold (tokens at the to
 one SVG icon set in art.js (24px grid, 2.5 stroke, round caps), illustrated cover motifs. No emoji in the UI.
 Sound buttons follow classroom convention: a dot under a single letter, a bar under a digraph/trigraph.
 The reader is exactly one screen tall: the picture shrinks first, then `fitPage` steps the text down (min 20px).
-Page pictures run edge to edge in the card and fill whatever space the text leaves (`object-fit: cover`): on top when the
-screen is tall, the left half in landscape. They never get taller than the card is wide, so a 4:3 picture loses at most a
-quarter of its width on a phone. No inner dashed border (Oct 2026).
+Page pictures run edge to edge in the card and fill the space the text leaves (`object-fit: cover`): on top when the
+screen is tall, on the left in landscape. The picture box follows the picture's own shape (`--ia`, set when it loads), so
+cover crops at most ~20% off any side; in landscape the box is the card's height times that shape, capped at 60% of the
+card. Text she can read comes first: `fitPage` shrinks it to 34px, then lets the picture crop up to about a third
+(`.tight`), and only then shrinks the text further (min 20px). Checked on every page at 10.2" and 10.9" iPad sizes (Oct 9):
+a plain half-card box in landscape had cut a third off every picture. No inner dashed border.
 Word cards shrink their tiles (`--chip`) for long words instead of scrolling, so the whole word stays visible.
 Double-tap zoom is off (`touch-action: manipulation` on everything): quick taps on words kept zooming the iPad.
 Word cards have **one speaker button**. If the word has tiles, it always sounds it out first (tiles light in turn) and only

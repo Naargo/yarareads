@@ -315,7 +315,13 @@ async function showReader(id, pageIndex) {
     </div>`;
 
   fitPage();
-  app.querySelector('.picture img')?.addEventListener('load', fitPage);
+  // The picture box follows the picture's own shape (--ia in style.css), so the crop stays small.
+  const img = app.querySelector('.picture img');
+  const shape = () => {
+    if (img.naturalWidth) app.querySelector('.sheet').style.setProperty('--ia', img.naturalWidth / img.naturalHeight);
+    fitPage();
+  };
+  if (img) img.complete ? shape() : img.addEventListener('load', shape);
 
   const go = (i) => (location.hash = `#/read/${id}/${i}`);
   app.querySelector('[data-act=home]').onclick = () => (location.hash = '#/');
@@ -331,12 +337,20 @@ const pictureUrl = (key) => `/api/pictures/${key}`;
 
 // Keep the page on one screen: CSS lets the picture shrink first; if the text still
 // overflows the sheet, step its size down (never below 20px).
+// With a picture, text she can read comes first: shrink it to 34px, then let the picture crop more
+// (.tight, up to about a third), and only then shrink the text further.
 function fitPage() {
   const sheet = app.querySelector('.sheet'), text = app.querySelector('.text');
   if (!sheet || !text) return;
   text.style.fontSize = '';
+  sheet.classList.remove('tight');
   let size = parseFloat(getComputedStyle(text).fontSize);
-  while (sheet.scrollHeight > sheet.clientHeight + 1 && size > 20) {
+  const over = () => sheet.scrollHeight > sheet.clientHeight + 1;
+  while (over() && size > 20) {
+    if (size - 2 < 34 && !sheet.classList.contains('tight') && sheet.classList.contains('with-picture')) {
+      sheet.classList.add('tight');
+      continue;
+    }
     size -= 2;
     text.style.fontSize = `${size}px`;
   }

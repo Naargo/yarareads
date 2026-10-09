@@ -189,22 +189,37 @@ button { border: none; background: none; cursor: pointer; padding: 0; }
 /* A word she can't read yet (books from home): quiet, so the page still reads as a page. */
 .text .w.new { text-decoration: underline dotted var(--ink-soft); text-decoration-thickness: 2px; text-underline-offset: 0.22em; }
 
-/* Pages with a picture: the picture runs edge to edge in the card and fills whatever the text leaves
-   (cropped to fit, never letterboxed). Stacked on tall screens, side by side when there's room. */
-.sheet.with-picture { flex-direction: column; align-items: stretch; padding: 0; gap: 0; container-type: inline-size; }
-/* Never taller than the card is wide: a 4:3 picture loses at most a quarter of its width. */
-.sheet.with-picture .picture { flex: 1 1 auto; min-height: 34%; max-height: 100cqw; position: relative; }
-.sheet.with-picture .text { margin-block: auto; }
+/* Pages with a picture: the picture runs edge to edge in the card and fills the space the text leaves
+   (object-fit: cover), stacked on tall screens, side by side when there's room. The box is kept within
+   about 20% of the picture's own shape either way (--ia, its aspect ratio, set in app.js when it loads),
+   so cover never crops more than ~20% off any picture: on the iPad in landscape a plain half-card box
+   was taller than wide and cut a third off every picture (half of Julia's face on the bee page). */
+.sheet.with-picture {
+  flex-direction: column; align-items: stretch; padding: 0; gap: 0;
+  container-type: size; --ia: 1.3333;
+}
+.sheet.with-picture .picture {
+  flex: 1 1 auto; position: relative;
+  min-height: calc(100cqw / (var(--ia) * 1.25));
+  max-height: calc(100cqw / (var(--ia) * 0.8));
+}
 .sheet.with-picture .picture img {
   position: absolute; inset: 0; width: 100%; height: 100%;
   object-fit: cover; object-position: center 40%; display: block;
 }
-.sheet.with-picture .text { flex: 0 0 auto; align-self: center; padding: 18px 24px 22px; }
+.sheet.with-picture .text { flex: 0 0 auto; align-self: center; margin-block: auto; padding: 18px 24px 22px; }
 .sheet.with-picture .text { font-size: clamp(28px, 5vw, 44px); line-height: 1.7; }
+/* Long text on a tall screen: the picture may lose up to about a third rather than the text getting tiny. */
+.sheet.with-picture.tight .picture { min-height: calc(100cqw / (var(--ia) * 1.6)); }
 @media (min-width: 760px) and (min-aspect-ratio: 5/4) {
   .sheet.with-picture { flex-direction: row; }
-  .sheet.with-picture .picture { flex: 1 1 55%; min-height: 0; }
-  .sheet.with-picture .text { flex: 1 1 45%; max-width: none; padding: 28px 32px; }
+  /* Full height; as wide as the picture's shape asks, but leaving the text at least ~40% of the card. */
+  .sheet.with-picture .picture {
+    flex: 0 0 auto; min-height: 0; max-height: none;
+    width: min(calc(100cqh * var(--ia)), 60cqw);
+    min-width: min(calc(100cqh * var(--ia) * 0.8), 66cqw);
+  }
+  .sheet.with-picture .text { flex: 1 1 0; min-width: 0; max-width: none; padding: 24px 28px; }
 }
 
 .nav { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
