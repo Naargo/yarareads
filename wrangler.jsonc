@@ -6,7 +6,7 @@
   "assets": {
     "directory": "public",
     "binding": "ASSETS",
-    "run_worker_first": ["/api/*"]
+    "run_worker_first": ["/api/*", "/robots.txt", "/sitemap.xml"]
   },
   "d1_databases": [
     { "binding": "DB", "database_name": "yara-reads", "database_id": "9d8e4cf4-a64d-4ff3-8cb6-93ebe2156a49" }
@@ -14,6 +14,9 @@
   "r2_buckets": [{ "binding": "PICTURES", "bucket_name": "yara-reads-pictures" }],
   // Workers AI: text to speech for words (cached in R2 under tts/).
   "ai": { "binding": "AI", "remote": true },
-  "routes": [{ "pattern": "yarareads.finereli.com", "custom_domain": true }]
+  "routes": [{ "pattern": "yarareads.finereli.com", "custom_domain": true }],
+  // The public site (no PIN, our stories only; see publicApi in src/worker.js) turns on when PUBLIC_HOST is a
+  // hostname routed to this worker. Empty: off. PUBLIC_INDEX "1" lets crawlers in.
+  "vars": { "PUBLIC_HOST": "", "PUBLIC_INDEX": "0" }
   // Secrets (wrangler secret put): PIN, SESSION_SECRET
 }

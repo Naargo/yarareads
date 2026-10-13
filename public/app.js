@@ -20,6 +20,15 @@ async function api(path, options = {}) {
   return res.json();
 }
 
+// The public site (no PIN; the worker decides by hostname) keeps a child's sounds and finished books on
+// this device, since there's no account. Yara's own site keeps them in D1 as before.
+let PUBLIC = false;
+const modeReady = fetch('/api/settings').then((r) => (r.ok ? r.json() : {})).then((s) => (PUBLIC = !!s.public)).catch(() => {});
+const local = {
+  get: (k) => { try { return JSON.parse(localStorage.getItem('yr.' + k)); } catch { return null; } },
+  set: (k, v) => { try { localStorage.setItem('yr.' + k, JSON.stringify(v)); } catch {} },
+};
+
 function log(type, data = {}) {
   api('events', { method: 'POST', body: { type, ...data } }).catch(() => {});
 }
@@ -27,7 +36,7 @@ function log(type, data = {}) {
 // Books and the sounds list are cached while she reads, and dropped every time the library shows,
 // so new books, pictures and inventory changes appear without reinstalling or reloading.
 let inventory;
-const getInventory = async () => inventory || (inventory = await api('inventory'));
+const getInventory = async () => inventory || (inventory = (PUBLIC && local.get('inventory')) || (await api('inventory')));
 let storyCache = {};
 const getStory = async (id) => storyCache[id] || (storyCache[id] = await api('stories/' + id));
 let settings;
@@ -183,6 +192,7 @@ const session = {
 let grownUp = session.get('grownUp') === '1';
 
 async function route() {
+  await modeReady;
   closePop();
   stopAudio();
   const [, view, id, page] = location.hash.split('/');
@@ -271,6 +281,10 @@ function showGate() {
 async function showLibrary() {
   forgetContent();
   const stories = await api('stories');
+  if (PUBLIC) {
+    const done = local.get('finished') || {};
+    stories.forEach((s) => (s.finished = done[s.id] || 0));
+  }
   const series = [...new Set(stories.map((s) => s.series))];
   const nextUp = stories.find((s) => !s.finished && s.kind !== 'book');
   app.innerHTML = `
@@ -294,6 +308,7 @@ async function showLibrary() {
         </div>`).join('')}
       <p style="text-align:center; margin-top:40px">
         <button class="grownups-btn" data-act="grownups">${ICONS.lock} Grown-ups</button>
+        ${PUBLIC ? '<br><a class="link" href="/about">What is this?</a>' : ''}
       </p>
     </div>`;
   app.querySelectorAll('.book').forEach((b) => (b.onclick = () => (location.hash = `#/read/${b.dataset.id}/0`)));
@@ -510,6 +525,11 @@ function place(p, el) {
 
 async function showEnd(story) {
   log('finish', { storyId: story.id });
+  if (PUBLIC) {
+    const done = local.get('finished') || {};
+    done[story.id] = (done[story.id] || 0) + 1;
+    local.set('finished', done);
+  }
   const stories = await api('stories');
   const next = stories.find((s) => s.series === story.series && s.number === story.number + 1);
   app.innerHTML = `
@@ -536,9 +556,14 @@ const TABS = [
   ['app', 'App'],
 ];
 
+// The public site has only the tabs that work on a device: sounds, words and books.
+const PUBLIC_TABS = ['sounds', 'words', 'books'];
+
 async function showGrownups(tab) {
-  if (!TABS.some(([t]) => t === tab)) tab = TABS[0][0];
-  const [inv, list, progress, prefs] = await Promise.all([getInventory(), api('stories'), api('progress'), getSettings()]);
+  const tabs = PUBLIC ? TABS.filter(([t]) => PUBLIC_TABS.includes(t)) : TABS;
+  if (!tabs.some(([t]) => t === tab)) tab = tabs[0][0];
+  const [inv, list, progress, prefs] = await Promise.all([
+    getInventory(), api('stories'), PUBLIC ? { taps: [], days: [] } : api('progress'), getSettings()]);
   const stories = tab === 'books' || tab === 'voice' ? await Promise.all(list.map((s) => getStory(s.id))) : [];
 
   const tiles = (entries) => entries.map(([g]) =>
@@ -563,27 +588,29 @@ async function showGrownups(tab) {
       </section>`,
     sounds: () => `
       <section class="panel">
-        <h2>Sounds she knows <small>${inv.graphemes.length} on</small></h2>
-        <p>Tap a sound to switch it on or off. Books only use sounds that are on, and a word with a sound that's off stops being one she can sound out.</p>
+        <h2>Sounds ${PUBLIC ? 'your child knows' : 'she knows'} <small>${inv.graphemes.length} on</small></h2>
+        <p>${PUBLIC
+          ? "Tap a sound to switch it on or off. It starts with the sounds from Teach Your Monster to Read, which the books are written for. A word with a sound that's off gets a dotted underline, and its word card shows the new sound in purple. This is saved on this device."
+          : "Tap a sound to switch it on or off. Books only use sounds that are on, and a word with a sound that's off stops being one she can sound out."}</p>
         ${CATALOG_GROUPS.map(([title, entries]) => `<h3>${esc(title)}</h3><div class="tiles">${tiles(entries)}</div>`).join('')}
       </section>`,
     words: () => `
       <section class="panel">
         <h2>Tricky words <small>${inv.tricky.length}</small></h2>
-        <p>Words she reads on sight, without sounding out.</p>
+        <p>Words ${PUBLIC ? 'your child reads' : 'she reads'} on sight, without sounding out.</p>
         <div class="wordlist">${words('tricky')}</div>
         ${adder('tricky', 'Add a tricky word')}
       </section>
       <section class="panel">
         <h2>Names <small>${inv.names.length}</small></h2>
-        <p>Characters' names. She can read these anywhere.</p>
+        <p>Characters' names. ${PUBLIC ? 'They count as readable' : 'She can read these'} anywhere.</p>
         <div class="wordlist">${words('names')}</div>
         ${adder('names', 'Add a name')}
       </section>`,
     books: () => `
       <section class="panel">
         <h2>Books</h2>
-        <p>Whether each book is still readable with what she knows.</p>
+        <p>Whether each book is still readable with what ${PUBLIC ? 'your child knows' : 'she knows'}.</p>
         ${stories.map((s) => {
           const missing = unreadable(s, inv);
           if (s.kind === 'book') {
@@ -599,7 +626,7 @@ async function showGrownups(tab) {
           return `<div class="bookrow">
             <span class="dot ${missing.length ? 'bad' : 'ok'}">${missing.length ? '!' : ICONS.check}</span>
             <div><b>Book ${s.number}: ${esc(s.title)}</b>
-              <div>${missing.length ? `Words she can't read yet: ${missing.map(esc).join(', ')}` : 'Every word is one she can read.'}</div>
+              <div>${missing.length ? `Words ${PUBLIC ? 'your child' : 'she'} can't read yet: ${missing.map(esc).join(', ')}` : (PUBLIC ? 'Every word is readable.' : 'Every word is one she can read.')}</div>
             </div>
           </div>`;
         }).join('')}
@@ -653,12 +680,13 @@ async function showGrownups(tab) {
         <h1>Grown-ups</h1>
         <button class="done press" data-act="done">${ICONS.check} Done</button>
       </header>
-      <nav class="tabs">${TABS.map(([t, label]) => `<a href="#/grownups/${t}" class="${t === tab ? 'on' : ''}">${label}</a>`).join('')}</nav>
+      <nav class="tabs">${tabs.map(([t, label]) => `<a href="#/grownups/${t}" class="${t === tab ? 'on' : ''}">${label}</a>`).join('')}</nav>
       ${panels[tab]()}
     </div>`;
 
   const save = async () => {
-    await api('inventory', { method: 'PUT', body: inv });
+    if (PUBLIC) local.set('inventory', inv);
+    else await api('inventory', { method: 'PUT', body: inv });
     toast('Saved');
     const y = scrollY;
     await showGrownups(tab);

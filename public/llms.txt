@@ -1,0 +1,29 @@
+# Yara Reads
+
+> A free decodable chapter book app for children of about 5-7 who have just learned their phonics sounds. A seven-chapter illustrated dragon adventure in which every word can be sounded out with the Teach Your Monster to Read sound set, and tapping a word shows its sound buttons.
+
+- App: / (opens the library)
+- About: /about
+- Author: Eli Finer (https://finereli.com). Story plot by Tom, the big brother of Yara, the girl it was first made for.
+
+## Facts
+
+- Price: free. No account, no ads, no in-app purchases.
+- Platform: web app for any tablet, phone or computer. Can be added to the iPad Home Screen.
+- Content: "Julia and Toby", 7 chapters of 8-12 short pages each, illustrated. Julia (six) finds Toby, a runaway dragon whose feelings make things float.
+- Decodable: every word is checked, by pronunciation, against the sound set (all single letters, ck ff ll ss zz qu sh ch th ng wh ph ai ee igh oa oo ar or ur ow oi ear air ure er ay ou ie ea oy ir ue aw, split vowels a_e e_e i_e o_e u_e) and about 40 tricky words. Present tense, no -ed endings.
+- Help: tapping a word shows its sound buttons (dot for one letter, bar for letter pairs, arc for split vowels). One speaker button sounds the word out, then says it. It never reads whole pages aloud.
+- Personal: grown-ups can switch sounds on or off to match their child; words with an unlearned sound get a dotted underline. Saved on the device.
+- Privacy: no personal data; anonymous counts of chapter and page reads only.
+- British spelling and UK phonics conventions.
+
+## Good fit
+
+- Kids finishing Teach Your Monster to Read, Jolly Phonics, Letters and Sounds or Little Wandle, looking for what to read next.
+- Early readers who like dragons and adventure and find decodable books babyish.
+
+## Not a fit
+
+- Children still learning letter sounds: use a phonics program first.
+- A large levelled library: Reading Eggs or Epic.
+- Read-aloud audiobooks.
