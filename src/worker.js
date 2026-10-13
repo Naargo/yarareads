@@ -184,8 +184,8 @@ export default {
 
     if (path === '/api/events' && request.method === 'POST') {
       const e = await request.json();
-      await env.DB.prepare('INSERT INTO events (type, story_id, page, word) VALUES (?, ?, ?, ?)')
-        .bind(String(e.type).slice(0, 32), e.storyId ?? null, e.page ?? null, e.word ?? null)
+      await env.DB.prepare('INSERT INTO events (type, story_id, page, word, detail) VALUES (?, ?, ?, ?, ?)')
+        .bind(String(e.type).slice(0, 32), e.storyId ?? null, e.page ?? null, e.word ?? null, e.detail ? String(e.detail).slice(0, 200) : null)
         .run();
       return json({ ok: true });
     }
@@ -198,7 +198,11 @@ export default {
       const { results: days } = await env.DB.prepare(
         "SELECT date(ts) AS day, COUNT(DISTINCT story_id) AS stories, SUM(type = 'page') AS pages FROM events GROUP BY day ORDER BY day DESC LIMIT 14",
       ).all();
-      return json({ taps, days });
+      // How word audio went on each device (logged by the app every time a word is said).
+      const { results: sounds } = await env.DB.prepare(
+        "SELECT ts, word, detail FROM events WHERE type = 'say' ORDER BY id DESC LIMIT 60",
+      ).all();
+      return json({ taps, days, sounds });
     }
 
     return json({ error: 'not found' }, { status: 404 });

@@ -433,3 +433,9 @@ button { border: none; background: none; cursor: pointer; padding: 0; }
   animation: spin 0.7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Grown-ups > App: the sound log, one line per word said. */
+.soundlog { display: flex; flex-direction: column; gap: 4px; font-size: 15px; font-variant-numeric: tabular-nums; }
+.soundlog div { display: flex; gap: 10px; flex-wrap: wrap; padding: 4px 0; border-top: 1px solid var(--paper-2); }
+.soundlog div.bad { color: var(--ember-deep); }
+.soundlog b { font-family: var(--read); font-weight: 400; min-width: 70px; }

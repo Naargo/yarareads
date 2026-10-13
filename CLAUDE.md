@@ -94,6 +94,11 @@ The word card starts fetching when it opens, so the audio is ready by the end of
 the speaker button shows a spinner. Audio plays through Web Audio: iOS only allows sound started inside a tap, so the tap
 resumes the AudioContext (`unlockAudio`) and the word can play later from a timer. Browser speech is only the fallback.
 Grown-ups > Voice can make every book word in advance ("Get every book word ready"). Cost is negligible (Aura ~$0.03 per 1k characters).
+Aura still clips a word's end now and then; fix those one at a time (Eli: one-off issues are fine). Generate a few takes,
+pick the clean one (last 50 ms quiet), and put it over the cached file in R2: Hyperion's "the" was replaced this way (Oct 13).
+`unlockAudio` resumes the AudioContext from any state but running (iOS goes 'interrupted' after the screen locks) and
+plays a silent buffer inside the tap. **Sound log:** every word said is logged (`events` type `say`, `detail` like
+"played 320ms preloaded audio=running iPad app"), shown in grown-ups > App; FALLBACK lines are failures.
 
 The grown-ups section is tabbed (`#/grownups/<tab>`: Practise, Sounds, Words, Books, Voice, App).
 

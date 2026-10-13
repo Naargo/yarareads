@@ -48,7 +48,15 @@ const forgetContent = () => {
 let audioCtx, playing;
 const ctx = () => audioCtx || (audioCtx = new (window.AudioContext || window.webkitAudioContext)());
 function unlockAudio() {
-  if (ctx().state === 'suspended') audioCtx.resume();
+  const c = ctx();
+  // iOS: 'suspended' at first, and 'interrupted' after the screen locks or the app goes to the background;
+  // resuming only from 'suspended' left the iPad silent until a reload.
+  if (c.state !== 'running') c.resume().catch(() => {});
+  // A silent sound started inside the tap is what reliably unlocks Web Audio on iOS.
+  const s = c.createBufferSource();
+  s.buffer = c.createBuffer(1, 1, 22050);
+  s.connect(c.destination);
+  s.start(0);
   primeSpeech(); // for the fallback voice
 }
 function stopAudio() {
@@ -58,29 +66,44 @@ function stopAudio() {
 }
 
 const sayKey = (word) => word.toLowerCase().replace(/[^a-z' -]/g, '').trim();
-const wordAudio = new Map(); // "voice|word" -> Promise<AudioBuffer | null>
+const wordAudio = new Map(); // "voice|word" -> Promise<{ buffer, why }>: the audio, or why there's none
 function loadWord(word, voice) {
   const w = sayKey(word), k = `${voice}|${w}`;
   if (!wordAudio.has(k)) {
+    let why = 'fetch';
     wordAudio.set(k, fetch(`/api/say?word=${encodeURIComponent(w)}&voice=${encodeURIComponent(voice)}`)
-      .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(r.status))))
-      .then((bytes) => new Promise((ok, fail) => ctx().decodeAudioData(bytes, ok, fail))) // callback form: older Safari
-      .catch(() => { wordAudio.delete(k); return null; }));
+      .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(`http ${r.status}`))))
+      .then((bytes) => { why = 'decode'; return new Promise((ok, fail) => ctx().decodeAudioData(bytes, ok, fail)); }) // callback form: older Safari
+      .then((buffer) => ({ buffer }))
+      .catch((e) => { wordAudio.delete(k); return { why: `${why} failed: ${e?.message || e}` }; }));
   }
   return wordAudio.get(k);
 }
+// For the sound log: which device, and whether it's the installed app.
+const device = () => `${/iPad|iPhone|Android|Macintosh|Windows/.exec(navigator.userAgent)?.[0] || 'other'}${navigator.standalone ? ' app' : ''}`;
 const prefetchWord = (word) => getSettings().then((s) => loadWord(word, s.voice)).catch(() => {});
 
 // Say a word; `button` shows a spinner if the audio isn't ready yet. Resolves when it starts playing.
+// Every attempt goes in the sound log (grown-ups > App), so intermittent failures can be traced.
 async function sayWord(word, button, voice) {
+  const t0 = performance.now();
+  const ready = wordAudio.has(`${voice || settings?.voice}|${sayKey(word)}`);
   voice ||= (await getSettings().catch(() => ({}))).voice;
-  const pending = voice ? loadWord(word, voice) : Promise.resolve(null);
+  const pending = voice ? loadWord(word, voice) : Promise.resolve({ why: 'no voice setting' });
   const spin = setTimeout(() => button?.classList.add('waiting'), 120);
-  const buffer = await pending;
+  const { buffer, why } = await pending;
   clearTimeout(spin);
   button?.classList.remove('waiting');
   stopAudio();
-  if (!buffer) return speak(word);
+  if (buffer && audioCtx.state !== 'running') await audioCtx.resume().catch(() => {});
+  const state = audioCtx?.state || 'none';
+  const note = (outcome) => log('say', { word: sayKey(word),
+    detail: `${outcome} ${Math.round(performance.now() - t0)}ms ${ready ? 'preloaded' : 'loaded'} audio=${state} ${device()}` });
+  if (!buffer || state !== 'running') {
+    note(`FALLBACK (${why || `audio ${state}`})`);
+    return speak(word);
+  }
+  note('played');
   playing = ctx().createBufferSource();
   playing.buffer = buffer;
   // Fade the last 30 ms: some words stop at full volume, and a hard stop clicks.
@@ -613,6 +636,14 @@ async function showGrownups(tab) {
         <h2>App <small>version ${esc(version || 'unknown')}</small></h2>
         <p>The app updates itself, and new books and pictures appear whenever the library opens. If something still looks out of date:</p>
         <button class="press check" data-act="update">Refresh now</button>
+      </section>
+      <section class="panel">
+        <h2>Sound log <small>last ${progress.sounds?.length || 0}</small></h2>
+        <p>Every time a word is said: whether it played, how long it took, whether it was already loaded, the state of the
+          audio, and the device. FALLBACK means the app's voice couldn't play and the browser's own voice was tried.</p>
+        <div class="soundlog">${(progress.sounds || []).map((e) => `
+          <div class="${/FALLBACK/.test(e.detail) ? 'bad' : ''}"><span class="muted">${esc(e.ts.slice(5, 16))}</span>
+            <b>${esc(e.word || '')}</b> <span>${esc(e.detail || '')}</span></div>`).join('') || '<span class="days">Nothing yet.</span>'}</div>
       </section>`,
   };
 
