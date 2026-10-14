@@ -1,0 +1,135 @@
+// Recorded phonics sounds: slice a recording of the recording sheet into one file per sound, and put them in the
+// Sound lab next to the AI takes. The sheet (claude.ai artifact "Yara Reads Sound Recording") is read part by part:
+// each sound, a pause, its example word, a pause ("sss ... sun ... mmm ... map ..."). One file per part.
+//
+//   node tools/sounds-record.mjs <recording> <part 1-4> [who] [--local]
+//
+// The recording is cut at its silences, each piece is transcribed (Whisper), and each example word is found in order;
+// the sound is the piece just before it. Stray taps and noises at either end don't matter, and a fumbled sound said
+// again is fine (the take just before the word wins). Each sound is trimmed, faded, levelled, encoded as MP3, and
+// uploaded to R2 as sounds/recorded/<who>/<id>.mp3, its word as sounds/recorded/<who>/words/<word>.mp3.
+// Local copies go to content/sounds/recorded/<who>/ (gitignored: the repo is public, these are family voices).
+// Ids are the sound in lower-case ARPAbet-ish names (s, sh, th, dh, ng, ...).
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+
+const root = new URL('..', import.meta.url).pathname;
+const ACCOUNT = '7485eb8ab648601f411b650cd794bce3';
+export const PARTS = {
+  1: [['s', 'sun'], ['m', 'map'], ['f', 'fan'], ['n', 'net'], ['l', 'leg'], ['r', 'rat'], ['v', 'van'], ['z', 'zip'],
+    ['sh', 'ship'], ['th', 'thin'], ['dh', 'this'], ['ng', 'ring']],
+  2: [['t', 'tap'], ['p', 'pan'], ['k', 'cat'], ['b', 'bat'], ['d', 'dog'], ['g', 'got'], ['h', 'hat'], ['j', 'jam'],
+    ['w', 'wet'], ['y', 'yes'], ['ch', 'chip'], ['x', 'box'], ['qu', 'queen']],
+  3: [['a', 'ant'], ['e', 'egg'], ['i', 'ink'], ['o', 'on'], ['u', 'up'], ['oo-short', 'book']],
+  4: [['ai', 'rain'], ['ee', 'see'], ['igh', 'night'], ['oa', 'boat'], ['oo', 'moon'], ['ar', 'car'], ['or', 'fork'],
+    ['ur', 'fur'], ['ow', 'cow'], ['oi', 'coin'], ['ear', 'near'], ['air', 'hair'], ['ure', 'sure'], ['ue', 'cue']],
+};
+
+const [file, partArg, whoArg] = process.argv.slice(2).filter((a) => !a.startsWith('--'));
+const where = process.argv.includes('--local') ? '--local' : '--remote';
+const who = whoArg || 'eli';
+const part = PARTS[partArg];
+if (!file || !part) {
+  console.log('usage: node tools/sounds-record.mjs <recording> <part 1-4> [who] [--local]');
+  process.exit(1);
+}
+
+// Decode to 24 kHz mono 16-bit PCM.
+const SR = 24000;
+const pcm = execFileSync('ffmpeg', ['-v', 'error', '-i', file, '-ac', '1', '-ar', String(SR), '-f', 's16le', '-'], { maxBuffer: 1 << 30 });
+const x = Float32Array.from(new Int16Array(pcm.buffer, pcm.byteOffset, pcm.length / 2), (v) => v / 32768);
+const db = (a) => 20 * Math.log10(Math.sqrt(a.reduce((s, v) => s + v * v, 0) / a.length) + 1e-9);
+
+// Pieces: runs of 10 ms windows louder than -45 dBFS, joined across gaps under 250 ms, ignoring blips under 80 ms.
+const W = SR / 100;
+const loud = [];
+for (let i = 0; i + W <= x.length; i += W) loud.push(db(x.subarray(i, i + W)) > -45);
+const pieces = [];
+let start = null, last = null;
+loud.forEach((l, i) => {
+  if (!l) return;
+  if (start === null) start = i;
+  else if (i - last > 25) { pieces.push([start, last]); start = i; }
+  last = i;
+});
+if (start !== null) pieces.push([start, last]);
+const kept = pieces.filter(([s, e]) => e - s >= 8).map(([s, e]) => [Math.max(0, (s - 5) * W), Math.min(x.length, (e + 8) * W)]);
+
+const wav = (samples) => {
+  const data = Buffer.alloc(samples.length * 2);
+  samples.forEach((v, i) => data.writeInt16LE(Math.max(-32768, Math.min(32767, Math.round(v * 32767))), i * 2));
+  const h = Buffer.alloc(44);
+  h.write('RIFF', 0); h.writeUInt32LE(36 + data.length, 4); h.write('WAVE', 8); h.write('fmt ', 12);
+  h.writeUInt32LE(16, 16); h.writeUInt16LE(1, 20); h.writeUInt16LE(1, 22); h.writeUInt32LE(SR, 24);
+  h.writeUInt32LE(SR * 2, 28); h.writeUInt16LE(2, 32); h.writeUInt16LE(16, 34); h.write('data', 36); h.writeUInt32LE(data.length, 40);
+  return Buffer.concat([h, data]);
+};
+async function whisper(samples) {
+  const res = await fetch(`https://api.cloudflare.com/client/v4/accounts/${ACCOUNT}/ai/run/@cf/openai/whisper`, {
+    method: 'POST', headers: { authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`, 'content-type': 'application/octet-stream' }, body: wav(samples),
+  });
+  return ((await res.json()).result?.text || '').trim().toLowerCase().replace(/[^a-z ]/g, '');
+}
+const heard = [];
+for (const [a, b] of kept) heard.push(await whisper(x.subarray(a, b)));
+
+// Find each word in order (a close-enough transcript); its sound is the piece just before it.
+const close = (said, word) => {
+  const s = said.split(' ')[0] || '';
+  if (s === word || s.startsWith(word) || word.startsWith(s) && s.length >= 2) return true;
+  let same = 0; // letters in place, for Whisper's near misses ("shit" for ship, "vam" for van)
+  for (let i = 0; i < Math.min(s.length, word.length); i++) same += s[i] === word[i];
+  return same >= Math.max(2, word.length - 1);
+};
+const found = [];
+let at = 1;
+for (const [id, word] of part) {
+  let k = at;
+  while (k < kept.length && !close(heard[k], word)) k++;
+  if (k >= kept.length) {
+    console.log(heard.map((h, i) => `${i + 1}: ${(kept[i][1] - kept[i][0]) / SR}s "${h}"`).join('\n'));
+    throw new Error(`couldn't find "${word}" after piece ${at}: check the list above`);
+  }
+  found.push({ id, word, sound: kept[k - 1], said: kept[k] });
+  at = k + 2;
+}
+
+// Level (RMS to -20 dBFS, peaks under -1), fade 10 ms in and 40 ms out, high-pass, MP3.
+const dir = join(root, 'content/sounds/recorded', who);
+mkdirSync(join(dir, 'words'), { recursive: true });
+const clip = (a, b, out) => {
+  const s = Float32Array.from(x.subarray(a, b));
+  const peak = s.reduce((m, v) => Math.max(m, Math.abs(v)), 0);
+  const g = Math.min(10 ** ((-20 - db(s)) / 20), 10 ** ((-1 - 20 * Math.log10(peak + 1e-9)) / 20));
+  const fi = SR / 100, fo = SR / 25;
+  s.forEach((v, i) => (s[i] = v * g * Math.min(1, i / fi, (s.length - i) / fo)));
+  const tmp = `${out}.wav`;
+  writeFileSync(tmp, wav(s));
+  execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', tmp, '-af', 'highpass=f=70', '-c:a', 'libmp3lame', '-b:a', '64k', out]);
+  execFileSync('rm', [tmp]);
+};
+for (const f of found) {
+  clip(...f.sound, join(dir, `${f.id}.mp3`));
+  clip(...f.said, join(dir, 'words', `${f.word}.mp3`));
+  console.log(`${f.id.padEnd(9)} ${((f.sound[1] - f.sound[0]) / SR).toFixed(2)}s   word "${f.word}"`);
+}
+
+// Upload, and add a "recorded" take per sound to the Sound lab's live manifest (new sounds get their own row).
+const put = (key, path, type) => execFileSync('npx', ['wrangler', 'r2', 'object', 'put', `yara-reads-pictures/sounds/${key}`,
+  where, '--file', path, '--content-type', type], { stdio: 'ignore' });
+const manifestFile = join(root, 'content/sounds/candidates.json');
+execFileSync('npx', ['wrangler', 'r2', 'object', 'get', 'yara-reads-pictures/sounds/candidates.json', where, '--file', manifestFile], { stdio: 'ignore' });
+const manifest = existsSync(manifestFile) ? JSON.parse(readFileSync(manifestFile, 'utf8')) : [];
+for (const f of found) {
+  const key = `recorded/${who}/${f.id}.mp3`;
+  put(key, join(dir, `${f.id}.mp3`), 'audio/mpeg');
+  put(`recorded/${who}/words/${f.word}.mp3`, join(dir, 'words', `${f.word}.mp3`), 'audio/mpeg');
+  let entry = manifest.find((e) => e.sound === f.id);
+  if (!entry) manifest.push((entry = { sound: f.id, takes: [] }));
+  entry.example = f.word;
+  entry.takes = [{ key, voice: who, text: 'recorded' }, ...entry.takes.filter((t) => t.key !== key)];
+}
+writeFileSync(manifestFile, JSON.stringify(manifest, null, 1) + '\n');
+put('candidates.json', manifestFile, 'application/json');
+console.log(`${found.length} sounds from part ${partArg} uploaded (${where})`);

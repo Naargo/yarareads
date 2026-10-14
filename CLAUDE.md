@@ -115,6 +115,12 @@ Content changes need only `tools/push.mjs`, no deploy.
    (TTS voices given spellings like "sss", "tuh") and `tools/sounds-describe.mjs` (gpt-audio given a description of the sound)
    are in the **Sound lab** (`#/sounds`, picks in D1 `sound_picks`), but Eli concluded (Oct 7) that the sounds will be
    **recorded by Tom or Eli** from a recording sheet, then cut into one file per sound. Whisper can't pre-screen isolated sounds.
+   Recording: one file per part of the sheet, each sound then its example word, a pause between ("sss ... sun ... mmm ... map").
+   `node tools/sounds-record.mjs <file> <part> [who]` slices at the silences, finds each example word with Whisper (in order;
+   the sound is the piece just before it, so stray noises and redos don't matter), levels and fades each clip, uploads it to R2
+   `sounds/recorded/<who>/<id>.mp3` (+ `words/`), and puts it first in the Sound lab. Local copies in content/sounds/recorded/
+   are gitignored: family voices stay out of the public repo. Part 1 (12 long sounds) recorded by Eli, Oct 14.
+   Next: parts 2-4, then the tiles play each sound as they light (needs `decode` to say which sound each part makes).
 5. ~~Books from home, with pictures (first: Mittu and the Yellow Mango).~~ Next: show which *sounds* a book needs, not just words.
 6. Practise: grow the grown-ups "Practise" panel into something Eli can work through with her.
 

@@ -3,6 +3,11 @@
   "sound": "s",
   "takes": [
    {
+    "key": "recorded/eli/s.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   },
+   {
     "key": "candidates/s/pandora-1.mp3",
     "voice": "pandora",
     "text": "sss"
@@ -42,11 +47,17 @@
     "voice": "gpt",
     "text": "described"
    }
-  ]
+  ],
+  "example": "sun"
  },
  {
   "sound": "m",
   "takes": [
+   {
+    "key": "recorded/eli/m.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   },
    {
     "key": "candidates/m/pandora-1.mp3",
     "voice": "pandora",
@@ -87,11 +98,17 @@
     "voice": "gpt",
     "text": "described"
    }
-  ]
+  ],
+  "example": "map"
  },
  {
   "sound": "f",
   "takes": [
+   {
+    "key": "recorded/eli/f.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   },
    {
     "key": "candidates/f/pandora-1.mp3",
     "voice": "pandora",
@@ -132,11 +149,17 @@
     "voice": "gpt",
     "text": "described"
    }
-  ]
+  ],
+  "example": "fan"
  },
  {
   "sound": "sh",
   "takes": [
+   {
+    "key": "recorded/eli/sh.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   },
    {
     "key": "candidates/sh/pandora-1.mp3",
     "voice": "pandora",
@@ -177,11 +200,17 @@
     "voice": "gpt",
     "text": "described"
    }
-  ]
+  ],
+  "example": "ship"
  },
  {
   "sound": "n",
   "takes": [
+   {
+    "key": "recorded/eli/n.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   },
    {
     "key": "candidates/n/pandora-1.mp3",
     "voice": "pandora",
@@ -222,11 +251,17 @@
     "voice": "gpt",
     "text": "described"
    }
-  ]
+  ],
+  "example": "net"
  },
  {
   "sound": "l",
   "takes": [
+   {
+    "key": "recorded/eli/l.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   },
    {
     "key": "candidates/l/pandora-1.mp3",
     "voice": "pandora",
@@ -267,11 +302,17 @@
     "voice": "gpt",
     "text": "described"
    }
-  ]
+  ],
+  "example": "leg"
  },
  {
   "sound": "z",
   "takes": [
+   {
+    "key": "recorded/eli/z.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   },
    {
     "key": "candidates/z/pandora-1.mp3",
     "voice": "pandora",
@@ -312,11 +353,17 @@
     "voice": "gpt",
     "text": "described"
    }
-  ]
+  ],
+  "example": "zip"
  },
  {
   "sound": "v",
   "takes": [
+   {
+    "key": "recorded/eli/v.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   },
    {
     "key": "candidates/v/pandora-1.mp3",
     "voice": "pandora",
@@ -357,7 +404,8 @@
     "voice": "gpt",
     "text": "described"
    }
-  ]
+  ],
+  "example": "van"
  },
  {
   "sound": "t",
@@ -1428,6 +1476,11 @@
   "sound": "th",
   "takes": [
    {
+    "key": "recorded/eli/th.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   },
+   {
     "key": "candidates/th/pandora-1.mp3",
     "voice": "pandora",
     "text": "th"
@@ -1467,6 +1520,40 @@
     "voice": "gpt",
     "text": "described"
    }
-  ]
+  ],
+  "example": "thin"
+ },
+ {
+  "sound": "r",
+  "takes": [
+   {
+    "key": "recorded/eli/r.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   }
+  ],
+  "example": "rat"
+ },
+ {
+  "sound": "dh",
+  "takes": [
+   {
+    "key": "recorded/eli/dh.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   }
+  ],
+  "example": "this"
+ },
+ {
+  "sound": "ng",
+  "takes": [
+   {
+    "key": "recorded/eli/ng.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   }
+  ],
+  "example": "ring"
  }
 ]

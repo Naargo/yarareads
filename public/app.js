@@ -734,7 +734,8 @@ const EXAMPLES = {
   b: 'bat', d: 'dog', g: 'got', a: 'ant', e: 'egg', i: 'ink', o: 'on', u: 'up', ai: 'rain', ee: 'see',
   igh: 'night', oa: 'boat', oo: 'moon', ar: 'car', or: 'fork', ur: 'fur', ow: 'cow', oi: 'coin', ch: 'chip', th: 'thin',
 };
-const VOICE_NAMES = { pandora: 'Voice 1', athena: 'Voice 2', melo: 'Voice 3', 'gpt-mini': 'Voice 4', gpt: 'Voice 5' };
+// Recordings first (tools/sounds-record.mjs), then the AI experiments.
+const VOICE_NAMES = { eli: 'Recorded', tom: 'Tom', pandora: 'Voice 1', athena: 'Voice 2', melo: 'Voice 3', 'gpt-mini': 'Voice 4', gpt: 'Voice 5' };
 let labAudio;
 
 async function showSoundLab() {
@@ -754,11 +755,11 @@ async function showSoundLab() {
           and a short clipped "t". Leave a sound unstarred if none are right; those will need recording.</p>
         <p class="muted">${picked} of ${manifest.length} sounds picked. Each take is labelled with how it was spelled for the voice.</p>
       </section>
-      ${manifest.map(({ sound, takes }) => `
+      ${manifest.map(({ sound, takes, example }) => `
         <section class="panel labrow">
-          <div class="labsound"><span class="tile on">${esc(sound)}</span><span class="muted">${esc(EXAMPLES[sound] || '')}</span></div>
+          <div class="labsound"><span class="tile on">${esc(sound)}</span><span class="muted">${esc(example || EXAMPLES[sound] || '')}</span></div>
           <div class="labtakes">
-            ${Object.keys(VOICE_NAMES).map((v) => `
+            ${Object.keys(VOICE_NAMES).filter((v) => takes.some((t) => t.voice === v)).map((v) => `
               <div class="labvoice"><span class="muted">${VOICE_NAMES[v]}</span>
                 ${takes.filter((t) => t.voice === v).map((t) => `
                   <span class="take ${picks[sound] === t.key ? 'picked' : ''}">

@@ -4,3 +4,4 @@ node_modules/
 .dev.vars
 public/version.json
 content/sounds/candidates/
+content/sounds/recorded/
