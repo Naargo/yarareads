@@ -138,6 +138,14 @@ function stretch(w, inv, pronunciations) {
 //   name       a character; parts if it can be sounded out at all
 //   unknown    she can't read it yet; parts (some marked new) if it can be sounded out at all
 // pronunciations is a list of possible pronunciations for the word (may be empty).
+// Words sounded out a particular way, chosen by Eli (Oct 16): [letters, sound] per sound button. They get sound buttons even
+// if they're on her tricky list. "they": th-e-y, the e and the consonant y gliding into its /ai/ (ey isn't hers yet).
+// "again": ai says "eh", as many people say it (and as in "said"). Letters she hasn't learned would show plum.
+export const SOUNDED = {
+  they: [['th', 'DH'], ['e', 'EH'], ['y', 'Y']],
+  again: [['a', 'AH'], ['g', 'G'], ['ai', 'EH'], ['n', 'N']],
+};
+
 export function classify(word, inv, pronunciations = []) {
   const w = normalize(word);
   const base = normalize(word.replace(/[’']s$/, ''));
@@ -145,6 +153,9 @@ export function classify(word, inv, pronunciations = []) {
   // Possessives: "Yara's" arrives as "yaras" once stored without the apostrophe.
   if (names.includes(base) || (w.endsWith('s') && names.includes(w.slice(0, -1)))) {
     return { kind: 'name', parts: stretch(w, inv, pronunciations) };
+  }
+  if (SOUNDED[w]) {
+    return { kind: 'decodable', parts: SOUNDED[w].map(([text, sound]) => ({ text, g: text, sound, ...(inv.graphemes.includes(text) ? {} : { new: true }) })) };
   }
   if (inv.tricky.map(normalize).includes(w)) return { kind: 'tricky' };
   if (w === 'a' && inv.graphemes.includes('a')) return { kind: 'decodable', parts: [{ text: 'a', g: 'a', sound: 'AE' }] }; // "a" is taught as decodable
