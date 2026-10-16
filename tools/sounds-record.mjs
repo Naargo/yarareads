@@ -102,13 +102,39 @@ for (const [id, word] of found.length ? [] : part) {
   at = k + 2;
 }
 
-// Level (RMS to -20 dBFS, peaks under -1), fade 10 ms in and 40 ms out, high-pass, MP3.
+// Level by how loud each sound *sounds*, matched to the word voice: K-weighted loudness (the ITU BS.1770 filters, as
+// in LUFS) over the part where the sound is happening (50 ms windows within 20 dB of the loudest), set to -23, the
+// median of Hyperion's words. Plain RMS over the whole clip (Oct 14-16) counted the silence around short sounds and
+// ignored that hiss sounds louder than it measures: ch, x, s and sh came out ~5 dB louder than m, n and v. Peaks stay
+// under -1 dBFS. Then fade 10 ms in and 40 ms out, high-pass, MP3.
+const TARGET_LUFS = -23;
+const biquad = (s, [b0, b1, b2], [a0, a1, a2]) => {
+  const y = new Float32Array(s.length);
+  let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+  for (let i = 0; i < s.length; i++) {
+    const o = (b0 * s[i] + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2) / a0;
+    x2 = x1; x1 = s[i]; y2 = y1; y1 = o; y[i] = o;
+  }
+  return y;
+};
+function loudness(s) {
+  const A = 10 ** (4 / 40), r = Math.sqrt(A);
+  let w = 2 * Math.PI * 1500 / SR, c = Math.cos(w), al = Math.sin(w) / Math.SQRT2;
+  let k = biquad(s, [A * ((A + 1) + (A - 1) * c + 2 * r * al), -2 * A * ((A - 1) + (A + 1) * c), A * ((A + 1) + (A - 1) * c - 2 * r * al)],
+    [(A + 1) - (A - 1) * c + 2 * r * al, 2 * ((A - 1) - (A + 1) * c), (A + 1) - (A - 1) * c - 2 * r * al]);
+  w = 2 * Math.PI * 38 / SR; c = Math.cos(w); al = Math.sin(w);
+  k = biquad(k, [(1 + c) / 2, -(1 + c), (1 + c) / 2], [1 + al, -2 * c, 1 - al]);
+  const W = SR / 20, ms = [];
+  for (let i = 0; i + W <= k.length; i += W / 2) ms.push(k.subarray(i, i + W).reduce((t, v) => t + v * v, 0) / W);
+  const top = Math.max(...ms), keep = ms.filter((m) => m > top / 100);
+  return -0.691 + 10 * Math.log10(keep.reduce((t, m) => t + m, 0) / keep.length + 1e-12);
+}
 const dir = join(root, 'content/sounds/recorded', who);
 mkdirSync(join(dir, 'words'), { recursive: true });
 const clip = (a, b, out) => {
   const s = Float32Array.from(x.subarray(a, b));
   const peak = s.reduce((m, v) => Math.max(m, Math.abs(v)), 0);
-  const g = Math.min(10 ** ((-20 - db(s)) / 20), 10 ** ((-1 - 20 * Math.log10(peak + 1e-9)) / 20));
+  const g = Math.min(10 ** ((TARGET_LUFS - loudness(s)) / 20), 10 ** ((-1 - 20 * Math.log10(peak + 1e-9)) / 20));
   const fi = SR / 100, fo = SR / 25;
   s.forEach((v, i) => (s[i] = v * g * Math.min(1, i / fi, (s.length - i) / fo)));
   const tmp = `${out}.wav`;

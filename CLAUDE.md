@@ -90,7 +90,9 @@ then says the word: Eli doesn't want the voice reading words for her without the
 `decode` gives every part its `sound` in ARPAbet ("Z" for the s in "is", "K S" for x), and `SOUND_FILES` maps it to a
 recording (a sequence with no recording of its own plays phoneme by phoneme; a silent e plays nothing). A tile stays lit for
 its sound plus a gap, at least 500 ms; with no recording, 650 ms as before. Recordings load when the card opens.
-The public site doesn't serve the recordings (Eli's voice), so its tiles stay silent.
+The public site serves these 45 recordings too (Eli's call, Oct 16), but not the Sound lab's other takes or the recorded example words.
+Recordings are levelled by perceived loudness (K-weighted, as LUFS, over the active part of the clip) to -23, the median
+of Hyperion's words, so they match the voice and each other (within 0.5 dB; plain RMS had left ch/x/s/sh ~5 dB louder than m/n/v).
 
 **Word voice.** Words are spoken by a Cloudflare Workers AI voice (Deepgram Aura; `VOICES` in worker.js, chosen in grown-ups > Voice,
 stored in D1 `settings`). `/api/say` generates a word once and caches it in R2 under `tts2/<voice>/<word>.mp3` (~0.5-1 s new, ~10 ms cached).

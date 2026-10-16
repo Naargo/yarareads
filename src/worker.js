@@ -98,6 +98,14 @@ async function publicApi(request, env, url, path) {
       },
     });
   }
+  // The phonics sounds the tiles play (Eli's recordings; he chose to share them, Oct 16). Only those: not the Sound lab's
+  // AI takes, nor the example words recorded with them.
+  const recorded = path.match(/^\/api\/sounds\/(recorded\/[a-z]+\/[a-z-]+\.mp3)$/);
+  if (recorded && get) {
+    const obj = await env.PICTURES.get(`sounds/${recorded[1]}`);
+    if (!obj) return json({ error: 'not found' }, { status: 404 });
+    return new Response(obj.body, { headers: { 'content-type': 'audio/mpeg', 'cache-control': 'public, max-age=3600' } });
+  }
   // Words already made for the books, in the chosen voice. Never generates new audio (that costs money);
   // a missing word falls back to the browser's voice.
   if (path === '/api/say' && get) {
