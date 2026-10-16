@@ -108,6 +108,11 @@ for (const [id, word] of found.length ? [] : part) {
 // ignored that hiss sounds louder than it measures: ch, x, s and sh came out ~5 dB louder than m, n and v. Peaks stay
 // under -1 dBFS. Then fade 10 ms in and 40 ms out, high-pass, MP3.
 const TARGET_LUFS = -23;
+// Per-sound corrections on top of the LUFS level (dB). LUFS underrates broadband hiss, so Eli heard f, s and h as far too
+// loud (Oct 16). These come from Zwicker loudness (ISO 532-1, the standard model of how loud a sound seems; N5 in sones,
+// MoSQITo), bringing every sound to the recordings' median (z, which Eli said sounds right, barely moves), plus 2.5 dB
+// off the unvoiced hisses (s sh f th h ch x) by ear: small speakers push their high end.
+const ADJUST = { a: -1, ai: -1.5, air: -2, b: 3.5, ch: -4, d: 1, dh: 0.5, e: -1.5, ear: -1, ee: 2, f: -10.5, g: 2, h: -9, i: 1.5, igh: -0.5, j: -3.5, k: -2.5, l: 4, m: 3, n: 3, ng: 2.5, o: 2, oa: 0.5, oi: -0.5, oo: 2, 'oo-short': 3.5, or: 1, qu: 3, r: 4.5, s: -4, sh: -6.5, t: -1.5, th: -8.5, u: 1, ur: 0.5, v: -1.5, w: 2, x: -6, y: 1, z: -0.5 };
 const biquad = (s, [b0, b1, b2], [a0, a1, a2]) => {
   const y = new Float32Array(s.length);
   let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
@@ -131,10 +136,10 @@ function loudness(s) {
 }
 const dir = join(root, 'content/sounds/recorded', who);
 mkdirSync(join(dir, 'words'), { recursive: true });
-const clip = (a, b, out) => {
+const clip = (a, b, out, adjust = 0) => {
   const s = Float32Array.from(x.subarray(a, b));
   const peak = s.reduce((m, v) => Math.max(m, Math.abs(v)), 0);
-  const g = Math.min(10 ** ((TARGET_LUFS - loudness(s)) / 20), 10 ** ((-1 - 20 * Math.log10(peak + 1e-9)) / 20));
+  const g = Math.min(10 ** ((TARGET_LUFS + adjust - loudness(s)) / 20), 10 ** ((-1 - 20 * Math.log10(peak + 1e-9)) / 20));
   const fi = SR / 100, fo = SR / 25;
   s.forEach((v, i) => (s[i] = v * g * Math.min(1, i / fi, (s.length - i) / fo)));
   const tmp = `${out}.wav`;
@@ -143,7 +148,7 @@ const clip = (a, b, out) => {
   execFileSync('rm', [tmp]);
 };
 for (const f of found) {
-  clip(...f.sound, join(dir, `${f.id}.mp3`));
+  clip(...f.sound, join(dir, `${f.id}.mp3`), ADJUST[f.id] || 0);
   clip(...f.said, join(dir, 'words', `${f.word}.mp3`));
   console.log(`${f.id.padEnd(9)} ${((f.sound[1] - f.sound[0]) / SR).toFixed(2)}s   word "${f.word}"`);
 }

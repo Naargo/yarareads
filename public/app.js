@@ -438,7 +438,7 @@ function openPop(el, story, inv) {
   prefetchWord(word); // ready by the end of the sounding out, usually
   // Recorded sounds: loaded only if a setting uses them (grown-ups > Voice).
   const prefs = getSettings().catch(() => ({}));
-  if (info.parts) prefs.then((s) => (s.soundOut || s.tapSound) && prefetchSounds(info.parts));
+  if (info.parts) prefetchSounds(info.parts);
   document.body.appendChild(pop);
   fitPop(pop);
   if (info.parts) drawLinks(pop, info.parts);
@@ -456,10 +456,10 @@ function openPop(el, story, inv) {
     unlockAudio();
     soundOut(pop, word, info.parts, sound);
   };
-  // Tap a sound button to hear that one sound (setting "tapSound"); a silent e plays its vowel's sound.
+  // Tap a sound button to hear that one sound (always on); a silent e plays its vowel's sound.
   const card = pop;
-  prefs.then((s) => {
-    if (!s.tapSound || !info.parts || card !== pop) return;
+  prefs.then(() => {
+    if (!info.parts || card !== pop) return;
     card.querySelector('.chips').classList.add('tappable');
     card.querySelectorAll('.chip').forEach((chip) => (chip.onclick = async () => {
       if (card.dataset.busy) return;
@@ -557,20 +557,27 @@ function playSounds(buffers) {
   });
 }
 
-// Light up each sound in turn and play it (a silent-e vowel lights with its e), then blend: say the whole word.
-// A tile stays lit for its sound plus a short gap, and at least half a second; with no recording, 650 ms as before.
+// The speaker button. Setting soundOut on (default): light up each sound in turn and play it (a silent-e vowel lights
+// with its e), then blend: say the whole word. Off: just say the word (no silent animation; Eli found it odd).
+// A tile stays lit for its sound plus a short gap, and at least half a second; with no recording, 650 ms.
 async function soundOut(p, word, parts, button) {
   if (p.dataset.busy) return; // one sounding-out at a time
   p.dataset.busy = '1';
-  const withSounds = (await getSettings().catch(() => ({}))).soundOut; // off: the tiles light in silence
   const chips = [...p.querySelectorAll('.chip')];
+  if ((await getSettings().catch(() => ({}))).soundOut === false) {
+    chips.forEach((c) => c.classList.add('lit'));
+    await sayWord(word, button);
+    setTimeout(() => chips.forEach((c) => c.classList.remove('lit')), 600);
+    delete p.dataset.busy;
+    return;
+  }
   const wait = (ms) => new Promise((ok) => setTimeout(ok, ms));
   for (const i of parts.map((_, k) => k).filter((k) => !parts[k].silent)) {
     if (!pop || pop !== p) return; // card closed mid-way
     chips.forEach((x) => x.classList.remove('lit'));
     chips[i].classList.add('lit');
     if (isSplit(parts[i])) chips[partner(parts, i)].classList.add('lit');
-    const buffers = withSounds ? (await Promise.all(partFiles(parts[i]).map(loadSound))).filter(Boolean) : [];
+    const buffers = (await Promise.all(partFiles(parts[i]).map(loadSound))).filter(Boolean);
     const t0 = performance.now();
     await playSounds(buffers);
     const played = performance.now() - t0;
@@ -717,10 +724,9 @@ async function showGrownups(tab) {
         </div>
       </section>
       <section class="panel">
-        <h2>Sound buttons</h2>
-        <p>The recorded sounds (one per sound button) and when they play.</p>
-        ${[['tapSound', 'Tap a sound to hear it', 'Tapping a sound button on the word card plays that sound.'],
-          ['soundOut', 'Play the sounds while sounding out', 'The speaker button plays each sound as its button lights up, then says the word. Off: the buttons light up in silence, then the word is said.'],
+        <h2>Speaker button</h2>
+        <p>What the speaker button on the word card does.</p>
+        ${[['soundOut', 'Sound it out before saying the word', 'The speaker button lights each sound button in turn and plays its sound, then says the word. Off: it just says the word. Tapping a sound button always plays that sound.'],
         ].map(([key, title, about]) => `
           <button class="switchrow" data-setting="${key}" role="switch" aria-checked="${!!prefs[key]}">
             <span><b>${title}</b><span class="muted">${about}</span></span>

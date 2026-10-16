@@ -86,16 +86,17 @@ Word cards shrink their tiles (`--chip`) for long words instead of scrolling, so
 Double-tap zoom is off (`touch-action: manipulation` on everything): quick taps on words kept zooming the iPad.
 Word cards have **one speaker button**. If the word has tiles, it always sounds it out first (tiles light in turn) and only
 then says the word: Eli doesn't want the voice reading words for her without the sounding out. Tricky words just get said.
-**Recorded sounds** (Eli's, R2 `sounds/recorded/eli/<id>.mp3`, `RECORDED` in app.js), controlled by two switches in
-grown-ups > Voice (D1 `settings`, defaults in worker.js `SOUND_DEFAULTS`; the public site always uses the defaults):
-`tapSound` (on): tap a sound button to hear that sound (a silent e plays its vowel); `soundOut` (off, Eli's choice Oct 16):
-the speaker button plays each sound as its tile lights. Off, the sounding-out animation is silent and only the word is said.
+**Recorded sounds** (Eli's, R2 `sounds/recorded/eli/<id>.mp3`, `RECORDED` in app.js). Tapping a sound button always plays
+its sound (a silent e plays its vowel). One switch in grown-ups > Voice, `soundOut` (D1 `settings`, default on, worker.js
+`SOUND_DEFAULTS`; the public site uses the default): on, the speaker sounds the word out first (each tile lights and plays its
+sound), then says it; off, it just says the word. No silent animation: Eli found it odd (Oct 16).
 `decode` gives every part its `sound` in ARPAbet ("Z" for the s in "is", "K S" for x), and `SOUND_FILES` maps it to a
 recording (a sequence with no recording of its own plays phoneme by phoneme; a silent e plays nothing). A tile stays lit for
 its sound plus a gap, at least 500 ms; with no recording, 650 ms as before. Recordings load when the card opens.
 The public site serves these 45 recordings too (Eli's call, Oct 16), but not the Sound lab's other takes or the recorded example words.
-Recordings are levelled by perceived loudness (K-weighted, as LUFS, over the active part of the clip) to -23, the median
-of Hyperion's words, so they match the voice and each other (within 0.5 dB; plain RMS had left ch/x/s/sh ~5 dB louder than m/n/v).
+Recordings are levelled to -23 LUFS over the active part of each clip (the median of Hyperion's words), then corrected per
+sound (`ADJUST` in tools/sounds-record.mjs) from Zwicker loudness (ISO 532-1, sones, via MoSQITo), which unlike LUFS hears
+broadband hiss as loud as people do; plus 2.5 dB off the unvoiced hisses by Eli's ear (f, s, h were "extremely loud").
 
 **Word voice.** Words are spoken by a Cloudflare Workers AI voice (Deepgram Aura; `VOICES` in worker.js, chosen in grown-ups > Voice,
 stored in D1 `settings`). `/api/say` generates a word once and caches it in R2 under `tts2/<voice>/<word>.mp3` (~0.5-1 s new, ~10 ms cached).

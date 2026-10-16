@@ -60,9 +60,9 @@ async function sayWord(env, voiceId, word) {
 const isPublic = (url, env) => !!env.PUBLIC_HOST && url.hostname === env.PUBLIC_HOST;
 const OUR_STORIES = "coalesce(json_extract(body, '$.kind'), 'story') != 'book'";
 
-// How the word card uses the recorded phonics sounds (grown-ups > Voice). soundOut: play each sound while the speaker
-// button sounds the word out (off: the animation is silent). tapSound: tap a sound button to hear that sound.
-const SOUND_DEFAULTS = { soundOut: false, tapSound: true };
+// What the word card's speaker button does (grown-ups > Voice). soundOut on: sound the word out first (each sound button
+// lights and plays its recording), then say it. Off: just say the word. Tapping a sound button to hear it is always on.
+const SOUND_DEFAULTS = { soundOut: true };
 const soundSettings = async (env) => Object.fromEntries(await Promise.all(Object.entries(SOUND_DEFAULTS).map(async ([k, d]) =>
   [k, (await setting(env, k, d ? '1' : '0')) === '1'])));
 
@@ -258,7 +258,7 @@ export default {
     if (path === '/api/settings' && request.method === 'GET') {
       return json({ voice: await setting(env, 'voice', DEFAULT_VOICE), voices: VOICES, ...(await soundSettings(env)) });
     }
-    // Any of: voice, soundOut, tapSound.
+    // Any of: voice, soundOut.
     if (path === '/api/settings' && request.method === 'PUT') {
       const body = await request.json();
       const set = (k, v) => env.DB.prepare('INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)').bind(k, v).run();
