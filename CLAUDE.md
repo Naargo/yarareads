@@ -86,6 +86,11 @@ Word cards shrink their tiles (`--chip`) for long words instead of scrolling, so
 Double-tap zoom is off (`touch-action: manipulation` on everything): quick taps on words kept zooming the iPad.
 Word cards have **one speaker button**. If the word has tiles, it always sounds it out first (tiles light in turn) and only
 then says the word: Eli doesn't want the voice reading words for her without the sounding out. Tricky words just get said.
+**Each tile plays its sound** as it lights: Eli's recordings (R2 `sounds/recorded/eli/<id>.mp3`, `RECORDED` in app.js).
+`decode` gives every part its `sound` in ARPAbet ("Z" for the s in "is", "K S" for x), and `SOUND_FILES` maps it to a
+recording (a sequence with no recording of its own plays phoneme by phoneme; a silent e plays nothing). A tile stays lit for
+its sound plus a gap, at least 500 ms; with no recording, 650 ms as before. Recordings load when the card opens.
+The public site doesn't serve the recordings (Eli's voice), so its tiles stay silent.
 
 **Word voice.** Words are spoken by a Cloudflare Workers AI voice (Deepgram Aura; `VOICES` in worker.js, chosen in grown-ups > Voice,
 stored in D1 `settings`). `/api/say` generates a word once and caches it in R2 under `tts2/<voice>/<word>.mp3` (~0.5-1 s new, ~10 ms cached).
@@ -119,8 +124,9 @@ Content changes need only `tools/push.mjs`, no deploy.
    `node tools/sounds-record.mjs <file> <part> [who]` slices at the silences, finds each example word with Whisper (in order;
    the sound is the piece just before it, so stray noises and redos don't matter), levels and fades each clip, uploads it to R2
    `sounds/recorded/<who>/<id>.mp3` (+ `words/`), and puts it first in the Sound lab. Local copies in content/sounds/recorded/
-   are gitignored: family voices stay out of the public repo. Part 1 (12 long sounds) recorded by Eli, Oct 14.
-   Next: parts 2-4, then the tiles play each sound as they light (needs `decode` to say which sound each part makes).
+   are gitignored: family voices stay out of the public repo. All 45 recorded by Eli in one take (Oct 16, `all`): with exactly
+   two pieces per sound the tool pairs them in order, since Whisper mishears single words ("yeah" for hat).
+   ~~The tiles play each sound as they light.~~
 5. ~~Books from home, with pictures (first: Mittu and the Yellow Mango).~~ Next: show which *sounds* a book needs, not just words.
 6. Practise: grow the grown-ups "Practise" panel into something Eli can work through with her.
 

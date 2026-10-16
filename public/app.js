@@ -436,6 +436,7 @@ function openPop(el, story, inv) {
       <div class="actions"><button class="press speak" data-a="say" aria-label="Say it">${ICONS.speaker}</button></div>`;
   }
   prefetchWord(word); // ready by the end of the sounding out, usually
+  if (info.parts) prefetchSounds(info.parts);
   document.body.appendChild(pop);
   fitPop(pop);
   if (info.parts) drawLinks(pop, info.parts);
@@ -493,22 +494,71 @@ function drawLinks(p, parts) {
   row.insertAdjacentHTML('beforeend', `<svg class="links" width="${row.offsetWidth}" height="${row.offsetHeight + 24}">${paths}</svg>`);
 }
 
-// Light up each sound in turn (a silent-e vowel lights with its e), then blend: say the whole word.
-function soundOut(p, word, parts, button) {
+// ---------- Phonics sounds: recordings of each sound, played as its tile lights ----------
+// Recorded from the recording sheet (tools/sounds-record.mjs) into R2 sounds/recorded/<who>/<id>.mp3.
+// decode gives each part its sound as ARPAbet ("Z", "K S", "AA R"); this maps it to a recording.
+const RECORDED = 'eli';
+const SOUND_FILES = {
+  S: 's', Z: 'z', M: 'm', F: 'f', N: 'n', L: 'l', R: 'r', V: 'v', SH: 'sh', TH: 'th', DH: 'dh', NG: 'ng',
+  T: 't', P: 'p', K: 'k', B: 'b', D: 'd', G: 'g', HH: 'h', JH: 'j', W: 'w', Y: 'y', CH: 'ch', 'K S': 'x', 'K W': 'qu',
+  AE: 'a', EH: 'e', IH: 'i', AA: 'o', AO: 'o', AH: 'u', UH: 'oo-short',
+  EY: 'ai', IY: 'ee', AY: 'igh', OW: 'oa', UW: 'oo', 'AA R': 'ar', 'AO R': 'or', ER: 'ur', AW: 'ow', OY: 'oi',
+  'IH R': 'ear', 'EH R': 'air', 'UH R': 'ure', 'Y UW': 'ue',
+};
+// A part's recordings in order: the whole sound if there's one for it ("K S" is x), else each phoneme ("AH L" in "little").
+const partFiles = (part) => {
+  if (!part.sound) return [];
+  if (SOUND_FILES[part.sound]) return [SOUND_FILES[part.sound]];
+  return part.sound.split(' ').map((ph) => SOUND_FILES[ph]).filter(Boolean);
+};
+const soundAudio = new Map(); // id -> Promise<AudioBuffer | null>
+const loadSound = (id) => {
+  if (!soundAudio.has(id)) {
+    soundAudio.set(id, fetch(`/api/sounds/recorded/${RECORDED}/${id}.mp3`)
+      .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(r.status))))
+      .then((bytes) => new Promise((ok, fail) => ctx().decodeAudioData(bytes, ok, fail)))
+      .catch(() => { soundAudio.delete(id); return null; }));
+  }
+  return soundAudio.get(id);
+};
+const prefetchSounds = (parts) => parts.forEach((p) => partFiles(p).forEach(loadSound));
+// Play buffers back to back; resolves when the last one ends.
+function playSounds(buffers) {
+  return new Promise((done) => {
+    if (!buffers.length || !audioCtx || audioCtx.state !== 'running') return done();
+    let t = audioCtx.currentTime;
+    buffers.forEach((b, k) => {
+      const src = audioCtx.createBufferSource();
+      src.buffer = b;
+      src.connect(audioCtx.destination);
+      src.start(t);
+      if (k === buffers.length - 1) src.onended = done;
+      t += b.duration;
+    });
+  });
+}
+
+// Light up each sound in turn and play it (a silent-e vowel lights with its e), then blend: say the whole word.
+// A tile stays lit for its sound plus a short gap, and at least half a second; with no recording, 650 ms as before.
+async function soundOut(p, word, parts, button) {
   if (p.dataset.busy) return; // one sounding-out at a time
   p.dataset.busy = '1';
   const chips = [...p.querySelectorAll('.chip')];
-  const steps = parts.map((_, i) => i).filter((i) => !parts[i].silent);
-  steps.forEach((i, n) => setTimeout(() => {
+  const wait = (ms) => new Promise((ok) => setTimeout(ok, ms));
+  for (const i of parts.map((_, k) => k).filter((k) => !parts[k].silent)) {
+    if (!pop || pop !== p) return; // card closed mid-way
     chips.forEach((x) => x.classList.remove('lit'));
     chips[i].classList.add('lit');
     if (isSplit(parts[i])) chips[partner(parts, i)].classList.add('lit');
-  }, n * 650));
-  setTimeout(async () => {
-    chips.forEach((c) => c.classList.add('lit'));
-    await sayWord(word, button);
-    delete p.dataset.busy;
-  }, steps.length * 650);
+    const buffers = (await Promise.all(partFiles(parts[i]).map(loadSound))).filter(Boolean);
+    const t0 = performance.now();
+    await playSounds(buffers);
+    const played = performance.now() - t0;
+    await wait(buffers.length ? Math.max(500 - played, 180) : 650);
+  }
+  chips.forEach((c) => c.classList.add('lit'));
+  await sayWord(word, button);
+  delete p.dataset.busy;
 }
 
 function place(p, el) {

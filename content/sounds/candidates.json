@@ -411,6 +411,11 @@
   "sound": "t",
   "takes": [
    {
+    "key": "recorded/eli/t.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   },
+   {
     "key": "candidates/t/pandora-1.mp3",
     "voice": "pandora",
     "text": "t"
@@ -465,11 +470,17 @@
     "voice": "gpt",
     "text": "described"
    }
-  ]
+  ],
+  "example": "tap"
  },
  {
   "sound": "p",
   "takes": [
+   {
+    "key": "recorded/eli/p.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   },
    {
     "key": "candidates/p/pandora-1.mp3",
     "voice": "pandora",
@@ -525,11 +536,17 @@
     "voice": "gpt",
     "text": "described"
    }
-  ]
+  ],
+  "example": "pan"
  },
  {
   "sound": "k",
   "takes": [
+   {
+    "key": "recorded/eli/k.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   },
    {
     "key": "candidates/k/pandora-1.mp3",
     "voice": "pandora",
@@ -585,11 +602,17 @@
     "voice": "gpt",
     "text": "described"
    }
-  ]
+  ],
+  "example": "cat"
  },
  {
   "sound": "b",
   "takes": [
+   {
+    "key": "recorded/eli/b.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   },
    {
     "key": "candidates/b/pandora-1.mp3",
     "voice": "pandora",
@@ -630,11 +653,17 @@
     "voice": "gpt",
     "text": "described"
    }
-  ]
+  ],
+  "example": "bat"
  },
  {
   "sound": "d",
   "takes": [
+   {
+    "key": "recorded/eli/d.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   },
    {
     "key": "candidates/d/pandora-1.mp3",
     "voice": "pandora",
@@ -675,11 +704,17 @@
     "voice": "gpt-mini",
     "text": "described"
    }
-  ]
+  ],
+  "example": "dog"
  },
  {
   "sound": "g",
   "takes": [
+   {
+    "key": "recorded/eli/g.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   },
    {
     "key": "candidates/g/pandora-1.mp3",
     "voice": "pandora",
@@ -720,11 +755,17 @@
     "voice": "gpt",
     "text": "described"
    }
-  ]
+  ],
+  "example": "got"
  },
  {
   "sound": "a",
   "takes": [
+   {
+    "key": "recorded/eli/a.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   },
    {
     "key": "candidates/a/pandora-1.mp3",
     "voice": "pandora",
@@ -780,11 +821,17 @@
     "voice": "gpt",
     "text": "described"
    }
-  ]
+  ],
+  "example": "ant"
  },
  {
   "sound": "e",
   "takes": [
+   {
+    "key": "recorded/eli/e.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   },
    {
     "key": "candidates/e/pandora-1.mp3",
     "voice": "pandora",
@@ -825,11 +872,17 @@
     "voice": "gpt-mini",
     "text": "described"
    }
-  ]
+  ],
+  "example": "egg"
  },
  {
   "sound": "i",
   "takes": [
+   {
+    "key": "recorded/eli/i.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   },
    {
     "key": "candidates/i/pandora-1.mp3",
     "voice": "pandora",
@@ -870,11 +923,17 @@
     "voice": "gpt",
     "text": "described"
    }
-  ]
+  ],
+  "example": "ink"
  },
  {
   "sound": "o",
   "takes": [
+   {
+    "key": "recorded/eli/o.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   },
    {
     "key": "candidates/o/pandora-1.mp3",
     "voice": "pandora",
@@ -930,11 +989,17 @@
     "voice": "gpt",
     "text": "described"
    }
-  ]
+  ],
+  "example": "on"
  },
  {
   "sound": "u",
   "takes": [
+   {
+    "key": "recorded/eli/u.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   },
    {
     "key": "candidates/u/pandora-1.mp3",
     "voice": "pandora",
@@ -975,11 +1040,17 @@
     "voice": "gpt",
     "text": "described"
    }
-  ]
+  ],
+  "example": "up"
  },
  {
   "sound": "ai",
   "takes": [
+   {
+    "key": "recorded/eli/ai.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   },
    {
     "key": "candidates/ai/pandora-1.mp3",
     "voice": "pandora",
@@ -1020,11 +1091,17 @@
     "voice": "gpt",
     "text": "described"
    }
-  ]
+  ],
+  "example": "rain"
  },
  {
   "sound": "ee",
   "takes": [
+   {
+    "key": "recorded/eli/ee.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   },
    {
     "key": "candidates/ee/pandora-1.mp3",
     "voice": "pandora",
@@ -1065,11 +1142,17 @@
     "voice": "gpt",
     "text": "described"
    }
-  ]
+  ],
+  "example": "see"
  },
  {
   "sound": "igh",
   "takes": [
+   {
+    "key": "recorded/eli/igh.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   },
    {
     "key": "candidates/igh/pandora-1.mp3",
     "voice": "pandora",
@@ -1110,11 +1193,17 @@
     "voice": "gpt",
     "text": "described"
    }
-  ]
+  ],
+  "example": "night"
  },
  {
   "sound": "oa",
   "takes": [
+   {
+    "key": "recorded/eli/oa.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   },
    {
     "key": "candidates/oa/pandora-1.mp3",
     "voice": "pandora",
@@ -1155,11 +1244,17 @@
     "voice": "gpt",
     "text": "described"
    }
-  ]
+  ],
+  "example": "boat"
  },
  {
   "sound": "oo",
   "takes": [
+   {
+    "key": "recorded/eli/oo.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   },
    {
     "key": "candidates/oo/pandora-1.mp3",
     "voice": "pandora",
@@ -1200,11 +1295,17 @@
     "voice": "gpt",
     "text": "described"
    }
-  ]
+  ],
+  "example": "moon"
  },
  {
   "sound": "ar",
   "takes": [
+   {
+    "key": "recorded/eli/ar.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   },
    {
     "key": "candidates/ar/pandora-1.mp3",
     "voice": "pandora",
@@ -1245,11 +1346,17 @@
     "voice": "gpt",
     "text": "described"
    }
-  ]
+  ],
+  "example": "car"
  },
  {
   "sound": "or",
   "takes": [
+   {
+    "key": "recorded/eli/or.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   },
    {
     "key": "candidates/or/pandora-1.mp3",
     "voice": "pandora",
@@ -1290,11 +1397,17 @@
     "voice": "gpt",
     "text": "described"
    }
-  ]
+  ],
+  "example": "fork"
  },
  {
   "sound": "ur",
   "takes": [
+   {
+    "key": "recorded/eli/ur.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   },
    {
     "key": "candidates/ur/pandora-1.mp3",
     "voice": "pandora",
@@ -1335,11 +1448,17 @@
     "voice": "gpt",
     "text": "described"
    }
-  ]
+  ],
+  "example": "fur"
  },
  {
   "sound": "ow",
   "takes": [
+   {
+    "key": "recorded/eli/ow.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   },
    {
     "key": "candidates/ow/pandora-1.mp3",
     "voice": "pandora",
@@ -1380,11 +1499,17 @@
     "voice": "gpt",
     "text": "described"
    }
-  ]
+  ],
+  "example": "cow"
  },
  {
   "sound": "oi",
   "takes": [
+   {
+    "key": "recorded/eli/oi.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   },
    {
     "key": "candidates/oi/pandora-1.mp3",
     "voice": "pandora",
@@ -1425,11 +1550,17 @@
     "voice": "gpt",
     "text": "described"
    }
-  ]
+  ],
+  "example": "coin"
  },
  {
   "sound": "ch",
   "takes": [
+   {
+    "key": "recorded/eli/ch.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   },
    {
     "key": "candidates/ch/pandora-1.mp3",
     "voice": "pandora",
@@ -1470,7 +1601,8 @@
     "voice": "gpt",
     "text": "described"
    }
-  ]
+  ],
+  "example": "chip"
  },
  {
   "sound": "th",
@@ -1555,5 +1687,126 @@
    }
   ],
   "example": "ring"
+ },
+ {
+  "sound": "h",
+  "takes": [
+   {
+    "key": "recorded/eli/h.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   }
+  ],
+  "example": "hat"
+ },
+ {
+  "sound": "j",
+  "takes": [
+   {
+    "key": "recorded/eli/j.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   }
+  ],
+  "example": "jam"
+ },
+ {
+  "sound": "w",
+  "takes": [
+   {
+    "key": "recorded/eli/w.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   }
+  ],
+  "example": "wet"
+ },
+ {
+  "sound": "y",
+  "takes": [
+   {
+    "key": "recorded/eli/y.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   }
+  ],
+  "example": "yes"
+ },
+ {
+  "sound": "x",
+  "takes": [
+   {
+    "key": "recorded/eli/x.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   }
+  ],
+  "example": "box"
+ },
+ {
+  "sound": "qu",
+  "takes": [
+   {
+    "key": "recorded/eli/qu.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   }
+  ],
+  "example": "queen"
+ },
+ {
+  "sound": "oo-short",
+  "takes": [
+   {
+    "key": "recorded/eli/oo-short.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   }
+  ],
+  "example": "book"
+ },
+ {
+  "sound": "ear",
+  "takes": [
+   {
+    "key": "recorded/eli/ear.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   }
+  ],
+  "example": "near"
+ },
+ {
+  "sound": "air",
+  "takes": [
+   {
+    "key": "recorded/eli/air.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   }
+  ],
+  "example": "hair"
+ },
+ {
+  "sound": "ure",
+  "takes": [
+   {
+    "key": "recorded/eli/ure.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   }
+  ],
+  "example": "sure"
+ },
+ {
+  "sound": "ue",
+  "takes": [
+   {
+    "key": "recorded/eli/ue.mp3",
+    "voice": "eli",
+    "text": "recorded"
+   }
+  ],
+  "example": "cue"
  }
 ]

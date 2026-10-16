@@ -72,6 +72,8 @@ export function decode(word, graphemes, pronunciation) {
     if (VOWELS.has(letters(g)) && SCHWA.has(pronunciation[j])) options.push([plain[j]]);
     return options.filter((seq) => seq.every((p, k) => plain[j + k] === p)).map((seq) => seq.length);
   };
+  // The sound a part makes in this word, as ARPAbet ("Z" for the s in "is"): the word card plays its recording.
+  const said = (j, n) => plain.slice(j, j + n).join(' ');
   const memo = new Map();
 
   function go(i, j) {
@@ -88,7 +90,11 @@ export function decode(word, graphemes, pronunciation) {
         for (const n of matches(g, j)) {
           for (const m of matches(c, j + n)) {
             const rest = go(e + 1, j + n + m);
-            if (rest) { found = [{ text: g[0], g }, { text: letters(c), g: c }, { text: 'e', g, silent: true }, ...rest]; break; }
+            if (rest) {
+              found = [{ text: g[0], g, sound: said(j, n) }, { text: letters(c), g: c, sound: said(j + n, m) },
+                { text: 'e', g, silent: true }, ...rest];
+              break;
+            }
           }
           if (found) break;
         }
@@ -98,7 +104,7 @@ export function decode(word, graphemes, pronunciation) {
       if (found || !w.startsWith(letters(g), i)) continue;
       for (const n of matches(g, j)) {
         const rest = go(i + letters(g).length, j + n);
-        if (rest) { found = [{ text: letters(g), g }, ...rest]; break; }
+        if (rest) { found = [{ text: letters(g), g, sound: said(j, n) }, ...rest]; break; }
       }
     }
     memo.set(key, found);
@@ -141,7 +147,7 @@ export function classify(word, inv, pronunciations = []) {
     return { kind: 'name', parts: stretch(w, inv, pronunciations) };
   }
   if (inv.tricky.map(normalize).includes(w)) return { kind: 'tricky' };
-  if (w === 'a' && inv.graphemes.includes('a')) return { kind: 'decodable', parts: [{ text: 'a', g: 'a' }] }; // "a" is taught as decodable
+  if (w === 'a' && inv.graphemes.includes('a')) return { kind: 'decodable', parts: [{ text: 'a', g: 'a', sound: 'AE' }] }; // "a" is taught as decodable
   const parts = breakdown(w, inv.graphemes, pronunciations);
   if (parts) return { kind: 'decodable', parts };
   return { kind: 'unknown', parts: stretch(w, inv, pronunciations) };

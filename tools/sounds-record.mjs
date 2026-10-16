@@ -2,7 +2,7 @@
 // Sound lab next to the AI takes. The sheet (claude.ai artifact "Yara Reads Sound Recording") is read part by part:
 // each sound, a pause, its example word, a pause ("sss ... sun ... mmm ... map ..."). One file per part.
 //
-//   node tools/sounds-record.mjs <recording> <part 1-4> [who] [--local]
+//   node tools/sounds-record.mjs <recording> <part 1-4 | all> [who] [--local]     (all: the whole sheet in one file)
 //
 // The recording is cut at its silences, each piece is transcribed (Whisper), and each example word is found in order;
 // the sound is the piece just before it. Stray taps and noises at either end don't matter, and a fumbled sound said
@@ -29,9 +29,9 @@ export const PARTS = {
 const [file, partArg, whoArg] = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 const where = process.argv.includes('--local') ? '--local' : '--remote';
 const who = whoArg || 'eli';
-const part = PARTS[partArg];
+const part = partArg === 'all' ? Object.values(PARTS).flat() : PARTS[partArg];
 if (!file || !part) {
-  console.log('usage: node tools/sounds-record.mjs <recording> <part 1-4> [who] [--local]');
+  console.log('usage: node tools/sounds-record.mjs <recording> <part 1-4 | all> [who] [--local]');
   process.exit(1);
 }
 
@@ -82,9 +82,16 @@ const close = (said, word) => {
   for (let i = 0; i < Math.min(s.length, word.length); i++) same += s[i] === word[i];
   return same >= Math.max(2, word.length - 1);
 };
+// A clean take has exactly two pieces per sound (sound, word), so they simply pair up in order; Whisper is then only a
+// check (it mishears single words: "yeah" for hat, "end" for ant). Otherwise, find each word to skip stray pieces.
 const found = [];
 let at = 1;
-for (const [id, word] of part) {
+if (kept.length === part.length * 2) {
+  part.forEach(([id, word], i) => found.push({ id, word, sound: kept[2 * i], said: kept[2 * i + 1] }));
+  const agree = part.filter(([, word], i) => close(heard[2 * i + 1], word)).length;
+  console.log(`${kept.length} pieces: paired in order (Whisper agrees on ${agree} of ${part.length} words)`);
+}
+for (const [id, word] of found.length ? [] : part) {
   let k = at;
   while (k < kept.length && !close(heard[k], word)) k++;
   if (k >= kept.length) {
