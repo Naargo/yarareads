@@ -34,7 +34,7 @@ Never loosen the inventory to make a story pass.
   Names and words she can't read yet are still broken down, using the whole catalog: tiles for sounds she hasn't learned are plum (`part.new`).
   Only tricky words and words no catalog sound can explain show as one block.
   `SOUNDED` in phonics.js lists words sounded out a particular way, by Eli's choice, as [letters, sound] per button, ahead of
-  the tricky list: "they" is th-e-y (the e and consonant y glide into its /ai/), "again" plays its ai as "eh" (Oct 16).
+  the tricky list: "they" is th-e-y (the e and consonant y glide into its /ai/), "again" and "said" play their ai as "eh" (Oct 16).
   Add to it one word at a time; it changes only the word card, not what counts as readable.
 - `docs/stories/`: one brief per series (Tom's briefs, decisions, chapter outline). Read it before writing the next chapter.
 - `docs/vocabulary.md`: coverage findings and the queue of what to teach or add next. `node tools/coverage.mjs` re-measures.
