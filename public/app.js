@@ -423,7 +423,7 @@ function openPop(el, story, inv) {
   }[info.kind];
   if (info.parts) {
     pop.innerHTML = `
-      <div class="chips">${info.parts.map((p) => `<div class="chip ${chipClass(p)}">${esc(p.text)}<span class="mark"></span></div>`).join('')}</div>
+      <div class="chips">${info.parts.map((p, i) => `<div class="chip ${chipClass(p)}" data-i="${i}">${esc(p.text)}<span class="mark"></span></div>`).join('')}</div>
       ${badge ? `<div class="badge ${info.kind === 'unknown' ? 'new' : ''}">${badge}</div>` : ''}
       <div class="actions">
         <button class="press speak" data-a="sound" aria-label="Sound it out">${ICONS.speaker}</button>
@@ -436,7 +436,9 @@ function openPop(el, story, inv) {
       <div class="actions"><button class="press speak" data-a="say" aria-label="Say it">${ICONS.speaker}</button></div>`;
   }
   prefetchWord(word); // ready by the end of the sounding out, usually
-  if (info.parts) prefetchSounds(info.parts);
+  // Recorded sounds: loaded only if a setting uses them (grown-ups > Voice).
+  const prefs = getSettings().catch(() => ({}));
+  if (info.parts) prefs.then((s) => (s.soundOut || s.tapSound) && prefetchSounds(info.parts));
   document.body.appendChild(pop);
   fitPop(pop);
   if (info.parts) drawLinks(pop, info.parts);
@@ -454,6 +456,23 @@ function openPop(el, story, inv) {
     unlockAudio();
     soundOut(pop, word, info.parts, sound);
   };
+  // Tap a sound button to hear that one sound (setting "tapSound"); a silent e plays its vowel's sound.
+  const card = pop;
+  prefs.then((s) => {
+    if (!s.tapSound || !info.parts || card !== pop) return;
+    card.querySelector('.chips').classList.add('tappable');
+    card.querySelectorAll('.chip').forEach((chip) => (chip.onclick = async () => {
+      if (card.dataset.busy) return;
+      unlockAudio();
+      let i = Number(chip.dataset.i);
+      if (info.parts[i].silent) i = info.parts.findIndex((p, k) => k < i && p.g === info.parts[i].g && !p.silent);
+      const lit = [i, isSplit(info.parts[i]) ? partner(info.parts, i) : -1].filter((k) => k >= 0).map((k) => card.querySelectorAll('.chip')[k]);
+      lit.forEach((c) => c.classList.add('lit'));
+      const buffers = (await Promise.all(partFiles(info.parts[i]).map(loadSound))).filter(Boolean);
+      await playSounds(buffers);
+      setTimeout(() => lit.forEach((c) => c.classList.remove('lit')), 150);
+    }));
+  });
 }
 
 // Long words: shrink the tiles until the card fits the screen width.
@@ -543,6 +562,7 @@ function playSounds(buffers) {
 async function soundOut(p, word, parts, button) {
   if (p.dataset.busy) return; // one sounding-out at a time
   p.dataset.busy = '1';
+  const withSounds = (await getSettings().catch(() => ({}))).soundOut; // off: the tiles light in silence
   const chips = [...p.querySelectorAll('.chip')];
   const wait = (ms) => new Promise((ok) => setTimeout(ok, ms));
   for (const i of parts.map((_, k) => k).filter((k) => !parts[k].silent)) {
@@ -550,7 +570,7 @@ async function soundOut(p, word, parts, button) {
     chips.forEach((x) => x.classList.remove('lit'));
     chips[i].classList.add('lit');
     if (isSplit(parts[i])) chips[partner(parts, i)].classList.add('lit');
-    const buffers = (await Promise.all(partFiles(parts[i]).map(loadSound))).filter(Boolean);
+    const buffers = withSounds ? (await Promise.all(partFiles(parts[i]).map(loadSound))).filter(Boolean) : [];
     const t0 = performance.now();
     await playSounds(buffers);
     const played = performance.now() - t0;
@@ -697,6 +717,17 @@ async function showGrownups(tab) {
         </div>
       </section>
       <section class="panel">
+        <h2>Sound buttons</h2>
+        <p>The recorded sounds (one per sound button) and when they play.</p>
+        ${[['tapSound', 'Tap a sound to hear it', 'Tapping a sound button on the word card plays that sound.'],
+          ['soundOut', 'Play the sounds while sounding out', 'The speaker button plays each sound as its button lights up, then says the word. Off: the buttons light up in silence, then the word is said.'],
+        ].map(([key, title, about]) => `
+          <button class="switchrow" data-setting="${key}" role="switch" aria-checked="${!!prefs[key]}">
+            <span><b>${title}</b><span class="muted">${about}</span></span>
+            <span class="switch ${prefs[key] ? 'on' : ''}"></span>
+          </button>`).join('')}
+      </section>
+      <section class="panel">
         <h2>Get the books ready</h2>
         <p>Each word is made once, the first time it's needed, then kept. This makes every word in the books now,
           in the voice in use, so she never waits.</p>
@@ -775,6 +806,13 @@ async function showGrownups(tab) {
     on('.try', (b) => {
       unlockAudio();
       sayWord(tryWord(), b, b.dataset.voice);
+    });
+    on('[data-setting]', async (b) => {
+      const key = b.dataset.setting;
+      await api('settings', { method: 'PUT', body: { [key]: !prefs[key] } });
+      settings = null;
+      toast(prefs[key] ? 'Off' : 'On');
+      await showGrownups('voice');
     });
     on('.pick', async (b) => {
       await api('settings', { method: 'PUT', body: { voice: b.dataset.voice } });

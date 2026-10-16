@@ -86,7 +86,10 @@ Word cards shrink their tiles (`--chip`) for long words instead of scrolling, so
 Double-tap zoom is off (`touch-action: manipulation` on everything): quick taps on words kept zooming the iPad.
 Word cards have **one speaker button**. If the word has tiles, it always sounds it out first (tiles light in turn) and only
 then says the word: Eli doesn't want the voice reading words for her without the sounding out. Tricky words just get said.
-**Each tile plays its sound** as it lights: Eli's recordings (R2 `sounds/recorded/eli/<id>.mp3`, `RECORDED` in app.js).
+**Recorded sounds** (Eli's, R2 `sounds/recorded/eli/<id>.mp3`, `RECORDED` in app.js), controlled by two switches in
+grown-ups > Voice (D1 `settings`, defaults in worker.js `SOUND_DEFAULTS`; the public site always uses the defaults):
+`tapSound` (on): tap a sound button to hear that sound (a silent e plays its vowel); `soundOut` (off, Eli's choice Oct 16):
+the speaker button plays each sound as its tile lights. Off, the sounding-out animation is silent and only the word is said.
 `decode` gives every part its `sound` in ARPAbet ("Z" for the s in "is", "K S" for x), and `SOUND_FILES` maps it to a
 recording (a sequence with no recording of its own plays phoneme by phoneme; a silent e plays nothing). A tile stays lit for
 its sound plus a gap, at least 500 ms; with no recording, 650 ms as before. Recordings load when the card opens.
