@@ -667,9 +667,9 @@ async function showGrownups(tab) {
   if (!gdata) {
     app.innerHTML = adminShell(tab, '<section class="panel"><p class="muted">Loading</p></section>');
     app.querySelector('[data-act=done]').onclick = () => (location.hash = '#/');
-    const [inv, list, prefs, tokens] = await Promise.all([getInventory(), api('stories'), getSettings(), PUBLIC ? [] : api('agent-tokens').catch(() => [])]);
+    const [inv, list, prefs, agents] = await Promise.all([getInventory(), api('stories'), getSettings(), PUBLIC ? [] : api('agents').catch(() => [])]);
     const stories = await Promise.all(list.map((s) => getStory(s.id)));
-    gdata = { inv, stories, prefs, tokens };
+    gdata = { inv, stories, prefs, agents };
     if (!location.hash.startsWith('#/grownups')) return; // left while loading
     tab = location.hash.split('/')[2];
   }
@@ -680,7 +680,6 @@ function renderGrownups(tab) {
   const tabs = PUBLIC ? TABS.filter(([t]) => PUBLIC_TABS.includes(t)) : TABS;
   if (!tabs.some(([t]) => t === tab)) tab = tabs[0][0];
   const { inv, stories, prefs } = gdata;
-  if (tab !== 'agents') gdata.newKey = null;
 
   const tiles = (entries) => entries.map(([g]) =>
     `<button class="tile ${inv.graphemes.includes(g) ? 'on' : ''}" data-g="${esc(g)}">${esc(letters(g))}${
@@ -768,19 +767,15 @@ function renderGrownups(tab) {
         <h2>Your own agent</h2>
         <p>Connect Claude, ChatGPT or any agent that supports MCP, and it can write books for your child, or type in books you own,
           straight into this account. Only you see them. The agent checks every word against the sounds switched on here.</p>
-        ${gdata.newKey ? `<div class="newkey">
-          <p><b>Copy this address now.</b> It won't be shown again, and anyone with it can add books to this account.</p>
-          <input readonly value="${esc(`${location.origin}/mcp/${gdata.newKey}`)}" aria-label="Connection address">
-          <button class="press check" data-act="copykey">Copy</button>
-          <p class="muted">In Claude or ChatGPT, add a custom connector (an MCP server) and paste the address. For Claude Code:
-            <code>claude mcp add --transport http yara-reads &lt;address&gt;</code></p>
-        </div>` : ''}
-        <h3>Connections</h3>
-        <div class="wordlist">${gdata.tokens.map((t) => `<span class="wordchip">${esc(t.label)} <span class="muted">${esc(t.created_at.slice(0, 10))}</span><button data-revoke="${t.id}" aria-label="Remove ${esc(t.label)}">${ICONS.close}</button></span>`).join('') || '<span class="days">None yet.</span>'}</div>
-        <form class="adder" data-newkey>
-          <input name="label" placeholder="Name it, e.g. Claude" autocomplete="off" maxlength="40">
-          <button class="press">${ICONS.plus} Connect</button>
-        </form>
+        <div class="newkey">
+          <p><b>Address</b></p>
+          <input readonly value="${esc(`${location.origin}/mcp`)}" aria-label="Address to give the agent">
+          <button class="press check" data-act="copyaddress">Copy</button>
+          <p class="muted">In Claude or ChatGPT, add a custom connector (an MCP server) and paste this address. You'll be asked to sign in
+            with Google to allow it. For Claude Code: <code>claude mcp add --transport http yara-reads ${esc(location.origin)}/mcp</code>, then <code>/mcp</code> to sign in.</p>
+        </div>
+        <h3>Connected agents</h3>
+        <div class="wordlist">${gdata.agents.map((a) => `<span class="wordchip">${esc(a.name || 'An agent')} <span class="muted">${a.last_used ? `used ${esc(a.last_used.slice(0, 10))}` : 'not used yet'}</span><button data-revoke="${esc(a.id)}" aria-label="Disconnect ${esc(a.name || 'agent')}">${ICONS.close}</button></span>`).join('') || '<span class="days">None yet.</span>'}</div>
       </section>`,
     app: () => `
       <section class="panel">
@@ -837,26 +832,20 @@ function renderGrownups(tab) {
 
   if (tab === 'agents') {
     on('[data-revoke]', (b) => {
-      const id = Number(b.dataset.revoke);
-      gdata.tokens = gdata.tokens.filter((t) => t.id !== id);
+      const id = b.dataset.revoke;
+      gdata.agents = gdata.agents.filter((a) => a.id !== id);
       rerender();
-      api(`agent-tokens/${id}`, { method: 'DELETE' }).catch(failed);
+      api(`agents/${id}`, { method: 'DELETE' }).catch(failed);
     });
-    on('[data-act=copykey]', async (b) => {
-      try { await navigator.clipboard.writeText(`${location.origin}/mcp/${gdata.newKey}`); toast('Copied'); } catch { app.querySelector('.newkey input').select(); }
+    on('[data-act=copyaddress]', async () => {
+      try { await navigator.clipboard.writeText(`${location.origin}/mcp`); toast('Copied'); } catch { app.querySelector('.newkey input').select(); }
     });
-    const form = app.querySelector('[data-newkey]');
-    form.onsubmit = async (e) => {
-      e.preventDefault();
-      const label = form.label.value.trim() || 'My agent', button = form.querySelector('button');
-      button.disabled = true;
-      try {
-        const made = await api('agent-tokens', { method: 'POST', body: { label } });
-        gdata.tokens = [...gdata.tokens, { id: made.id, label, created_at: new Date().toISOString() }];
-        gdata.newKey = made.token;
-        rerender();
-      } catch { button.disabled = false; failed(); }
-    };
+    // An agent may have been connected since this visit began: look again, and redraw only if the list changed.
+    api('agents').then((a) => {
+      if (JSON.stringify(a) === JSON.stringify(gdata.agents) || location.hash !== '#/grownups/agents') return;
+      gdata.agents = a;
+      rerender();
+    }).catch(() => {});
   }
 
   if (tab === 'voice') {

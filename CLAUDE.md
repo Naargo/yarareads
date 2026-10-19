@@ -34,20 +34,24 @@ Never loosen the inventory to make a story pass.
   account, kept out of the public repo) makes the worker hand it all over the first time that account signs in (`adoptFamily`).
   `push.mjs` / `pull.mjs` take `--owner <email or id>` (or `$OWNER_EMAIL`); the account must have signed in once so it's in `accounts`.
   The public site (PUBLIC_HOST) is unchanged: no login, state on the device.
-- **Agents (MCP)** (Oct 19). A parent's own agent (Claude, ChatGPT...) adds books to their account through `/mcp/<token>` (or `/mcp`
-  with a Bearer header): `src/mcp.js`, Streamable HTTP with JSON replies. Tokens are made in Grown-ups > Agents (`agent_tokens`, only the
-  hash is kept, shown once). Tools: `guide`, `get_sounds`, `check_text`, `save_book`, `set_image`, `list_books`, `get_book`, `delete_book`,
-  `preview_url`. The agent's how-to is `src/agent-guide.txt` (the `guide` tool returns it): edit that, not a docs page. Books an agent
-  saves have `stories.owner` = the account, so they're private (`OUR_STORIES` excludes owned stories from the public site); ids are
-  `u<6 hex of the account>-<slug>` and pictures `R2 <id>/<page|cover>.<ext>`. A `story` is compiled in the worker against the account's
-  inventory and refused if any word is unreadable; a `book` isn't checked. The worker compiles with the CMU dictionary served as the
-  static asset `public/lexicon.dict` (git-ignored; `tools/lexicon-asset.mjs` writes it, `npm run deploy` runs that first; run it
-  before `wrangler dev` too). `src/lexicon-core.js` and `src/compile.js` are shared with tools/.
-  `preview_url` makes a one-hour `yrp_` token: `/?preview=<token>#/read/<id>/<page>` opens the app read-only as the account (so an agent
-  with a browser can check its work); it can't save and leaves no reading history.
+- **Agents (MCP)** (Oct 19). A parent's own agent (Claude, ChatGPT...) adds books to their account through `/mcp` (`src/mcp.js`,
+  Streamable HTTP with JSON replies). Auth is OAuth 2.1 as the MCP spec asks, ported from the Accountant's `functions/_mcp-auth.ts`
+  (`src/mcp-auth.js`): discovery under `/.well-known/`, dynamic client registration, authorization code with PKCE (S256), rotating
+  refresh tokens, tokens hashed in `mcp_tokens`. Approving = signing in with Google through login.finereli.com; unlike the
+  Accountant (one owner) the tokens carry the approver's `sub`, so the agent works in that account. Grown-ups > Agents shows the
+  address and lists/revokes approved agents (`/api/agents`). Tools: `guide`, `get_sounds`, `check_text`, `save_book`, `set_image`,
+  `list_books`, `get_book`, `delete_book`, `preview_url`. The agent's how-to is `src/agent-guide.txt` (the `guide` tool returns it):
+  edit that, not a docs page. Books an agent saves have `stories.owner` = the account, so they're private (`OUR_STORIES` excludes
+  owned stories from the public site); ids are `u<6 hex of the account>-<slug>` and pictures `R2 <id>/<page|cover>.<ext>`. A `story`
+  is compiled in the worker against the account's inventory and refused if any word is unreadable; a `book` isn't checked. The worker
+  compiles with the CMU dictionary served as the static asset `public/lexicon.dict` (git-ignored; `tools/lexicon-asset.mjs` writes
+  it, `npm run deploy` runs that first; run it before `wrangler dev` too). `src/lexicon-core.js` and `src/compile.js` are shared with tools/.
+  `preview_url` makes a one-hour `yrp_` token (`agent_tokens`): `/?preview=<token>#/read/<id>/<page>` opens the app read-only as the
+  account (so an agent with a browser can check its work); it can't save and leaves no reading history.
 - **Signed-in requests** carry the Google token as a Bearer header; pictures are plain `<img>` requests, so `POST /api/session` also
   puts the token in a read-only cookie (`yr_token`, honoured for GET only). Test signed-in behaviour without Google: put
-  `LOGIN_ISSUER=http://localhost:8788` in `.dev.vars`, run `node tools/dev-login.mjs` (prints a token, serves the JWKS), `npx wrangler dev`.
+  `LOGIN_ORIGIN=http://localhost:8788` in `.dev.vars`, run `node tools/dev-login.mjs` (prints a token, serves the JWKS and a
+  `/exchange` that accepts any code, enough to walk the MCP approval), `npx wrangler dev`.
 - **Progress** is books finished ("Read N times" in the library) and the page to pick a book up from (`spot`): the free version keeps both in localStorage.
 - **The live inventory is in D1**, edited by Eli in the grown-ups section (gate: type a birth year that makes you an adult, like TYM).
   `content/inventory.json` is the seed: her TYM sounds and tricky words from his screenshots (Oct 2026), plus "egg" and "house".

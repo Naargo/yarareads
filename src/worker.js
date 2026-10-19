@@ -3,6 +3,7 @@
 import publicInventory from '../content/inventory.json';
 import { verifyLoginToken } from './verify-login.js';
 import { handleMcp, sha256 } from './mcp.js';
+import { oauthRoute, listClients, revoke } from './mcp-auth.js';
 
 // Tokens from login.finereli.com are made for one origin; these are ours (wrangler dev serves on 8787).
 const AUDIENCE = ['https://yarareads.finereli.com', 'http://localhost:8787'];
@@ -75,8 +76,8 @@ async function setting(env, sub, key, fallback) {
 // Who is asking. The app sends the Google sign-in token from login.finereli.com as a Bearer header. Page pictures are
 // plain <img> requests, which can't carry a header, so the same token also sits in a cookie (POST /api/session), honoured
 // for reads only. A preview token (made by an agent's preview_url) is a one-hour read-only view of an account.
-// env.LOGIN_ISSUER points tests at a local key server. Returns { sub, email, name, readOnly? } or null.
-const loginOptions = (env) => ({ audience: AUDIENCE, ...(env.LOGIN_ISSUER && { issuer: env.LOGIN_ISSUER }) });
+// env.LOGIN_ORIGIN points tests at a local key server. Returns { sub, email, name, readOnly? } or null.
+const loginOptions = (env) => ({ audience: AUDIENCE, ...(env.LOGIN_ORIGIN && { issuer: env.LOGIN_ORIGIN }) });
 
 async function tokenAccount(token, env) {
   if (token.startsWith('yrp_')) {
@@ -207,8 +208,10 @@ export default {
         ['/about', '/', '/llms.txt'].map(loc).join('')}</urlset>\n`, { headers: { 'content-type': 'application/xml' } });
     }
 
-    // An agent's connection (MCP). It has its own keys; see src/mcp.js.
-    if (path === '/mcp' || path.startsWith('/mcp/')) return handleMcp(request, env, url, { seed: INVENTORY_SEED });
+    // An agent's connection (MCP) and the OAuth that lets a parent approve it; see src/mcp.js and src/mcp-auth.js.
+    const oauth = await oauthRoute(request, env, url, AUDIENCE);
+    if (oauth) return oauth;
+    if (path === '/mcp') return handleMcp(request, env, url, { seed: INVENTORY_SEED });
 
     if (!path.startsWith('/api/')) return env.ASSETS.fetch(request);
 
@@ -358,24 +361,11 @@ export default {
       return json({ ok: true });
     }
 
-    // Keys for the parent's own agents (Claude, ChatGPT...) to manage this account's books through /mcp. The key is shown
-    // once, when it's made; only its hash is kept.
-    if (path === '/api/agent-tokens' && request.method === 'GET') {
-      const { results } = await env.DB.prepare("SELECT id, label, created_at FROM agent_tokens WHERE sub = ? AND kind = 'agent' ORDER BY id").bind(sub).all();
-      return json(results);
-    }
-    if (path === '/api/agent-tokens' && request.method === 'POST') {
-      const { label } = await request.json().catch(() => ({}));
-      const { n } = await env.DB.prepare("SELECT COUNT(*) AS n FROM agent_tokens WHERE sub = ? AND kind = 'agent'").bind(sub).first();
-      if (n >= 10) return json({ error: 'too many keys: remove one first' }, { status: 400 });
-      const token = 'yra_' + btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(24)))).replace(/[+/=]/g, (c) => ({ '+': '-', '/': '_', '=': '' })[c]);
-      const row = await env.DB.prepare("INSERT INTO agent_tokens (hash, sub, label, kind) VALUES (?, ?, ?, 'agent') RETURNING id")
-        .bind(await sha256(token), sub, String(label || 'My agent').slice(0, 40)).first();
-      return json({ id: row.id, token });
-    }
-    const tokenMatch = path.match(/^\/api\/agent-tokens\/(\d+)$/);
-    if (tokenMatch && request.method === 'DELETE') {
-      await env.DB.prepare("DELETE FROM agent_tokens WHERE id = ? AND sub = ? AND kind = 'agent'").bind(Number(tokenMatch[1]), sub).run();
+    // The agents this account has approved (Grown-ups > Agents), and taking one back.
+    if (path === '/api/agents' && request.method === 'GET') return json(await listClients(env.DB, sub));
+    const agentMatch = path.match(/^\/api\/agents\/([\w-]+)$/);
+    if (agentMatch && request.method === 'DELETE') {
+      await revoke(env.DB, agentMatch[1], sub);
       return json({ ok: true });
     }
 

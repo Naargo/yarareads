@@ -1,10 +1,11 @@
 // MCP server (Streamable HTTP, JSON replies) so a parent's own agent can add and manage books in their account.
-// Connect at /mcp/<token> or /mcp with "Authorization: Bearer <token>"; tokens are made in Grown-ups > Agents.
-// Every book an agent saves is private to the token's account (stories.owner).
+// Connect at /mcp. Agents sign in with OAuth 2.1 (src/mcp-auth.js): the parent approves with Google, and the agent's tokens
+// belong to that account. Every book an agent saves is private to it (stories.owner).
 
 import { compileStory } from './compile.js';
 import { makeLexicon } from './lexicon-core.js';
 import { classify, forStory } from '../public/phonics.js';
+import { bearerSub, unauthorized, json, preflight } from './mcp-auth.js';
 import GUIDE from './agent-guide.txt';
 
 const MAX_BOOKS = 40, MAX_PAGES = 60, MAX_PAGE_CHARS = 600, MAX_IMAGE = 3 * 1024 * 1024;
@@ -240,8 +241,10 @@ async function callTool(name, args, ctx) {
     case 'preview_url': {
       if (args.book_id && !(await ownBook(env, sub, args.book_id))) return fail('no such book in this account');
       const token = 'yrp_' + btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(24)))).replace(/[+/=]/g, (c) => ({ '+': '-', '/': '_', '=': '' })[c]);
-      await env.DB.prepare("INSERT INTO agent_tokens (hash, sub, label, kind, expires_at) VALUES (?, ?, 'preview', 'preview', datetime('now', '+1 hour'))")
-        .bind(await sha256(token), sub).run();
+      await env.DB.batch([
+        env.DB.prepare("DELETE FROM agent_tokens WHERE expires_at < datetime('now')"),
+        env.DB.prepare("INSERT INTO agent_tokens (hash, sub, label, kind, expires_at) VALUES (?, ?, 'preview', 'preview', datetime('now', '+1 hour'))").bind(await sha256(token), sub),
+      ]);
       const page = Number.isInteger(args.page) && args.page > 1 ? args.page - 1 : 0;
       return text({ url: `${origin}/?preview=${token}${args.book_id ? `#/read/${args.book_id}/${page}` : ''}`, expires: 'in one hour', read_only: true });
     }
@@ -276,23 +279,15 @@ async function rpc(msg, ctx) {
   }
 }
 
-// The token, from /mcp/<token> or a Bearer header, resolved to its account.
-async function tokenAccount(request, env, url) {
-  const token = url.pathname.split('/')[2] || request.headers.get('Authorization')?.replace(/^Bearer /, '');
-  if (!token) return null;
-  const row = await env.DB.prepare("SELECT sub FROM agent_tokens WHERE hash = ? AND kind = 'agent'").bind(await sha256(token)).first();
-  return row ? row.sub : null;
-}
-
 export async function handleMcp(request, env, url, { seed }) {
-  const json = (data, init = {}) => new Response(JSON.stringify(data), { ...init, headers: { 'content-type': 'application/json', ...init.headers } });
-  if (request.method !== 'POST') return json({ error: 'POST JSON-RPC here' }, { status: 405, headers: { allow: 'POST' } });
-  const sub = await tokenAccount(request, env, url);
-  if (!sub) return json({ error: 'unauthorized' }, { status: 401, headers: { 'www-authenticate': 'Bearer' } });
+  if (request.method === 'OPTIONS') return preflight();
+  if (request.method !== 'POST') return json({ error: 'POST JSON-RPC here' }, 405, { allow: 'POST' });
+  const sub = await bearerSub(request, env.DB);
+  if (!sub) return unauthorized(url.origin);
   const body = await request.json().catch(() => null);
-  if (!body) return json({ jsonrpc: '2.0', id: null, error: { code: -32700, message: 'parse error' } }, { status: 400 });
+  if (!body) return json({ jsonrpc: '2.0', id: null, error: { code: -32700, message: 'parse error' } }, 400);
   const ctx = { env, sub, origin: url.origin, seed };
   const replies = (await Promise.all((Array.isArray(body) ? body : [body]).map((m) => rpc(m, ctx)))).filter(Boolean);
-  if (!replies.length) return new Response(null, { status: 202 });
+  if (!replies.length) return new Response(null, { status: 202, headers: { 'Access-Control-Allow-Origin': '*' } });
   return json(Array.isArray(body) ? replies : replies[0]);
 }

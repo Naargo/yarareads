@@ -30,7 +30,7 @@ Revised Oct 19 2026 after review. The first goal is to publish and find out whet
 ### 5. MCP for books (built Oct 19, not yet deployed or tried with a real agent)
 
 - An MCP server so an agent can manage an account's books: create, upload page images, push, check. It replaces a how-to doc for agents, and it's what lets Tom use his own Claude to write books for Yara.
-- Authenticate with a per-account token, not the PIN. Depends on 3.
+- Agents connect with OAuth 2.1 (the Accountant's pattern): the parent approves with Google, and the agent's tokens belong to that account.
 - Agents need to check their work in the real UI. Add a private preview key that lets an agent open the app as an account without going through login.
 - Until it exists, adding a book stays the paragraph in CLAUDE.md.
 

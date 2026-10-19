@@ -1,5 +1,5 @@
 // A stand-in for login.finereli.com, for testing signed-in behaviour against `wrangler dev` without Google.
-// Serves a JWKS on :8788 and prints a token for a made-up account. Needs `LOGIN_ISSUER=http://localhost:8788` in .dev.vars.
+// Serves a JWKS and a /exchange on :8788 and prints a token for a made-up account. Needs `LOGIN_ORIGIN=http://localhost:8788` in .dev.vars.
 // Usage: node tools/dev-login.mjs [email] [sub]     (the server stays up until you stop it; the token is printed once)
 import { generateKeyPairSync, sign } from 'node:crypto';
 import { createServer } from 'node:http';
@@ -16,5 +16,7 @@ const body = b64({ iss: issuer, sub, aud: 'http://localhost:8787', exp: Math.flo
 const sig = sign('sha256', Buffer.from(`${head}.${body}`), { key: privateKey, dsaEncoding: 'ieee-p1363' }).toString('base64url');
 createServer((req, res) => {
   res.setHeader('content-type', 'application/json');
+  // Any code is accepted, as that account: enough to walk the MCP approval flow without Google.
+  if (req.url === '/exchange') return res.end(JSON.stringify({ token: `${head}.${body}.${sig}` }));
   res.end(JSON.stringify({ keys: [jwk] }));
 }).listen(8788, () => console.log(`${head}.${body}.${sig}`));
