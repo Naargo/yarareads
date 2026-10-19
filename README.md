@@ -9,6 +9,8 @@ I made it for my daughter Yara. She's six and loves glitter, magic and dragons. 
 couldn't find anything for her to read next that was both a good story and made only of words she could sound out. Her big brother
 Tom wrote the first story, and the app is built so there can be many more.
 
+<img width="1053" height="712" alt="image" src="https://github.com/user-attachments/assets/0da99299-64ac-46d8-8e77-28b2b670f7b2" />
+
 ## What's different
 
 - **The help lives on the word.** Tap any word: a dot under single letters, a bar under pairs like "sh" and "ee", an arc joining
