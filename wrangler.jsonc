@@ -14,9 +14,11 @@
   "r2_buckets": [{ "binding": "PICTURES", "bucket_name": "yara-reads-pictures" }],
   // Workers AI: text to speech for words (cached in R2 under tts/).
   "ai": { "binding": "AI", "remote": true },
+  // Request and error metrics in the Cloudflare dashboard (Workers > yara-reads > Metrics); no personal data kept.
+  "observability": { "enabled": true },
   "routes": [{ "pattern": "yarareads.finereli.com", "custom_domain": true }],
-  // The public site (no sign-in, our stories only; see publicApi in src/worker.js) turns on when PUBLIC_HOST is a
-  // hostname routed to this worker. Empty: off. PUBLIC_INDEX "1" lets crawlers in.
-  "vars": { "PUBLIC_HOST": "", "PUBLIC_INDEX": "0" }
+  // Signed out, the app is the free public version (our stories only; see publicApi in src/worker.js). PUBLIC_HOST makes a
+  // second hostname always serve it. PUBLIC_INDEX "1" lets crawlers in.
+  "vars": { "PUBLIC_HOST": "", "PUBLIC_INDEX": "1" }
   // Secrets (wrangler secret put): FAMILY_EMAIL (the Google account that adopts the pre-accounts data)
 }

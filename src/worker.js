@@ -195,17 +195,17 @@ export default {
 
     const pub = isPublic(url, env);
 
-    // Crawlers: the public site is indexable once env.PUBLIC_INDEX is '1'; Yara's never is.
+    // Crawlers: indexable once env.PUBLIC_INDEX is '1' (the signed-out app is the public site), except the API and the agent endpoints.
+    const indexable = env.PUBLIC_INDEX === '1';
     if (path === '/robots.txt') {
-      const open = pub && env.PUBLIC_INDEX === '1';
-      return new Response(open ? `User-agent: *\nAllow: /\n\nSitemap: https://${url.hostname}/sitemap.xml\n` : 'User-agent: *\nDisallow: /\n',
+      return new Response(indexable ? `User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /oauth/\nDisallow: /mcp\n\nSitemap: https://${url.hostname}/sitemap.xml\n` : 'User-agent: *\nDisallow: /\n',
         { headers: { 'content-type': 'text/plain' } });
     }
     if (path === '/sitemap.xml') {
-      if (!pub) return new Response('Not found', { status: 404 });
+      if (!indexable) return new Response('Not found', { status: 404 });
       const loc = (p) => `<url><loc>https://${url.hostname}${p}</loc></url>`;
       return new Response(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${
-        ['/about', '/', '/llms.txt'].map(loc).join('')}</urlset>\n`, { headers: { 'content-type': 'application/xml' } });
+        ['/about', '/privacy', '/terms', '/', '/llms.txt'].map(loc).join('')}</urlset>\n`, { headers: { 'content-type': 'application/xml' } });
     }
 
     // An agent's connection (MCP) and the OAuth that lets a parent approve it; see src/mcp.js and src/mcp-auth.js.
@@ -359,6 +359,44 @@ export default {
         .bind(String(e.type).slice(0, 32), e.storyId ?? null, e.page ?? null, e.word ?? null, e.detail ? String(e.detail).slice(0, 200) : null, sub)
         .run();
       return json({ ok: true });
+    }
+
+    // A copy of everything held about this account, and deleting all of it. Not for a preview link.
+    if (path === '/api/account/export' && request.method === 'GET') {
+      if (who.readOnly) return json({ error: 'not for a preview' }, { status: 403 });
+      const all = (sql) => env.DB.prepare(sql).bind(sub).all().then((r) => r.results);
+      const books = (await all('SELECT body FROM stories WHERE owner = ?')).map((r) => JSON.parse(r.body));
+      const data = {
+        exported: new Date().toISOString(),
+        account: { email: who.email, name: who.name },
+        inventory: JSON.parse((await env.DB.prepare('SELECT body FROM account_inventory WHERE sub = ?').bind(sub).first())?.body || 'null'),
+        settings: Object.fromEntries((await all('SELECT key, value FROM account_settings WHERE sub = ?')).map((r) => [r.key, r.value])),
+        reading: await all('SELECT ts, type, story_id, page, word FROM events WHERE sub = ? AND type != \'say\' ORDER BY id'),
+        books,
+      };
+      return new Response(JSON.stringify(data, null, 2), {
+        headers: { 'content-type': 'application/json', 'content-disposition': 'attachment; filename="yara-reads-my-data.json"' },
+      });
+    }
+    if (path === '/api/account' && request.method === 'DELETE') {
+      if (who.readOnly) return json({ error: 'not for a preview' }, { status: 403 });
+      const { results: own } = await env.DB.prepare('SELECT id FROM stories WHERE owner = ?').bind(sub).all();
+      for (const { id } of own) {
+        for (let list = await env.PICTURES.list({ prefix: `${id}/` }); ; list = await env.PICTURES.list({ prefix: `${id}/`, cursor: list.cursor })) {
+          if (list.objects.length) await env.PICTURES.delete(list.objects.map((o) => o.key));
+          if (!list.truncated) break;
+        }
+      }
+      await env.DB.batch([
+        env.DB.prepare('DELETE FROM stories WHERE owner = ?').bind(sub),
+        env.DB.prepare('DELETE FROM account_inventory WHERE sub = ?').bind(sub),
+        env.DB.prepare('DELETE FROM account_settings WHERE sub = ?').bind(sub),
+        env.DB.prepare('DELETE FROM events WHERE sub = ?').bind(sub),
+        env.DB.prepare('DELETE FROM mcp_tokens WHERE sub = ?').bind(sub),
+        env.DB.prepare('DELETE FROM agent_tokens WHERE sub = ?').bind(sub),
+        env.DB.prepare('DELETE FROM accounts WHERE sub = ?').bind(sub),
+      ]);
+      return json({ ok: true }, { headers: { 'set-cookie': 'yr_token=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax' } });
     }
 
     // The agents this account has approved (Grown-ups > Agents), and taking one back.

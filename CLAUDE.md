@@ -1,7 +1,8 @@
 # Yara Reads
 
 A reading app for Yara (Eli's daughter), who is finishing Teach Your Monster to Read (TYM).
-Live at https://yarareads.finereli.com (PIN-gated). Cloudflare Worker + static assets + D1.
+Live at https://yarareads.finereli.com (free without an account; Google sign-in is optional). Cloudflare Worker + static assets + D1.
+The repo is public: README.md is the pitch and how to run your own; stories and pictures are CC BY 4.0, code is MIT (LICENSE, content/LICENSE.md, NOTICE.md).
 
 ## Why it exists
 
@@ -71,13 +72,13 @@ Never loosen the inventory to make a story pass.
   (egg, tear, bog, sun, moon, sparkle, wheel, crash, whoa, feelings, float; add new ones there with a `--cover-<name>` color in style.css). `picture` is a scene description for image generation;
   `image` is an R2 key ("fizz-1/1.jpg") for the page's actual picture, with the file in `content/pictures/<key>`. `names` are characters known only in that story.
 - **Books from home** (`kind: "book"`): real books the family owns, e.g. Mittu and the Yellow Mango. They live in `content/home/<id>/book.json` plus
-  their page images, and that folder is **gitignored: the repo is public and these are other people's books**. D1 and R2 hold the real copies.
+  their page images, and that folder is **gitignored (and purged from history): the repo is public and these are other people's books**. D1 and R2 hold the real copies.
   They're exempt from the readability rule; the checker reports what share she can read, and the reader underlines words she can't read yet.
   To add one: extract text and pictures (for PDFs, `pdftohtml -xml` gives each illustration's tile positions; render with `pdftoppm -aaVector no`
   or tile seams show), split into short pages, set `coverImage`, then `node tools/push.mjs --images`.
 - Page pictures: **read docs/illustration.md** before making any. `node tools/illustrate.mjs` (gpt-image-2 via OpenRouter; a chapter is drawn as one 4x4 board, then a panel picked per page; approved
   character sheets in content/art/ as references) writes web-quality JPEGs (~60 KB); `node tools/shrink.mjs` for others.
-- Page pictures are served from R2 (bucket `yara-reads-pictures`) at `/api/pictures/<key>`, behind the PIN.
+- Page pictures are served from R2 (bucket `yara-reads-pictures`) at `/api/pictures/<key>`: our own stories' pictures to anyone, an account's private pictures only to that account.
   `push.mjs` stores each picture in the story as `<key>?v=<hash of the file>`, and versioned URLs are cached for a year
   (immutable): a redrawn picture keeps its R2 key but gets a new URL, so every device shows the new one. Always re-push
   stories after changing a picture (`push.mjs --images` does both).
@@ -100,7 +101,7 @@ Never loosen the inventory to make a story pass.
   Content (books, pictures, inventory) isn't versioned: the app drops its cached books and inventory whenever the library
   shows, and re-renders the library on returning to the foreground. Grown-ups has "Refresh now" (a full reload).
 - Icons: `public/icons/*.svg` are the sources; the PNGs are rendered from them (Playwright screenshot at each size).
-- Local dev: `.dev.vars` with PIN and SESSION_SECRET, `npx wrangler d1 migrations apply yara-reads --local`, `node tools/push.mjs --local --inventory`, `npx wrangler dev`.
+- Local dev: `node tools/lexicon-asset.mjs` (the dictionary the worker needs), `npx wrangler d1 migrations apply yara-reads --local`, `node tools/push.mjs --local --inventory`, `npx wrangler dev`.
 
 ## Design
 

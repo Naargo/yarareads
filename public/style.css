@@ -154,6 +154,8 @@ button { border: none; background: none; cursor: pointer; padding: 0; }
 .grownups-btn .icon { font-size: 18px; }
 .library-foot { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px 20px; margin-top: 40px; }
 .library-foot .link { flex-basis: 100%; text-align: center; }
+.fine-links { flex-basis: 100%; text-align: center; font-size: 14px; }
+.fine-links a { color: var(--ink-soft); margin: 0 8px; }
 
 /* ---------- Reader ---------- */
 

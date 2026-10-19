@@ -310,6 +310,7 @@ async function showLibrary() {
         <button class="grownups-btn" data-act="grownups">${ICONS.lock} Grown-ups</button>
         ${login.user || previewToken() ? '' : `<button class="grownups-btn" data-act="signin">${ICONS.user} Sign in</button>`}
         ${PUBLIC ? '<a class="link" href="/about">What is this?</a>' : ''}
+        <span class="fine-links"><a href="/privacy">Privacy</a> <a href="/terms">Terms</a></span>
       </div>
     </div>`;
   app.querySelectorAll('.book').forEach((b) => (b.onclick = () => (location.hash = `#/read/${b.dataset.id}/${stories.find((s) => s.id === b.dataset.id)?.spot || 0}`)));
@@ -787,6 +788,14 @@ function renderGrownups(tab) {
         <h2>Account</h2>
         <p>Signed in as <b>${esc(login.user.email)}</b>. Books, sounds, voice and progress belong to this account.</p>
         <button class="press check" data-act="signout">Sign out</button>
+        <h3>Your data</h3>
+        <p>Download everything kept for this account, or delete it all: sounds, progress, books you or your agents added, and
+          agent connections. Deleting can't be undone. See the <a href="/privacy">privacy policy</a>.</p>
+        <button class="press check" data-act="export">Download my data</button>
+        <form class="adder" data-delete>
+          <input name="confirm" placeholder='Type "delete" to confirm' autocomplete="off" autocapitalize="off" aria-label="Type delete to confirm">
+          <button class="press">Delete my account</button>
+        </form>
       </section>`}`,
   };
 
@@ -808,6 +817,24 @@ function renderGrownups(tab) {
   on('[data-act=done]', () => (location.hash = '#/'));
   // A full reload: fresh code, books, pictures and sounds. Lands back here in grown-ups.
   on('[data-act=update]', () => location.reload());
+  on('[data-act=export]', async () => {
+    const res = await fetch('/api/account/export', { headers: { authorization: `Bearer ${authToken()}` } }).catch(() => null);
+    if (!res?.ok) return failed();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(await res.blob());
+    a.download = 'yara-reads-my-data.json';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  });
+  const del = app.querySelector('[data-delete]');
+  if (del) del.onsubmit = async (e) => {
+    e.preventDefault();
+    if (del.confirm.value.trim().toLowerCase() !== 'delete') return toast('Type "delete" to confirm');
+    const res = await api('account', { method: 'DELETE' }).catch(() => null);
+    if (!res) return failed();
+    login.signOut();
+    location.href = '/';
+  };
   on('[data-act=signout]', async () => {
     login.signOut();
     await syncSession();
