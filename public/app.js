@@ -12,26 +12,27 @@ const BRAND = `<div class="brand">${LOGO}<span class="name">Yara <em>Reads</em><
 const login = new FinereliLogin({ storageKey: 'yr.login' });
 const loginReady = login.handleRedirect();
 
-class NeedPin extends Error {}
-
 async function api(path, options = {}) {
   const res = await fetch('/api/' + path, {
     ...options,
     headers: { 'content-type': 'application/json', ...(login.token && { authorization: `Bearer ${login.token}` }) },
     body: options.body && JSON.stringify(options.body),
   });
-  if (res.status === 401) {
-    login.handleUnauthorized();
-    throw new NeedPin();
-  }
   if (!res.ok) throw new Error(`${path}: ${res.status}`);
   return res.json();
 }
 
-// The public site (no sign-in; the worker decides by hostname) keeps a child's sounds and finished books on
-// this device, since there's no account. Yara's own site keeps them in D1 as before.
+// Signed out, the worker gives the free version (our own books, no sign-in): a child's sounds and finished books stay on
+// this device. Signed in, they're kept on the account.
 let PUBLIC = false;
-const modeReady = fetch('/api/settings').then((r) => (r.ok ? r.json() : {})).then((s) => (PUBLIC = !!s.public)).catch(() => {});
+const modeReady = loginReady
+  .then(() => fetch('/api/settings', { headers: login.token ? { authorization: `Bearer ${login.token}` } : {} }))
+  .then((r) => (r.ok ? r.json() : {}))
+  .then((s) => {
+    PUBLIC = !!s.public;
+    if (PUBLIC) login.handleUnauthorized(); // a token the worker no longer accepts
+  })
+  .catch(() => {});
 const local = {
   get: (k) => { try { return JSON.parse(localStorage.getItem('yr.' + k)); } catch { return null; } },
   set: (k, v) => { try { localStorage.setItem('yr.' + k, JSON.stringify(v)); } catch {} },
@@ -210,8 +211,7 @@ async function route() {
     else if (view === 'grownups') grownUp ? await showGrownups(id) : showGate();
     else await showLibrary();
   } catch (e) {
-    if (e instanceof NeedPin) showSignIn();
-    else app.innerHTML = `<div class="end"><h1 class="big">Oops!</h1><p class="said">${esc(e.message)}</p></div>`;
+    app.innerHTML = `<div class="end"><h1 class="big">Oops!</h1><p class="said">${esc(e.message)}</p></div>`;
   }
   window.scrollTo(0, 0);
 }
@@ -253,18 +253,6 @@ function keypad({ title, hint, digits = 4, boxes = false, onCancel, onDone }) {
     if (entered.length === digits) (await onDone(entered)) || fail();
   });
   if (onCancel) app.querySelector('[data-act=cancel]').onclick = onCancel;
-}
-
-function showSignIn() {
-  app.innerHTML = `
-    <div class="keyscreen">
-      ${BRAND}
-      <h2>Sign in to read</h2>
-      <button class="press ember" data-act="google">Sign in with Google</button>
-    </div>`;
-  app.querySelector('[data-act=google]').onclick = async () => {
-    if (await login.signIn()) route();
-  };
 }
 
 // Like TYM: grown-ups prove it by typing a birth year that makes them an adult.
@@ -317,11 +305,14 @@ async function showLibrary() {
         </div>`).join('')}
       <p style="text-align:center; margin-top:40px">
         <button class="grownups-btn" data-act="grownups">${ICONS.lock} Grown-ups</button>
+        ${login.user ? '' : '<button class="grownups-btn" data-act="signin">Sign in</button>'}
         ${PUBLIC ? '<br><a class="link" href="/about">What is this?</a>' : ''}
       </p>
     </div>`;
   app.querySelectorAll('.book').forEach((b) => (b.onclick = () => (location.hash = `#/read/${b.dataset.id}/0`)));
   app.querySelector('[data-act=grownups]').onclick = () => (location.hash = '#/grownups');
+  const signin = app.querySelector('[data-act=signin]');
+  if (signin) signin.onclick = async () => { if (await login.signIn()) location.reload(); };
 }
 
 // ---------- Reader ----------
@@ -784,8 +775,7 @@ async function showGrownups(tab) {
   on('[data-act=update]', () => location.reload());
   on('[data-act=signout]', async () => {
     login.signOut();
-    forgetContent();
-    route();
+    location.reload();
   });
   on('.tile', (t) => {
     const g = t.dataset.g;

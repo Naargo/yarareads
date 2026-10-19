@@ -189,7 +189,8 @@ export default {
     }
 
     const who = await account(request, env);
-    if (!who) return json({ error: 'sign in' }, { status: 401 });
+    // Not signed in: the free version, the same as the public site (our own books; progress stays on the device).
+    if (!who) return publicApi(request, env, url, path);
     const sub = who.sub;
 
     if (path === '/api/stories' && request.method === 'GET') {
