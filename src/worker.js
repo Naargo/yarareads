@@ -21,14 +21,11 @@ function cookie(request, name) {
 const VOICES = {
   'aura-2:pandora': { model: '@cf/deepgram/aura-2-en', speaker: 'pandora', label: 'Pandora', about: 'British woman' },
   'aura-2:draco': { model: '@cf/deepgram/aura-2-en', speaker: 'draco', label: 'Draco', about: 'British man' },
-  'aura-1:athena': { model: '@cf/deepgram/aura-1', speaker: 'athena', label: 'Athena', about: 'British woman, older model' },
-  'aura-1:helios': { model: '@cf/deepgram/aura-1', speaker: 'helios', label: 'Helios', about: 'British man, older model' },
   'aura-2:theia': { model: '@cf/deepgram/aura-2-en', speaker: 'theia', label: 'Theia', about: 'Australian woman' },
   'aura-2:hyperion': { model: '@cf/deepgram/aura-2-en', speaker: 'hyperion', label: 'Hyperion', about: 'Australian man' },
   'aura-2:luna': { model: '@cf/deepgram/aura-2-en', speaker: 'luna', label: 'Luna', about: 'American woman' },
   'aura-2:asteria': { model: '@cf/deepgram/aura-2-en', speaker: 'asteria', label: 'Asteria', about: 'American woman' },
   'aura-2:apollo': { model: '@cf/deepgram/aura-2-en', speaker: 'apollo', label: 'Apollo', about: 'American man' },
-  'melo:en': { model: '@cf/myshell-ai/melotts', label: 'Melo', about: 'Open-source voice' },
 };
 const DEFAULT_VOICE = 'aura-2:hyperion'; // Eli's pick (Oct 7)
 
@@ -38,8 +35,8 @@ const DEFAULT_VOICE = 'aura-2:hyperion'; // Eli's pick (Oct 7)
 // tts/ holds the old, sometimes clipped bare-word audio; tts2/ is the fixed set.
 async function sayWord(env, voiceId, word) {
   const voice = VOICES[voiceId];
-  const ext = voiceId.startsWith('melo') ? 'wav' : 'mp3';
-  const type = ext === 'wav' ? 'audio/wav' : 'audio/mpeg';
+  const ext = 'mp3';
+  const type = 'audio/mpeg';
   const key = `tts2/${voiceId.replace(':', '-')}/${encodeURIComponent(word)}.${ext}`;
   const cached = await env.PICTURES.get(key);
   if (cached) return { body: cached.body, type };
@@ -72,7 +69,7 @@ async function setting(env, key, fallback) {
 }
 
 // The public site's API: the reader's routes, limited to our stories. Everything else (grown-ups' tools,
-// Yara's settings and progress, the Sound lab) is refused.
+// Yara's settings and progress) is refused.
 async function publicApi(request, env, url, path) {
   const get = request.method === 'GET';
   if (path === '/api/stories' && get) {
@@ -104,7 +101,7 @@ async function publicApi(request, env, url, path) {
       },
     });
   }
-  // The phonics sounds the tiles play (Eli's recordings; he chose to share them, Oct 16). Only those: not the Sound lab's
+  // The phonics sounds the tiles play (Eli's recordings; he chose to share them, Oct 16). Only those: not the
   // AI takes, nor the example words recorded with them.
   const recorded = path.match(/^\/api\/sounds\/(recorded\/[a-z]+\/[a-z-]+\.mp3)$/);
   if (recorded && get) {
@@ -117,10 +114,10 @@ async function publicApi(request, env, url, path) {
   if (path === '/api/say' && get) {
     const word = (url.searchParams.get('word') || '').toLowerCase().replace(/[^a-z' -]/g, '').trim().slice(0, 40);
     const voiceId = await setting(env, 'voice', DEFAULT_VOICE);
-    const ext = voiceId.startsWith('melo') ? 'wav' : 'mp3';
+    const ext = 'mp3';
     const obj = word && (await env.PICTURES.get(`tts2/${voiceId.replace(':', '-')}/${encodeURIComponent(word)}.${ext}`));
     if (!obj) return json({ error: 'not ready' }, { status: 404 });
-    return new Response(obj.body, { headers: { 'content-type': ext === 'wav' ? 'audio/wav' : 'audio/mpeg', 'cache-control': 'public, max-age=86400' } });
+    return new Response(obj.body, { headers: { 'content-type': 'audio/mpeg', 'cache-control': 'public, max-age=86400' } });
   }
   if (path === '/api/settings' && get) {
     return json({ voice: await setting(env, 'voice', DEFAULT_VOICE), voices: {}, public: true, ...SOUND_DEFAULTS });
@@ -214,7 +211,7 @@ export default {
       });
     }
 
-    // Phonics sound audio (candidates and recordings), also in R2, under sounds/.
+    // Phonics sound audio (recordings), also in R2, under sounds/.
     const sound = path.match(/^\/api\/sounds\/([\w./-]+)$/);
     if (sound && request.method === 'GET' && !sound[1].includes('..')) {
       const obj = await env.PICTURES.get(`sounds/${sound[1]}`);
@@ -222,23 +219,6 @@ export default {
       return new Response(obj.body, {
         headers: { 'content-type': obj.httpMetadata?.contentType || 'audio/mpeg', 'cache-control': 'private, max-age=3600' },
       });
-    }
-
-    // Which audio plays for each sound, picked in the Sound lab.
-    if (path === '/api/sound-picks' && request.method === 'GET') {
-      const { results } = await env.DB.prepare('SELECT sound, key FROM sound_picks').all();
-      return json(Object.fromEntries(results.map((r) => [r.sound, r.key])));
-    }
-    if (path === '/api/sound-picks' && request.method === 'PUT') {
-      const { sound: s, key } = await request.json();
-      if (typeof s !== 'string' || s.length > 20) return json({ error: 'bad sound' }, { status: 400 });
-      if (key) {
-        await env.DB.prepare('INSERT OR REPLACE INTO sound_picks (sound, key, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)')
-          .bind(s, String(key).slice(0, 200)).run();
-      } else {
-        await env.DB.prepare('DELETE FROM sound_picks WHERE sound = ?').bind(s).run();
-      }
-      return json({ ok: true });
     }
 
     // A word, spoken. The voice is the grown-ups' choice unless ?voice= asks for another (the Voice tab's test).

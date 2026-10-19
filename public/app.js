@@ -199,7 +199,6 @@ async function route() {
   try {
     if (view === 'read' && id) await showReader(id, Number(page) || 0);
     else if (view === 'grownups') grownUp ? await showGrownups(id) : showGate();
-    else if (view === 'sounds') grownUp ? await showSoundLab() : showGate();
     else await showLibrary();
   } catch (e) {
     if (e instanceof NeedPin) showPin();
@@ -622,10 +621,9 @@ async function showEnd(story) {
 }
 
 // ---------- Grown-ups ----------
-// Tabs, one job each: #/grownups/<tab>. Practise is first because it's what you check most.
+// Tabs, one job each: #/grownups/<tab>.
 
 const TABS = [
-  ['practise', 'Practise'],
   ['sounds', 'Sounds'],
   ['words', 'Words'],
   ['books', 'Books'],
@@ -655,20 +653,12 @@ async function showGrownups(tab) {
     </form>`;
 
   const panels = {
-    practise: () => `
-      <section class="panel">
-        <h2>Practise</h2>
-        <p>The words she taps most for help. These are the ones to practise together.</p>
-        <div class="wordlist">${progress.taps.map((t) => `<span class="wordchip plain">${esc(t.word)}<span class="count">×${t.taps}</span></span>`).join('') || '<span class="days">Nothing yet.</span>'}</div>
-        <h3>Recent days</h3>
-        <div class="days">${progress.days.map((d) => `${esc(d.day)}: ${d.pages} pages, ${d.stories} books`).join('<br>') || 'Nothing yet.'}</div>
-      </section>`,
     sounds: () => `
       <section class="panel">
         <h2>Sounds ${PUBLIC ? 'your child knows' : 'she knows'} <small>${inv.graphemes.length} on</small></h2>
-        <p>${PUBLIC
-          ? "Tap a sound to switch it on or off. It starts with the sounds from Teach Your Monster to Read, which the books are written for. A word with a sound that's off gets a dotted underline, and its word card shows the new sound in purple. This is saved on this device."
-          : "Tap a sound to switch it on or off. Books only use sounds that are on, and a word with a sound that's off stops being one she can sound out."}</p>
+        <p>Tap a sound to switch it on or off. This doesn't change any book. A word with a sound that's off gets a dotted underline,
+          its word card shows that sound in purple, and the Books tab lists it as not readable yet. It starts with the sounds from
+          Teach Your Monster to Read, which the books are written for.${PUBLIC ? ' This is saved on this device.' : ' New stories are written only with sounds that are on.'}</p>
         ${CATALOG_GROUPS.map(([title, entries]) => `<h3>${esc(title)}</h3><div class="tiles">${tiles(entries)}</div>`).join('')}
       </section>`,
     words: () => `
@@ -711,9 +701,8 @@ async function showGrownups(tab) {
     voice: () => `
       <section class="panel">
         <h2>Voice</h2>
-        <p>The voice that says a word after the sounding out, and says tricky words. Type a word, tap a voice's
-          speaker to hear it, and tap a name to use that voice.</p>
-        <form class="adder tryword"><input name="w" value="dragon" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Word to try"></form>
+        <p>The voice that says a word after the sounding out, and says tricky words. Tap a voice's speaker to hear it,
+          and tap a name to use that voice.</p>
         <div class="voices">
           ${Object.entries(prefs.voices).map(([id, v]) => `
             <div class="voicerow ${id === prefs.voice ? 'chosen' : ''}">
@@ -739,11 +728,6 @@ async function showGrownups(tab) {
           in the voice in use, so she never waits.</p>
         <button class="press check" data-act="warm">Get every book word ready</button>
         <span class="muted warm-status"></span>
-      </section>
-      <section class="panel">
-        <h2>Sound lab</h2>
-        <p>Recordings of each phonics sound for the sound buttons. Listen to the candidates and pick the ones that sound right.</p>
-        <button class="press check" data-act="lab">Open the sound lab</button>
       </section>`,
     app: () => `
       <section class="panel">
@@ -781,7 +765,6 @@ async function showGrownups(tab) {
   };
   const on = (sel, fn) => app.querySelectorAll(sel).forEach((el) => (el.onclick = (e) => fn(el, e)));
   on('[data-act=done]', () => (location.hash = '#/'));
-  on('[data-act=lab]', () => (location.hash = '#/sounds'));
   // A full reload: fresh code, books, pictures and sounds. Lands back here in grown-ups.
   on('[data-act=update]', () => location.reload());
   on('.tile', (t) => {
@@ -802,16 +785,9 @@ async function showGrownups(tab) {
   }));
 
   if (tab === 'voice') {
-    const tryWord = () => app.querySelector('.tryword input').value.trim() || 'dragon';
-    app.querySelector('.tryword').onsubmit = (e) => {
-      e.preventDefault();
-      const b = app.querySelector(`.try[data-voice="${prefs.voice}"]`);
-      unlockAudio();
-      sayWord(tryWord(), b, prefs.voice);
-    };
     on('.try', (b) => {
       unlockAudio();
-      sayWord(tryWord(), b, b.dataset.voice);
+      sayWord('dragon', b, b.dataset.voice);
     });
     on('[data-setting]', async (b) => {
       const key = b.dataset.setting;
@@ -845,66 +821,6 @@ async function showGrownups(tab) {
       b.disabled = false;
     });
   }
-}
-
-// ---------- Sound lab (grown-ups) ----------
-// Candidate recordings of each pure phonics sound (tools/sounds.mjs). Eli taps to listen and stars
-// the one that sounds right; picks are saved, and the sound buttons will play them.
-
-const EXAMPLES = {
-  s: 'sun', m: 'map', f: 'fan', sh: 'ship', n: 'net', l: 'leg', z: 'zip', v: 'van', t: 'top', p: 'pig', k: 'kit',
-  b: 'bat', d: 'dog', g: 'got', a: 'ant', e: 'egg', i: 'ink', o: 'on', u: 'up', ai: 'rain', ee: 'see',
-  igh: 'night', oa: 'boat', oo: 'moon', ar: 'car', or: 'fork', ur: 'fur', ow: 'cow', oi: 'coin', ch: 'chip', th: 'thin',
-};
-// Recordings first (tools/sounds-record.mjs), then the AI experiments.
-const VOICE_NAMES = { eli: 'Recorded', tom: 'Tom', pandora: 'Voice 1', athena: 'Voice 2', melo: 'Voice 3', 'gpt-mini': 'Voice 4', gpt: 'Voice 5' };
-let labAudio;
-
-async function showSoundLab() {
-  const [manifest, picks] = await Promise.all([
-    fetch('/api/sounds/candidates.json').then((r) => (r.ok ? r.json() : [])),
-    api('sound-picks'),
-  ]);
-  const picked = Object.keys(picks).length;
-  app.innerHTML = `
-    <div class="admin lab">
-      <header>
-        <h1>Sound lab</h1>
-        <button class="done press" data-act="back">${ICONS.back} Grown-ups</button>
-      </header>
-      <section class="panel">
-        <p>Tap a take to hear it. Star the one that sounds like the pure sound from class: "sss", not "suh",
-          and a short clipped "t". Leave a sound unstarred if none are right; those will need recording.</p>
-        <p class="muted">${picked} of ${manifest.length} sounds picked. Each take is labelled with how it was spelled for the voice.</p>
-      </section>
-      ${manifest.map(({ sound, takes, example }) => `
-        <section class="panel labrow">
-          <div class="labsound"><span class="tile on">${esc(sound)}</span><span class="muted">${esc(example || EXAMPLES[sound] || '')}</span></div>
-          <div class="labtakes">
-            ${Object.keys(VOICE_NAMES).filter((v) => takes.some((t) => t.voice === v)).map((v) => `
-              <div class="labvoice"><span class="muted">${VOICE_NAMES[v]}</span>
-                ${takes.filter((t) => t.voice === v).map((t) => `
-                  <span class="take ${picks[sound] === t.key ? 'picked' : ''}">
-                    <button class="press play" data-key="${esc(t.key)}">${ICONS.speaker} ${esc(t.text)}</button>
-                    <button class="star-btn" data-sound="${esc(sound)}" data-key="${esc(t.key)}" aria-label="Pick">${STAR(picks[sound] === t.key)}</button>
-                  </span>`).join('')}
-              </div>`).join('')}
-          </div>
-        </section>`).join('') || '<section class="panel"><p>No candidates yet: run node tools/sounds.mjs.</p></section>'}
-    </div>`;
-  app.querySelector('[data-act=back]').onclick = () => (location.hash = '#/grownups/voice');
-  app.querySelectorAll('.play').forEach((b) => (b.onclick = () => {
-    labAudio?.pause();
-    labAudio = new Audio(`/api/sounds/${b.dataset.key}`);
-    labAudio.play();
-  }));
-  app.querySelectorAll('.star-btn').forEach((b) => (b.onclick = async () => {
-    const { sound, key } = b.dataset;
-    await api('sound-picks', { method: 'PUT', body: { sound, key: picks[sound] === key ? null : key } });
-    const y = scrollY;
-    await showSoundLab();
-    scrollTo(0, y);
-  }));
 }
 
 function toast(text) {

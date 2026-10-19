@@ -1,5 +1,4 @@
-// Recorded phonics sounds: slice a recording of the recording sheet into one file per sound, and put them in the
-// Sound lab next to the AI takes. The sheet (claude.ai artifact "Yara Reads Sound Recording") is read part by part:
+// Recorded phonics sounds: slice a recording of the recording sheet into one file per sound. The sheet (claude.ai artifact "Yara Reads Sound Recording") is read part by part:
 // each sound, a pause, its example word, a pause ("sss ... sun ... mmm ... map ..."). One file per part.
 //
 //   node tools/sounds-record.mjs <recording> <part 1-4 | all> [who] [--local]     (all: the whole sheet in one file)
@@ -153,21 +152,11 @@ for (const f of found) {
   console.log(`${f.id.padEnd(9)} ${((f.sound[1] - f.sound[0]) / SR).toFixed(2)}s   word "${f.word}"`);
 }
 
-// Upload, and add a "recorded" take per sound to the Sound lab's live manifest (new sounds get their own row).
+// Upload each sound and its example word to R2.
 const put = (key, path, type) => execFileSync('npx', ['wrangler', 'r2', 'object', 'put', `yara-reads-pictures/sounds/${key}`,
   where, '--file', path, '--content-type', type], { stdio: 'ignore' });
-const manifestFile = join(root, 'content/sounds/candidates.json');
-execFileSync('npx', ['wrangler', 'r2', 'object', 'get', 'yara-reads-pictures/sounds/candidates.json', where, '--file', manifestFile], { stdio: 'ignore' });
-const manifest = existsSync(manifestFile) ? JSON.parse(readFileSync(manifestFile, 'utf8')) : [];
 for (const f of found) {
-  const key = `recorded/${who}/${f.id}.mp3`;
-  put(key, join(dir, `${f.id}.mp3`), 'audio/mpeg');
+  put(`recorded/${who}/${f.id}.mp3`, join(dir, `${f.id}.mp3`), 'audio/mpeg');
   put(`recorded/${who}/words/${f.word}.mp3`, join(dir, 'words', `${f.word}.mp3`), 'audio/mpeg');
-  let entry = manifest.find((e) => e.sound === f.id);
-  if (!entry) manifest.push((entry = { sound: f.id, takes: [] }));
-  entry.example = f.word;
-  entry.takes = [{ key, voice: who, text: 'recorded' }, ...entry.takes.filter((t) => t.key !== key)];
 }
-writeFileSync(manifestFile, JSON.stringify(manifest, null, 1) + '\n');
-put('candidates.json', manifestFile, 'application/json');
 console.log(`${found.length} sounds from part ${partArg} uploaded (${where})`);

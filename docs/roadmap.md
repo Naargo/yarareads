@@ -1,0 +1,57 @@
+# Roadmap: from Yara's app to a public release
+
+Revised Oct 19 2026 after review. The first goal is to publish and find out whether any parents want this at all. Everything is split into what launch needs and what can wait.
+
+## Launch
+
+### 1. Clean up grown-ups (done Oct 19, not yet deployed)
+
+- Drop the "words she taps most" stats from Practise. Remove the tab until progress (see Progress) gives it something to show.
+- Voice tab: remove the experiments (the old Aura 1 and Melo voices, the try-a-word box). Keep the choice of voice.
+- Sounds tab: say what the toggles do. For existing books they only control what's highlighted as new (dotted underline, plum tiles, the "can't read yet" lists). They're a real constraint only when an agent writes a new story. Rename the tab to match.
+- Retire the Sound lab (`#/sounds`). It's experiment leftovers.
+
+### 2. Sounds
+
+- Every sound in the catalog plays one of the 45 recordings, but some play phoneme by phoneme (le, ed), and words outside the catalog have phonemes with no recording. Measure the gaps across all books, then record those.
+- Ship with Eli's voice. AI is bad at pure phonics sounds (tried). A different set can replace it later.
+
+### 3. Accounts
+
+- Log in with finereli-login, like every other app. One account owns its inventory, settings, books and progress.
+- Accounts matter because Yara needs copyrighted books we own (Mittu) that must never be public. Home books belong to an account.
+- Keep the free tier: no login, state on the device, as the public site works today.
+
+### 4. Progress
+
+- Replace the stars with "read N times". The End screen stops showing three fixed stars.
+- Store only books finished and the current spot in each book. Nothing else.
+
+### 5. MCP for books (needed now, for the family)
+
+- An MCP server so an agent can manage an account's books: create, upload page images, push, check. It replaces a how-to doc for agents, and it's what lets Tom use his own Claude to write books for Yara.
+- Authenticate with a per-account token, not the PIN. Depends on 3.
+- Agents need to check their work in the real UI. Add a private preview key that lets an agent open the app as an account without going through login.
+- Until it exists, adding a book stays the paragraph in CLAUDE.md.
+
+### 6. Publish
+
+See the publish-app skill: positioning, name, icon, privacy (children's data), hosting cost of TTS, launch channels.
+
+## After launch
+
+### 7. Optional sync without losing progress
+
+- Logged-out readers can log in later and keep their progress. TYM loses it on the switch, so ours must merge the device's state into the account.
+
+### 8. Multiple kids
+
+- Several kid profiles under one parent account on one device, as TYM does.
+
+### 9. Far future
+
+- People writing and sharing stories on the platform, maybe a marketplace. Only worth thinking about if parents show up.
+
+## Not important
+
+- An Indian English voice. Workers AI has none, and Deepgram's Flux TTS would need its own API key and a second code path. Revisit only if it matters.

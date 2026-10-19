@@ -34,7 +34,7 @@ Never loosen the inventory to make a story pass.
   Names and words she can't read yet are still broken down, using the whole catalog: tiles for sounds she hasn't learned are plum (`part.new`).
   Only tricky words and words no catalog sound can explain show as one block.
   `SOUNDED` in phonics.js lists words sounded out a particular way, by Eli's choice, as [letters, sound] per button, ahead of
-  the tricky list: "they" is th-e-y (the e and consonant y glide into its /ai/), "again" and "said" play their ai as "eh" (Oct 16).
+  the tricky list: "they" is th-e-y (the e and consonant y glide into its /ai/), "again" and "said" play their ai as "eh", "looked" and "liked" end in ed as /t/ (Oct 19).
   Add to it one word at a time; it changes only the word card, not what counts as readable.
 - `docs/stories/`: one brief per series (Tom's briefs, decisions, chapter outline). Read it before writing the next chapter.
 - `docs/vocabulary.md`: coverage findings and the queue of what to teach or add next. `node tools/coverage.mjs` re-measures.
@@ -54,7 +54,7 @@ Never loosen the inventory to make a story pass.
   stories after changing a picture (`push.mjs --images` does both).
 - `public/`: the app (no build step). `art.js` holds the icons, logo and cover motifs; `fonts/` are self-hosted Andika (reading) and Fredoka (UI).
 - `src/worker.js`: API. `/api/login`, `/api/stories`, `/api/stories/:id`, `/api/pictures/<key>`, `/api/inventory` (GET/PUT), `/api/events`, `/api/progress`,
-  `/api/say?word=&voice=` (a spoken word), `/api/settings` (GET/PUT: the voice), `/api/sounds/<key>` and `/api/sound-picks` (Sound lab).
+  `/api/say?word=&voice=` (a spoken word), `/api/settings` (GET/PUT: the voice), `/api/sounds/<key>` (the recorded phonics sounds).
 - `migrations/`: D1 schema. Stories are stored with each word's pronunciations (`story.words`), so the app classifies words against the live inventory at read time.
 - Events (open, page, tap, finish) go to the `events` table. Taps are the signal for which words to practise.
 
@@ -96,7 +96,7 @@ sound), then says it; off, it just says the word. No silent animation: Eli found
 `decode` gives every part its `sound` in ARPAbet ("Z" for the s in "is", "K S" for x), and `SOUND_FILES` maps it to a
 recording (a sequence with no recording of its own plays phoneme by phoneme; a silent e plays nothing). A tile stays lit for
 its sound plus a gap, at least 500 ms; with no recording, 650 ms as before. Recordings load when the card opens.
-The public site serves these 45 recordings too (Eli's call, Oct 16), but not the Sound lab's other takes or the recorded example words.
+The public site serves these 45 recordings too (Eli's call, Oct 16), but not the recorded example words.
 Recordings are levelled to -23 LUFS over the active part of each clip (the median of Hyperion's words), then corrected per
 sound (`ADJUST` in tools/sounds-record.mjs) from Zwicker loudness (ISO 532-1, sones, via MoSQITo), which unlike LUFS hears
 broadband hiss as loud as people do; plus 2.5 dB off the unvoiced hisses by Eli's ear (f, s, h were "extremely loud").
@@ -114,7 +114,7 @@ pick the clean one (last 50 ms quiet), and put it over the cached file in R2: Hy
 plays a silent buffer inside the tap. **Sound log:** every word said is logged (`events` type `say`, `detail` like
 "played 320ms preloaded audio=running iPad app"), shown in grown-ups > App; FALLBACK lines are failures.
 
-The grown-ups section is tabbed (`#/grownups/<tab>`: Practise, Sounds, Words, Books, Voice, App).
+The grown-ups section is tabbed (`#/grownups/<tab>`: Sounds, Words, Books, Voice, App).
 
 Content changes need only `tools/push.mjs`, no deploy.
 
@@ -125,18 +125,16 @@ Content changes need only `tools/push.mjs`, no deploy.
    ~~Silent e (split digraphs), coverage tool.~~
    Next: more stories. AI writes, the checker validates, and we loop until clean. Vocabulary queue: docs/vocabulary.md.
 3. Pictures: generate per page from `picture`, keeping characters consistent; store in R2.
-4. Real phoneme audio. ~~Word voice (Cloudflare TTS, cached).~~ AI can't make pure phonics sounds well: `tools/sounds.mjs`
-   (TTS voices given spellings like "sss", "tuh") and `tools/sounds-describe.mjs` (gpt-audio given a description of the sound)
-   are in the **Sound lab** (`#/sounds`, picks in D1 `sound_picks`), but Eli concluded (Oct 7) that the sounds will be
-   **recorded by Tom or Eli** from a recording sheet, then cut into one file per sound. Whisper can't pre-screen isolated sounds.
+4. Real phoneme audio. ~~Word voice (Cloudflare TTS, cached).~~ AI can't make pure phonics sounds well (tried TTS spellings like "sss" and
+   gpt-audio descriptions, Oct 7), so the sounds are **recorded by Eli** from a recording sheet, then cut into one file per sound.
    Recording: one file per part of the sheet, each sound then its example word, a pause between ("sss ... sun ... mmm ... map").
    `node tools/sounds-record.mjs <file> <part> [who]` slices at the silences, finds each example word with Whisper (in order;
-   the sound is the piece just before it, so stray noises and redos don't matter), levels and fades each clip, uploads it to R2
-   `sounds/recorded/<who>/<id>.mp3` (+ `words/`), and puts it first in the Sound lab. Local copies in content/sounds/recorded/
+   the sound is the piece just before it, so stray noises and redos don't matter), levels and fades each clip, and uploads it to R2
+   `sounds/recorded/<who>/<id>.mp3` (+ `words/`). Local copies in content/sounds/recorded/
    are gitignored: family voices stay out of the public repo. All 45 recorded by Eli in one take (Oct 16, `all`): with exactly
    two pieces per sound the tool pairs them in order, since Whisper mishears single words ("yeah" for hat).
    ~~The tiles play each sound as they light.~~
 5. ~~Books from home, with pictures (first: Mittu and the Yellow Mango).~~ Next: show which *sounds* a book needs, not just words.
-6. Practise: grow the grown-ups "Practise" panel into something Eli can work through with her.
+6. Release plan: docs/roadmap.md.
 
 Not here: whole-page read-aloud. Browser TTS was too weak and it's a shortcut around reading. A proper version (OpenAI TTS with word timings for highlighting) is a separate project.
