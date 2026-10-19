@@ -8,19 +8,28 @@ const BRAND = `<div class="brand">${LOGO}<span class="name">Yara <em>Reads</em><
 
 // ---------- API ----------
 
+// An agent's preview link (?preview=<token>) opens the app read-only as an account for an hour, so it can look at its work.
+const previewParam = new URLSearchParams(location.search).get('preview');
+if (previewParam) {
+  try { sessionStorage.setItem('yr.preview', previewParam); } catch {}
+  history.replaceState(null, '', location.pathname + location.hash);
+}
+const previewToken = () => { try { return sessionStorage.getItem('yr.preview'); } catch { return null; } };
+
 // Signing in goes through login.finereli.com (Google). Each account has its own sounds, voice, books and progress.
 const login = new FinereliLogin({ storageKey: 'yr.login' });
+const authToken = () => previewToken() || login.token;
 // Page pictures are plain <img> requests that can't carry the token, so signing in also leaves it in a cookie
 // (read-only on the server). Signed out, the cookie is cleared.
-const syncSession = () => fetch('/api/session', login.token
-  ? { method: 'POST', headers: { authorization: `Bearer ${login.token}` } }
+const syncSession = () => fetch('/api/session', authToken()
+  ? { method: 'POST', headers: { authorization: `Bearer ${authToken()}` } }
   : { method: 'DELETE' }).catch(() => {});
 const loginReady = login.handleRedirect().then(syncSession);
 
 async function api(path, options = {}) {
   const res = await fetch('/api/' + path, {
     ...options,
-    headers: { 'content-type': 'application/json', ...(login.token && { authorization: `Bearer ${login.token}` }) },
+    headers: { 'content-type': 'application/json', ...(authToken() && { authorization: `Bearer ${authToken()}` }) },
     body: options.body && JSON.stringify(options.body),
   });
   if (!res.ok) throw new Error(`${path}: ${res.status}`);
@@ -31,11 +40,11 @@ async function api(path, options = {}) {
 // this device. Signed in, they're kept on the account.
 let PUBLIC = false;
 const modeReady = loginReady
-  .then(() => fetch('/api/settings', { headers: login.token ? { authorization: `Bearer ${login.token}` } : {} }))
+  .then(() => fetch('/api/settings', { headers: authToken() ? { authorization: `Bearer ${authToken()}` } : {} }))
   .then((r) => (r.ok ? r.json() : {}))
   .then((s) => {
     PUBLIC = !!s.public;
-    if (PUBLIC) login.handleUnauthorized(); // a token the worker no longer accepts
+    if (PUBLIC && !previewToken()) login.handleUnauthorized(); // a token the worker no longer accepts
   })
   .catch(() => {});
 const local = {
@@ -299,7 +308,7 @@ async function showLibrary() {
         </div>`).join('')}
       <div class="library-foot">
         <button class="grownups-btn" data-act="grownups">${ICONS.lock} Grown-ups</button>
-        ${login.user ? '' : `<button class="grownups-btn" data-act="signin">${ICONS.user} Sign in</button>`}
+        ${login.user || previewToken() ? '' : `<button class="grownups-btn" data-act="signin">${ICONS.user} Sign in</button>`}
         ${PUBLIC ? '<a class="link" href="/about">What is this?</a>' : ''}
       </div>
     </div>`;
@@ -630,6 +639,7 @@ const TABS = [
   ['words', 'Words'],
   ['books', 'Books'],
   ['voice', 'Voice'],
+  ['agents', 'Agents'],
   ['app', 'App'],
 ];
 
@@ -657,9 +667,9 @@ async function showGrownups(tab) {
   if (!gdata) {
     app.innerHTML = adminShell(tab, '<section class="panel"><p class="muted">Loading</p></section>');
     app.querySelector('[data-act=done]').onclick = () => (location.hash = '#/');
-    const [inv, list, prefs] = await Promise.all([getInventory(), api('stories'), getSettings()]);
+    const [inv, list, prefs, tokens] = await Promise.all([getInventory(), api('stories'), getSettings(), PUBLIC ? [] : api('agent-tokens').catch(() => [])]);
     const stories = await Promise.all(list.map((s) => getStory(s.id)));
-    gdata = { inv, stories, prefs };
+    gdata = { inv, stories, prefs, tokens };
     if (!location.hash.startsWith('#/grownups')) return; // left while loading
     tab = location.hash.split('/')[2];
   }
@@ -670,6 +680,7 @@ function renderGrownups(tab) {
   const tabs = PUBLIC ? TABS.filter(([t]) => PUBLIC_TABS.includes(t)) : TABS;
   if (!tabs.some(([t]) => t === tab)) tab = tabs[0][0];
   const { inv, stories, prefs } = gdata;
+  if (tab !== 'agents') gdata.newKey = null;
 
   const tiles = (entries) => entries.map(([g]) =>
     `<button class="tile ${inv.graphemes.includes(g) ? 'on' : ''}" data-g="${esc(g)}">${esc(letters(g))}${
@@ -752,6 +763,25 @@ function renderGrownups(tab) {
             <span class="switch ${prefs[key] ? 'on' : ''}"></span>
           </button>`).join('')}
       </section>`,
+    agents: () => `
+      <section class="panel">
+        <h2>Your own agent</h2>
+        <p>Connect Claude, ChatGPT or any agent that supports MCP, and it can write books for your child, or type in books you own,
+          straight into this account. Only you see them. The agent checks every word against the sounds switched on here.</p>
+        ${gdata.newKey ? `<div class="newkey">
+          <p><b>Copy this address now.</b> It won't be shown again, and anyone with it can add books to this account.</p>
+          <input readonly value="${esc(`${location.origin}/mcp/${gdata.newKey}`)}" aria-label="Connection address">
+          <button class="press check" data-act="copykey">Copy</button>
+          <p class="muted">In Claude or ChatGPT, add a custom connector (an MCP server) and paste the address. For Claude Code:
+            <code>claude mcp add --transport http yara-reads &lt;address&gt;</code></p>
+        </div>` : ''}
+        <h3>Connections</h3>
+        <div class="wordlist">${gdata.tokens.map((t) => `<span class="wordchip">${esc(t.label)} <span class="muted">${esc(t.created_at.slice(0, 10))}</span><button data-revoke="${t.id}" aria-label="Remove ${esc(t.label)}">${ICONS.close}</button></span>`).join('') || '<span class="days">None yet.</span>'}</div>
+        <form class="adder" data-newkey>
+          <input name="label" placeholder="Name it, e.g. Claude" autocomplete="off" maxlength="40">
+          <button class="press">${ICONS.plus} Connect</button>
+        </form>
+      </section>`,
     app: () => `
       <section class="panel">
         <h2>App <small>version ${esc(version || 'unknown')}</small></h2>
@@ -804,6 +834,30 @@ function renderGrownups(tab) {
     inv[f.dataset.add] = [...inv[f.dataset.add], w];
     save();
   }));
+
+  if (tab === 'agents') {
+    on('[data-revoke]', (b) => {
+      const id = Number(b.dataset.revoke);
+      gdata.tokens = gdata.tokens.filter((t) => t.id !== id);
+      rerender();
+      api(`agent-tokens/${id}`, { method: 'DELETE' }).catch(failed);
+    });
+    on('[data-act=copykey]', async (b) => {
+      try { await navigator.clipboard.writeText(`${location.origin}/mcp/${gdata.newKey}`); toast('Copied'); } catch { app.querySelector('.newkey input').select(); }
+    });
+    const form = app.querySelector('[data-newkey]');
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const label = form.label.value.trim() || 'My agent', button = form.querySelector('button');
+      button.disabled = true;
+      try {
+        const made = await api('agent-tokens', { method: 'POST', body: { label } });
+        gdata.tokens = [...gdata.tokens, { id: made.id, label, created_at: new Date().toISOString() }];
+        gdata.newKey = made.token;
+        rerender();
+      } catch { button.disabled = false; failed(); }
+    };
+  }
 
   if (tab === 'voice') {
     on('.try', (b) => {

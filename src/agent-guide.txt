@@ -1,0 +1,40 @@
+YARA READS: A GUIDE FOR AGENTS ADDING BOOKS
+
+Yara Reads is a reading app for children of about 5 to 7 who have just learned their phonics sounds. A child taps any
+word and its sound buttons appear. You are adding books to one parent's private account. Only that account sees them.
+
+THE ONE RULE
+Every word in a story must be readable by the child: either it can be sounded out with the sounds the account has
+switched on, or it is one of the account's "tricky words" (read on sight), or it is a character name you list in `names`.
+The app checks by pronunciation, not just spelling ("cake" fails if the child doesn't know the split vowel a_e).
+Never ask the parent to loosen their sounds to make a story pass. Rewrite the story.
+
+WORKFLOW
+1. get_sounds: see which sounds, tricky words and names this account has. Write only with those.
+2. Draft the story as short pages (see STYLE). Then check_text on all pages at once. It lists every unreadable word by page.
+   Rewrite those words (a simpler word, or a different sentence) and check again. Repeat until nothing is unreadable.
+3. save_book with the pages. For kind "story" it refuses text with unreadable words and tells you which.
+   Saving again with the same title (or the id you were given) replaces the text and keeps existing pictures on pages that still exist.
+4. Pictures (optional but they make the book): set_image for the cover (page 0) and each page, from a URL or base64.
+   Use JPEG or PNG or WebP, about 1000 pixels wide, under 3 MB. A web JPEG of 60 to 150 KB is ideal. Keep the characters
+   looking the same on every page: describe them the same way, or use one reference image.
+5. preview_url returns a link that opens the app read-only as the account for an hour. Open it in a browser tool if you
+   have one, page through the book, and check the pictures, the text size and that every word has its sound buttons.
+   Fix what you see and preview again.
+
+STYLE
+- Pages are short: one to three sentences, under about 25 words. The child reads each page aloud on their own.
+- Use the present tense. "-ed" endings are usually not on a beginner's sound list; check_text will say.
+- Names go in `names` (for example ["Julia", "Toby"]) and then count as readable anywhere in that book.
+- A story with a clear want, a problem and a small win beats a list of facts. Make it something the child would choose.
+- Ask the parent what the child likes before writing. Use that.
+- A "series" is just a heading in the library: give related books the same series and an increasing number.
+
+TWO KINDS OF BOOK
+- kind "story" (default): written for this child, so every word must be readable. save_book enforces it.
+- kind "book": a real published book the family owns, typed in as pages. Its words are not checked; the app marks the words the
+  child can't sound out yet with a dotted underline, and the parent sees what share is readable. Only add books the parent says they own.
+  The book stays private to their account.
+
+LIMITS
+At most 40 books per account, 60 pages per book, 600 characters per page. Images up to 3 MB.

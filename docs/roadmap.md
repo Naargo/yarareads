@@ -22,12 +22,12 @@ Revised Oct 19 2026 after review. The first goal is to publish and find out whet
 - Accounts matter because Yara needs copyrighted books we own (Mittu) that must never be public. Home books belong to an account.
 - Keep the free tier: no login, state on the device, as the public site works today.
 
-### 4. Progress
+### 4. Progress (built Oct 19: read N times, resume where you left off)
 
 - Replace the stars with "read N times". The End screen stops showing three fixed stars.
 - Store only books finished and the current spot in each book. Nothing else.
 
-### 5. MCP for books (needed now, for the family)
+### 5. MCP for books (built Oct 19, not yet deployed or tried with a real agent)
 
 - An MCP server so an agent can manage an account's books: create, upload page images, push, check. It replaces a how-to doc for agents, and it's what lets Tom use his own Claude to write books for Yara.
 - Authenticate with a per-account token, not the PIN. Depends on 3.

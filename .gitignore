@@ -5,3 +5,4 @@ node_modules/
 public/version.json
 content/sounds/candidates/
 content/sounds/recorded/
+public/lexicon.dict

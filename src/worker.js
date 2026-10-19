@@ -1,7 +1,8 @@
 // API for Yara Reads. Static files are served from public/; everything under /api/ lands here.
 
 import publicInventory from '../content/inventory.json';
-import { verifyLogin, verifyLoginToken } from './verify-login.js';
+import { verifyLoginToken } from './verify-login.js';
+import { handleMcp, sha256 } from './mcp.js';
 
 // Tokens from login.finereli.com are made for one origin; these are ours (wrangler dev serves on 8787).
 const AUDIENCE = ['https://yarareads.finereli.com', 'http://localhost:8787'];
@@ -57,7 +58,8 @@ async function sayWord(env, voiceId, word) {
 // own stories, never books from home (other people's books), and never touches Yara's data: her inventory,
 // settings and events need a sign-in. Parents keep their child's sounds and progress on their own device.
 const isPublic = (url, env) => !!env.PUBLIC_HOST && url.hostname === env.PUBLIC_HOST;
-const OUR_STORIES = "coalesce(json_extract(body, '$.kind'), 'story') != 'book'";
+// Ours: not a book from home, and not a book an account's own agent added (those have an owner).
+const OUR_STORIES = "coalesce(json_extract(body, '$.kind'), 'story') != 'book' AND owner IS NULL";
 
 // What the word card's speaker button does (grown-ups > Voice). soundOut on: sound the word out first (each sound button
 // lights and plays its recording), then say it. Off: just say the word. Tapping a sound button to hear it is always on.
@@ -70,21 +72,32 @@ async function setting(env, sub, key, fallback) {
   return row ? row.value : fallback;
 }
 
-// Who is asking: a Google sign-in (Bearer token from login.finereli.com). Page pictures are plain <img> requests,
-// which can't carry a header, so the app also leaves the same token in a cookie (POST /api/session); the cookie is
-// only honoured for reads. env.LOGIN_ISSUER points tests at a local key server. Returns { sub, email, name } or null.
-async function account(request, env) {
-  const opts = { audience: AUDIENCE, ...(env.LOGIN_ISSUER && { issuer: env.LOGIN_ISSUER }) };
-  let claims = await verifyLogin(request, opts);
-  if (!claims && (request.method === 'GET' || request.method === 'HEAD')) {
-    const token = cookie(request, 'yr_token');
-    if (token) claims = await verifyLoginToken(token, opts);
+// Who is asking. The app sends the Google sign-in token from login.finereli.com as a Bearer header. Page pictures are
+// plain <img> requests, which can't carry a header, so the same token also sits in a cookie (POST /api/session), honoured
+// for reads only. A preview token (made by an agent's preview_url) is a one-hour read-only view of an account.
+// env.LOGIN_ISSUER points tests at a local key server. Returns { sub, email, name, readOnly? } or null.
+const loginOptions = (env) => ({ audience: AUDIENCE, ...(env.LOGIN_ISSUER && { issuer: env.LOGIN_ISSUER }) });
+
+async function tokenAccount(token, env) {
+  if (token.startsWith('yrp_')) {
+    const row = await env.DB.prepare("SELECT sub FROM agent_tokens WHERE hash = ? AND kind = 'preview' AND expires_at > datetime('now')")
+      .bind(await sha256(token)).first();
+    return row && { sub: row.sub, email: 'preview', name: 'preview', readOnly: true };
   }
+  const claims = await verifyLoginToken(token, loginOptions(env));
   if (!claims) return null;
   if (env.FAMILY_EMAIL && claims.email_verified && claims.email.toLowerCase() === env.FAMILY_EMAIL.toLowerCase()) {
     await adoptFamily(env, claims.sub);
   }
   return { sub: claims.sub, email: claims.email, name: claims.name };
+}
+
+async function account(request, env) {
+  const bearer = request.headers.get('Authorization')?.replace(/^Bearer /, '');
+  if (bearer) return tokenAccount(bearer, env);
+  const reads = request.method === 'GET' || request.method === 'HEAD';
+  const token = reads && cookie(request, 'yr_token');
+  return token ? tokenAccount(token, env) : null;
 }
 
 // Hand what existed before accounts to this account. Safe to run twice at once (the app makes several requests at
@@ -194,6 +207,9 @@ export default {
         ['/about', '/', '/llms.txt'].map(loc).join('')}</urlset>\n`, { headers: { 'content-type': 'application/xml' } });
     }
 
+    // An agent's connection (MCP). It has its own keys; see src/mcp.js.
+    if (path === '/mcp' || path.startsWith('/mcp/')) return handleMcp(request, env, url, { seed: INVENTORY_SEED });
+
     if (!path.startsWith('/api/')) return env.ASSETS.fetch(request);
 
     if (pub) {
@@ -205,15 +221,20 @@ export default {
       const base = 'Path=/; HttpOnly; Secure; SameSite=Lax';
       if (request.method === 'DELETE') return json({ ok: true }, { headers: { 'set-cookie': `yr_token=; Max-Age=0; ${base}` } });
       const token = request.headers.get('Authorization')?.replace(/^Bearer /, '');
-      const claims = request.method === 'POST' && token && (await verifyLoginToken(token, { audience: AUDIENCE, ...(env.LOGIN_ISSUER && { issuer: env.LOGIN_ISSUER }) }));
-      if (!claims) return json({ error: 'sign in' }, { status: 401 });
-      return json({ ok: true }, { headers: { 'set-cookie': `yr_token=${token}; Max-Age=${Math.max(0, claims.exp - Math.floor(Date.now() / 1000))}; ${base}` } });
+      if (request.method !== 'POST' || !token || !(await tokenAccount(token, env))) return json({ error: 'sign in' }, { status: 401 });
+      // A sign-in token is a JWT that says when it ends; a preview token lasts an hour at most.
+      const exp = token.startsWith('yrp_') ? 3600 : Math.max(0, JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))).exp - Math.floor(Date.now() / 1000));
+      return json({ ok: true }, { headers: { 'set-cookie': `yr_token=${token}; Max-Age=${exp}; ${base}` } });
     }
 
     const who = await account(request, env);
     // Not signed in: the free version, the same as the public site (our own books; progress stays on the device).
     if (!who) return publicApi(request, env, url, path);
     const sub = who.sub;
+    // A preview looks and nothing else: no saving, and it leaves no reading history.
+    if (who.readOnly && request.method !== 'GET') {
+      return path === '/api/events' ? json({ ok: true }) : json({ error: 'preview is read-only' }, { status: 403 });
+    }
 
     if (path === '/api/stories' && request.method === 'GET') {
       await env.DB.prepare(
@@ -334,6 +355,27 @@ export default {
       await env.DB.prepare('INSERT INTO events (type, story_id, page, word, detail, sub) VALUES (?, ?, ?, ?, ?, ?)')
         .bind(String(e.type).slice(0, 32), e.storyId ?? null, e.page ?? null, e.word ?? null, e.detail ? String(e.detail).slice(0, 200) : null, sub)
         .run();
+      return json({ ok: true });
+    }
+
+    // Keys for the parent's own agents (Claude, ChatGPT...) to manage this account's books through /mcp. The key is shown
+    // once, when it's made; only its hash is kept.
+    if (path === '/api/agent-tokens' && request.method === 'GET') {
+      const { results } = await env.DB.prepare("SELECT id, label, created_at FROM agent_tokens WHERE sub = ? AND kind = 'agent' ORDER BY id").bind(sub).all();
+      return json(results);
+    }
+    if (path === '/api/agent-tokens' && request.method === 'POST') {
+      const { label } = await request.json().catch(() => ({}));
+      const { n } = await env.DB.prepare("SELECT COUNT(*) AS n FROM agent_tokens WHERE sub = ? AND kind = 'agent'").bind(sub).first();
+      if (n >= 10) return json({ error: 'too many keys: remove one first' }, { status: 400 });
+      const token = 'yra_' + btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(24)))).replace(/[+/=]/g, (c) => ({ '+': '-', '/': '_', '=': '' })[c]);
+      const row = await env.DB.prepare("INSERT INTO agent_tokens (hash, sub, label, kind) VALUES (?, ?, ?, 'agent') RETURNING id")
+        .bind(await sha256(token), sub, String(label || 'My agent').slice(0, 40)).first();
+      return json({ id: row.id, token });
+    }
+    const tokenMatch = path.match(/^\/api\/agent-tokens\/(\d+)$/);
+    if (tokenMatch && request.method === 'DELETE') {
+      await env.DB.prepare("DELETE FROM agent_tokens WHERE id = ? AND sub = ? AND kind = 'agent'").bind(Number(tokenMatch[1]), sub).run();
       return json({ ok: true });
     }
 

@@ -2,7 +2,7 @@
 // live inventory, how to break it down), and lists words Yara can't read yet.
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { classify, tokenize, isWord, normalize, forStory } from '../public/phonics.js';
+import { compileStory } from '../src/compile.js';
 import { pronunciations } from './lexicon.mjs';
 
 const root = new URL('..', import.meta.url).pathname;
@@ -28,17 +28,5 @@ export function imageFile(key) {
 export const isHomeBook = (story) => story.kind === 'book';
 
 export function compile(story, inv = inventory) {
-  inv = forStory(inv, story);
-  const words = {};
-  const unknown = new Map();
-  let count = 0;
-  story.pages.forEach((page, n) => {
-    for (const t of tokenize(page.text).filter(isWord)) {
-      count++;
-      const w = normalize(t);
-      words[w] = pronunciations(t);
-      if (classify(t, inv, words[w]).kind === 'unknown') unknown.set(w, [...(unknown.get(w) || []), n + 1]);
-    }
-  });
-  return { story: { ...story, words }, unknown, count };
+  return compileStory(story, inv, pronunciations);
 }
