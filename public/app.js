@@ -10,7 +10,12 @@ const BRAND = `<div class="brand">${LOGO}<span class="name">Yara <em>Reads</em><
 
 // Signing in goes through login.finereli.com (Google). Each account has its own sounds, voice, books and progress.
 const login = new FinereliLogin({ storageKey: 'yr.login' });
-const loginReady = login.handleRedirect();
+// Page pictures are plain <img> requests that can't carry the token, so signing in also leaves it in a cookie
+// (read-only on the server). Signed out, the cookie is cleared.
+const syncSession = () => fetch('/api/session', login.token
+  ? { method: 'POST', headers: { authorization: `Bearer ${login.token}` } }
+  : { method: 'DELETE' }).catch(() => {});
+const loginReady = login.handleRedirect().then(syncSession);
 
 async function api(path, options = {}) {
   const res = await fetch('/api/' + path, {
@@ -773,6 +778,7 @@ function renderGrownups(tab) {
   on('[data-act=update]', () => location.reload());
   on('[data-act=signout]', async () => {
     login.signOut();
+    await syncSession();
     location.reload();
   });
   on('.tile', (t) => {

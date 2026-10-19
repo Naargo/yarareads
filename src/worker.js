@@ -1,7 +1,7 @@
 // API for Yara Reads. Static files are served from public/; everything under /api/ lands here.
 
 import publicInventory from '../content/inventory.json';
-import { verifyLogin } from './verify-login.js';
+import { verifyLogin, verifyLoginToken } from './verify-login.js';
 
 // Tokens from login.finereli.com are made for one origin; these are ours (wrangler dev serves on 8787).
 const AUDIENCE = ['https://yarareads.finereli.com', 'http://localhost:8787'];
@@ -12,6 +12,11 @@ const INVENTORY_SEED = () => { const { _note, ...inv } = publicInventory; return
 
 const json = (data, init = {}) =>
   new Response(JSON.stringify(data), { ...init, headers: { 'content-type': 'application/json', ...init.headers } });
+
+function cookie(request, name) {
+  const match = (request.headers.get('cookie') || '').match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+  return match && match[1];
+}
 
 // Voices for words, from Cloudflare Workers AI. Ids are "<model>:<speaker>"; the grown-ups Voice tab lists these.
 // Aura is Deepgram's (mp3); MeloTTS returns base64 WAV in JSON.
@@ -65,9 +70,16 @@ async function setting(env, sub, key, fallback) {
   return row ? row.value : fallback;
 }
 
-// Who is asking: a Google sign-in (Bearer token from login.finereli.com). Returns { sub, email, name } or null.
+// Who is asking: a Google sign-in (Bearer token from login.finereli.com). Page pictures are plain <img> requests,
+// which can't carry a header, so the app also leaves the same token in a cookie (POST /api/session); the cookie is
+// only honoured for reads. env.LOGIN_ISSUER points tests at a local key server. Returns { sub, email, name } or null.
 async function account(request, env) {
-  const claims = await verifyLogin(request, { audience: AUDIENCE });
+  const opts = { audience: AUDIENCE, ...(env.LOGIN_ISSUER && { issuer: env.LOGIN_ISSUER }) };
+  let claims = await verifyLogin(request, opts);
+  if (!claims && (request.method === 'GET' || request.method === 'HEAD')) {
+    const token = cookie(request, 'yr_token');
+    if (token) claims = await verifyLoginToken(token, opts);
+  }
   if (!claims) return null;
   if (env.FAMILY_EMAIL && claims.email_verified && claims.email.toLowerCase() === env.FAMILY_EMAIL.toLowerCase()) {
     await adoptFamily(env, claims.sub);
@@ -186,6 +198,16 @@ export default {
 
     if (pub) {
       return publicApi(request, env, url, path);
+    }
+
+    // Sign-in leaves its token in a cookie too, for pictures. Signing out clears it.
+    if (path === '/api/session') {
+      const base = 'Path=/; HttpOnly; Secure; SameSite=Lax';
+      if (request.method === 'DELETE') return json({ ok: true }, { headers: { 'set-cookie': `yr_token=; Max-Age=0; ${base}` } });
+      const token = request.headers.get('Authorization')?.replace(/^Bearer /, '');
+      const claims = request.method === 'POST' && token && (await verifyLoginToken(token, { audience: AUDIENCE, ...(env.LOGIN_ISSUER && { issuer: env.LOGIN_ISSUER }) }));
+      if (!claims) return json({ error: 'sign in' }, { status: 401 });
+      return json({ ok: true }, { headers: { 'set-cookie': `yr_token=${token}; Max-Age=${Math.max(0, claims.exp - Math.floor(Date.now() / 1000))}; ${base}` } });
     }
 
     const who = await account(request, env);
