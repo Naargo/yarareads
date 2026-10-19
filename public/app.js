@@ -51,6 +51,7 @@ const getStory = async (id) => storyCache[id] || (storyCache[id] = await api('st
 let settings;
 const getSettings = async () => settings || (settings = await api('settings'));
 const forgetContent = () => {
+  gdata = null;
   inventory = null;
   storyCache = {};
   settings = null;
@@ -97,31 +98,19 @@ function loadWord(word, voice) {
   }
   return wordAudio.get(k);
 }
-// For the sound log: which device, and whether it's the installed app.
-const device = () => `${/iPad|iPhone|Android|Macintosh|Windows/.exec(navigator.userAgent)?.[0] || 'other'}${navigator.standalone ? ' app' : ''}`;
 const prefetchWord = (word) => getSettings().then((s) => loadWord(word, s.voice)).catch(() => {});
 
 // Say a word; `button` shows a spinner if the audio isn't ready yet. Resolves when it starts playing.
-// Every attempt goes in the sound log (grown-ups > App), so intermittent failures can be traced.
 async function sayWord(word, button, voice) {
-  const t0 = performance.now();
-  const ready = wordAudio.has(`${voice || settings?.voice}|${sayKey(word)}`);
   voice ||= (await getSettings().catch(() => ({}))).voice;
   const pending = voice ? loadWord(word, voice) : Promise.resolve({ why: 'no voice setting' });
   const spin = setTimeout(() => button?.classList.add('waiting'), 120);
-  const { buffer, why } = await pending;
+  const { buffer } = await pending;
   clearTimeout(spin);
   button?.classList.remove('waiting');
   stopAudio();
   if (buffer && audioCtx.state !== 'running') await audioCtx.resume().catch(() => {});
-  const state = audioCtx?.state || 'none';
-  const note = (outcome) => log('say', { word: sayKey(word),
-    detail: `${outcome} ${Math.round(performance.now() - t0)}ms ${ready ? 'preloaded' : 'loaded'} audio=${state} ${device()}` });
-  if (!buffer || state !== 'running') {
-    note(`FALLBACK (${why || `audio ${state}`})`);
-    return speak(word);
-  }
-  note('played');
+  if (!buffer || audioCtx.state !== 'running') return speak(word);
   playing = ctx().createBufferSource();
   playing.buffer = buffer;
   // Fade the last 30 ms: some words stop at full volume, and a hard stop clicks.
@@ -303,11 +292,11 @@ async function showLibrary() {
               </span>
             </button>`).join('')}
         </div>`).join('')}
-      <p style="text-align:center; margin-top:40px">
+      <div class="library-foot">
         <button class="grownups-btn" data-act="grownups">${ICONS.lock} Grown-ups</button>
-        ${login.user ? '' : '<button class="grownups-btn" data-act="signin">Sign in</button>'}
-        ${PUBLIC ? '<br><a class="link" href="/about">What is this?</a>' : ''}
-      </p>
+        ${login.user ? '' : `<button class="grownups-btn" data-act="signin">${ICONS.user} Sign in</button>`}
+        ${PUBLIC ? '<a class="link" href="/about">What is this?</a>' : ''}
+      </div>
     </div>`;
   app.querySelectorAll('.book').forEach((b) => (b.onclick = () => (location.hash = `#/read/${b.dataset.id}/0`)));
   app.querySelector('[data-act=grownups]').onclick = () => (location.hash = '#/grownups');
@@ -635,12 +624,40 @@ const TABS = [
 // The public site has only the tabs that work on a device: sounds, words and books.
 const PUBLIC_TABS = ['sounds', 'words', 'books'];
 
+// Everything the tabs show, loaded once per visit. Tabs render from it at once, and edits change it first and
+// save afterwards, so nothing waits on the network.
+let gdata;
+
+const adminShell = (tab, body) => {
+  const tabs = PUBLIC ? TABS.filter(([t]) => PUBLIC_TABS.includes(t)) : TABS;
+  return `
+    <div class="admin">
+      <header>
+        <h1>Grown-ups</h1>
+        <button class="done press" data-act="done">${ICONS.check} Done</button>
+      </header>
+      <nav class="tabs">${tabs.map(([t, label]) => `<a href="#/grownups/${t}" class="${t === tab ? 'on' : ''}">${label}</a>`).join('')}</nav>
+      ${body}
+    </div>`;
+};
+
 async function showGrownups(tab) {
+  if (!gdata) {
+    app.innerHTML = adminShell(tab, '<section class="panel"><p class="muted">Loading</p></section>');
+    app.querySelector('[data-act=done]').onclick = () => (location.hash = '#/');
+    const [inv, list, prefs] = await Promise.all([getInventory(), api('stories'), getSettings()]);
+    const stories = await Promise.all(list.map((s) => getStory(s.id)));
+    gdata = { inv, stories, prefs };
+    if (!location.hash.startsWith('#/grownups')) return; // left while loading
+    tab = location.hash.split('/')[2];
+  }
+  renderGrownups(tab);
+}
+
+function renderGrownups(tab) {
   const tabs = PUBLIC ? TABS.filter(([t]) => PUBLIC_TABS.includes(t)) : TABS;
   if (!tabs.some(([t]) => t === tab)) tab = tabs[0][0];
-  const [inv, list, progress, prefs] = await Promise.all([
-    getInventory(), api('stories'), PUBLIC ? { taps: [], days: [] } : api('progress'), getSettings()]);
-  const stories = tab === 'books' || tab === 'voice' ? await Promise.all(list.map((s) => getStory(s.id))) : [];
+  const { inv, stories, prefs } = gdata;
 
   const tiles = (entries) => entries.map(([g]) =>
     `<button class="tile ${inv.graphemes.includes(g) ? 'on' : ''}" data-g="${esc(g)}">${esc(letters(g))}${
@@ -656,7 +673,7 @@ async function showGrownups(tab) {
   const panels = {
     sounds: () => `
       <section class="panel">
-        <h2>Sounds ${PUBLIC ? 'your child knows' : 'she knows'} <small>${inv.graphemes.length} on</small></h2>
+        <h2>Known sounds <small>${inv.graphemes.length} on</small></h2>
         <p>Tap a sound to switch it on or off. This doesn't change any book. A word with a sound that's off gets a dotted underline,
           its word card shows that sound in purple, and the Books tab lists it as not readable yet. It starts with the sounds from
           Teach Your Monster to Read, which the books are written for.${PUBLIC ? ' This is saved on this device.' : ' New stories are written only with sounds that are on.'}</p>
@@ -665,20 +682,20 @@ async function showGrownups(tab) {
     words: () => `
       <section class="panel">
         <h2>Tricky words <small>${inv.tricky.length}</small></h2>
-        <p>Words ${PUBLIC ? 'your child reads' : 'she reads'} on sight, without sounding out.</p>
+        <p>Words read on sight, without sounding out.</p>
         <div class="wordlist">${words('tricky')}</div>
         ${adder('tricky', 'Add a tricky word')}
       </section>
       <section class="panel">
         <h2>Names <small>${inv.names.length}</small></h2>
-        <p>Characters' names. ${PUBLIC ? 'They count as readable' : 'She can read these'} anywhere.</p>
+        <p>Characters' names. They count as readable anywhere.</p>
         <div class="wordlist">${words('names')}</div>
         ${adder('names', 'Add a name')}
       </section>`,
     books: () => `
       <section class="panel">
         <h2>Books</h2>
-        <p>Whether each book is still readable with what ${PUBLIC ? 'your child knows' : 'she knows'}.</p>
+        <p>Whether each book is still readable with the sounds and words set here.</p>
         ${stories.map((s) => {
           const missing = unreadable(s, inv);
           if (s.kind === 'book') {
@@ -687,14 +704,14 @@ async function showGrownups(tab) {
             return `<div class="bookrow">
               <span class="dot home">${share}</span>
               <div><b>${esc(s.title)}</b> <span class="muted">from home</span>
-                <div>She can read ${share}% of it. Not yet: ${missing.map(esc).join(', ')}</div>
+                <div>${share}% is readable. Not yet: ${missing.map(esc).join(', ')}</div>
               </div>
             </div>`;
           }
           return `<div class="bookrow">
             <span class="dot ${missing.length ? 'bad' : 'ok'}">${missing.length ? '!' : ICONS.check}</span>
             <div><b>Book ${s.number}: ${esc(s.title)}</b>
-              <div>${missing.length ? `Words ${PUBLIC ? 'your child' : 'she'} can't read yet: ${missing.map(esc).join(', ')}` : (PUBLIC ? 'Every word is readable.' : 'Every word is one she can read.')}</div>
+              <div>${missing.length ? `Not readable yet: ${missing.map(esc).join(', ')}` : 'Every word is readable.'}</div>
             </div>
           </div>`;
         }).join('')}
@@ -722,13 +739,6 @@ async function showGrownups(tab) {
             <span><b>${title}</b><span class="muted">${about}</span></span>
             <span class="switch ${prefs[key] ? 'on' : ''}"></span>
           </button>`).join('')}
-      </section>
-      <section class="panel">
-        <h2>Get the books ready</h2>
-        <p>Each word is made once, the first time it's needed, then kept. This makes every word in the books now,
-          in the voice in use, so she never waits.</p>
-        <button class="press check" data-act="warm">Get every book word ready</button>
-        <span class="muted warm-status"></span>
       </section>`,
     app: () => `
       <section class="panel">
@@ -740,34 +750,22 @@ async function showGrownups(tab) {
         <h2>Account</h2>
         <p>Signed in as <b>${esc(login.user.email)}</b>. Books, sounds, voice and progress belong to this account.</p>
         <button class="press check" data-act="signout">Sign out</button>
-      </section>`}
-      <section class="panel">
-        <h2>Sound log <small>last ${progress.sounds?.length || 0}</small></h2>
-        <p>Every time a word is said: whether it played, how long it took, whether it was already loaded, the state of the
-          audio, and the device. FALLBACK means the app's voice couldn't play and the browser's own voice was tried.</p>
-        <div class="soundlog">${(progress.sounds || []).map((e) => `
-          <div class="${/FALLBACK/.test(e.detail) ? 'bad' : ''}"><span class="muted">${esc(e.ts.slice(5, 16))}</span>
-            <b>${esc(e.word || '')}</b> <span>${esc(e.detail || '')}</span></div>`).join('') || '<span class="days">Nothing yet.</span>'}</div>
-      </section>`,
+      </section>`}`,
   };
 
-  app.innerHTML = `
-    <div class="admin">
-      <header>
-        <h1>Grown-ups</h1>
-        <button class="done press" data-act="done">${ICONS.check} Done</button>
-      </header>
-      <nav class="tabs">${tabs.map(([t, label]) => `<a href="#/grownups/${t}" class="${t === tab ? 'on' : ''}">${label}</a>`).join('')}</nav>
-      ${panels[tab]()}
-    </div>`;
+  app.innerHTML = adminShell(tab, panels[tab]());
 
-  const save = async () => {
-    if (PUBLIC) local.set('inventory', inv);
-    else await api('inventory', { method: 'PUT', body: inv });
-    toast('Saved');
+  // Edits show at once and are saved afterwards; a failed save says so.
+  const rerender = () => {
     const y = scrollY;
-    await showGrownups(tab);
+    renderGrownups(tab);
     scrollTo(0, y);
+  };
+  const failed = () => toast('Could not save');
+  const save = () => {
+    rerender();
+    if (PUBLIC) local.set('inventory', inv);
+    else api('inventory', { method: 'PUT', body: inv }).catch(failed);
   };
   const on = (sel, fn) => app.querySelectorAll(sel).forEach((el) => (el.onclick = (e) => fn(el, e)));
   on('[data-act=done]', () => (location.hash = '#/'));
@@ -799,36 +797,16 @@ async function showGrownups(tab) {
       unlockAudio();
       sayWord('dragon', b, b.dataset.voice);
     });
-    on('[data-setting]', async (b) => {
+    on('[data-setting]', (b) => {
       const key = b.dataset.setting;
-      await api('settings', { method: 'PUT', body: { [key]: !prefs[key] } });
-      settings = null;
-      toast(prefs[key] ? 'Off' : 'On');
-      await showGrownups('voice');
+      prefs[key] = !prefs[key];
+      rerender();
+      api('settings', { method: 'PUT', body: { [key]: prefs[key] } }).catch(failed);
     });
-    on('.pick', async (b) => {
-      await api('settings', { method: 'PUT', body: { voice: b.dataset.voice } });
-      settings = null;
-      toast(`${prefs.voices[b.dataset.voice].label} is the voice now`);
-      await showGrownups('voice');
-    });
-    // Every word in every book, made in the voice in use (a few at a time; cached ones are quick).
-    on('[data-act=warm]', async (b) => {
-      const all = [...new Set(stories.flatMap((s) => s.pages.flatMap((p) => tokenize(p.text).filter(isWord))).map(sayKey))].filter(Boolean);
-      const status = app.querySelector('.warm-status');
-      b.disabled = true;
-      let done = 0, failed = 0;
-      const queue = [...all];
-      const worker = async () => {
-        for (let w; (w = queue.shift()); ) {
-          const r = await fetch(`/api/say?word=${encodeURIComponent(w)}&voice=${encodeURIComponent(prefs.voice)}`).catch(() => null);
-          if (!r?.ok) failed++;
-          status.textContent = `${++done} of ${all.length}${failed ? `, ${failed} failed` : ''}`;
-        }
-      };
-      await Promise.all([1, 2, 3, 4].map(worker));
-      status.textContent = failed ? `Done, but ${failed} failed. Try again.` : `All ${all.length} words ready.`;
-      b.disabled = false;
+    on('.pick', (b) => {
+      prefs.voice = b.dataset.voice;
+      rerender();
+      api('settings', { method: 'PUT', body: { voice: prefs.voice } }).catch(failed);
     });
   }
 }

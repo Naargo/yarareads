@@ -309,21 +309,6 @@ export default {
       return json({ ok: true });
     }
 
-    // For grown-ups: which words she taps most, i.e. what to practise next.
-    if (path === '/api/progress' && request.method === 'GET') {
-      const { results: taps } = await env.DB.prepare(
-        "SELECT word, COUNT(*) AS taps FROM events WHERE type = 'tap' AND sub = ? GROUP BY word ORDER BY taps DESC LIMIT 40",
-      ).bind(sub).all();
-      const { results: days } = await env.DB.prepare(
-        "SELECT date(ts) AS day, COUNT(DISTINCT story_id) AS stories, SUM(type = 'page') AS pages FROM events WHERE sub = ? GROUP BY day ORDER BY day DESC LIMIT 14",
-      ).bind(sub).all();
-      // How word audio went on each device (logged by the app every time a word is said).
-      const { results: sounds } = await env.DB.prepare(
-        "SELECT ts, word, detail FROM events WHERE type = 'say' AND sub = ? ORDER BY id DESC LIMIT 60",
-      ).bind(sub).all();
-      return json({ taps, days, sounds });
-    }
-
     return json({ error: 'not found' }, { status: 404 });
   },
 };

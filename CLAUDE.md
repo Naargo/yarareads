@@ -63,7 +63,7 @@ Never loosen the inventory to make a story pass.
   (immutable): a redrawn picture keeps its R2 key but gets a new URL, so every device shows the new one. Always re-push
   stories after changing a picture (`push.mjs --images` does both).
 - `public/`: the app (no build step). `art.js` holds the icons, logo and cover motifs; `fonts/` are self-hosted Andika (reading) and Fredoka (UI).
-- `src/worker.js`: API. `/api/login`, `/api/stories`, `/api/stories/:id`, `/api/pictures/<key>`, `/api/inventory` (GET/PUT), `/api/events`, `/api/progress`,
+- `src/worker.js`: API. `/api/login`, `/api/stories`, `/api/stories/:id`, `/api/pictures/<key>`, `/api/inventory` (GET/PUT), `/api/events`,
   `/api/say?word=&voice=` (a spoken word), `/api/settings` (GET/PUT: the voice), `/api/sounds/<key>` (the recorded phonics sounds).
 - `migrations/`: D1 schema. Stories are stored with each word's pronunciations (`story.words`), so the app classifies words against the live inventory at read time.
 - Events (open, page, tap, finish) go to the `events` table. Taps are the signal for which words to practise.
@@ -117,14 +117,15 @@ The word is sent as a sentence (`playing.`): a bare word gets its end clipped. E
 The word card starts fetching when it opens, so the audio is ready by the end of the sounding out (650 ms a sound); if not,
 the speaker button shows a spinner. Audio plays through Web Audio: iOS only allows sound started inside a tap, so the tap
 resumes the AudioContext (`unlockAudio`) and the word can play later from a timer. Browser speech is only the fallback.
-Grown-ups > Voice can make every book word in advance ("Get every book word ready"). Cost is negligible (Aura ~$0.03 per 1k characters).
+Words are made on demand the first time they're said (the free, signed-out version only plays words already made). Cost is negligible (Aura ~$0.03 per 1k characters).
 Aura still clips a word's end now and then; fix those one at a time (Eli: one-off issues are fine). Generate a few takes,
 pick the clean one (last 50 ms quiet), and put it over the cached file in R2: Hyperion's "the" was replaced this way (Oct 13).
 `unlockAudio` resumes the AudioContext from any state but running (iOS goes 'interrupted' after the screen locks) and
-plays a silent buffer inside the tap. **Sound log:** every word said is logged (`events` type `say`, `detail` like
-"played 320ms preloaded audio=running iPad app"), shown in grown-ups > App; FALLBACK lines are failures.
+plays a silent buffer inside the tap.
 
-The grown-ups section is tabbed (`#/grownups/<tab>`: Sounds, Words, Books, Voice, App).
+The grown-ups section is tabbed (`#/grownups/<tab>`: Sounds, Words, Books, Voice, App). `gdata` holds everything the tabs show,
+loaded once per visit; edits change it, re-render at once, and save in the background (nothing waits on the network).
+Wording in settings uses no pronouns: it's for any child.
 
 Content changes need only `tools/push.mjs`, no deploy.
 
