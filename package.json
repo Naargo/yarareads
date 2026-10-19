@@ -1,5 +1,5 @@
 {
-  "name": "yara-reads",
+  "name": "yarareads",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,15 +9,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/finereli/yara-reads.git"
+    "url": "git+https://github.com/finereli/yarareads.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/finereli/yara-reads/issues"
+    "url": "https://github.com/finereli/yarareads/issues"
   },
-  "homepage": "https://github.com/finereli/yara-reads#readme",
+  "homepage": "https://github.com/finereli/yarareads#readme",
   "devDependencies": {
     "playwright": "^1.63.0",
     "sharp": "^0.35.5",

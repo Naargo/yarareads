@@ -26,7 +26,7 @@ It's a Cloudflare Worker with static assets, D1 for data and R2 for pictures. No
 kid who's learning to read, I'd love you to take this and make it yours.
 
 ```sh
-git clone https://github.com/finereli/yara-reads && cd yara-reads
+git clone https://github.com/finereli/yarareads && cd yarareads
 npm install
 npx wrangler d1 create yara-reads          # put the database_id in wrangler.jsonc, with your account_id
 npx wrangler r2 bucket create yara-reads-pictures
