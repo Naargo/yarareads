@@ -15,8 +15,8 @@
   // Workers AI: text to speech for words (cached in R2 under tts/).
   "ai": { "binding": "AI", "remote": true },
   "routes": [{ "pattern": "yarareads.finereli.com", "custom_domain": true }],
-  // The public site (no PIN, our stories only; see publicApi in src/worker.js) turns on when PUBLIC_HOST is a
+  // The public site (no sign-in, our stories only; see publicApi in src/worker.js) turns on when PUBLIC_HOST is a
   // hostname routed to this worker. Empty: off. PUBLIC_INDEX "1" lets crawlers in.
   "vars": { "PUBLIC_HOST": "", "PUBLIC_INDEX": "0" }
-  // Secrets (wrangler secret put): PIN, SESSION_SECRET
+  // Secrets (wrangler secret put): FAMILY_EMAIL (the Google account that adopts the pre-accounts data)
 }

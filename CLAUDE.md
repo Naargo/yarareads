@@ -26,12 +26,13 @@ Never loosen the inventory to make a story pass.
 
 - **Accounts** (Oct 19). Sign-in is finereli-login (login.finereli.com, Google): `public/login.js` is the kit client ported to plain JS,
   `src/verify-login.js` checks the Bearer token in the worker (`AUDIENCE` in worker.js: the prod origin and localhost:8787).
-  `account()` in worker.js resolves every private request to a `sub`: the Google id, or `'family'` for the old PIN cookie (kept so
-  nothing broke; the PIN is the legacy account). Inventory (`account_inventory`), settings (`account_settings`), events (`events.sub`)
-  and books from home (`stories.owner`) are per account; our own series has `owner` NULL and is visible to everyone signed in.
-  Pictures are served only if a story the account can see uses them. A new account starts with the TYM seed inventory.
-  Grown-ups > App > Account shows who's signed in and has "Move it here" (`POST /api/claim`, needs the PIN): it moves the family
-  account's data to the Google account, once. `push.mjs --owner <sub>` / `pull.mjs --owner <sub>` target an account (default `family`).
+  `account()` in worker.js resolves every private request to the Google id (`sub`). There is no PIN any more, and no invites.
+  Inventory (`account_inventory`), settings (`account_settings`), events (`events.sub`) and books from home (`stories.owner`) are per
+  account; our own series has `owner` NULL and is visible to everyone signed in. Pictures are served only if a story the account can see
+  uses them. A new account starts with the TYM seed inventory. Every library load records the account in `accounts` (sub, email).
+  Everything that existed before accounts is held by the placeholder account `'family'`; the secret `FAMILY_EMAIL` (Yara's Google
+  account, kept out of the public repo) makes the worker hand it all over the first time that account signs in (`adoptFamily`).
+  `push.mjs` / `pull.mjs` take `--owner <email or id>` (or `$OWNER_EMAIL`); the account must have signed in once so it's in `accounts`.
   The public site (PUBLIC_HOST) is unchanged: no login, state on the device.
 - **The live inventory is in D1**, edited by Eli in the grown-ups section (gate: type a birth year that makes you an adult, like TYM).
   `content/inventory.json` is the seed: her TYM sounds and tricky words from his screenshots (Oct 2026), plus "egg" and "house".
@@ -74,7 +75,7 @@ Never loosen the inventory to make a story pass.
 - `node tools/push.mjs`: push stories to remote D1 (`--local` for dev). `--inventory` also overwrites the live inventory: only after a pull.
   `--images` uploads every page picture to R2.
 - `npm run deploy`: check, stamp `public/version.json`, deploy. Commit first so the version names a real commit.
-  Secrets: `PIN`, `SESSION_SECRET` (never write the PIN into the repo).
+  Secrets: `FAMILY_EMAIL` (see Accounts).
   The installed app (home screen PWA) checks version.json on returning to the foreground and every 15 minutes, and reloads
   when it changed. There's deliberately no service worker: assets are served must-revalidate, so a reload is the whole update.
   Content (books, pictures, inventory) isn't versioned: the app drops its cached books and inventory whenever the library

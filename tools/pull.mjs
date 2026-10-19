@@ -1,11 +1,13 @@
 // Copies the live inventory (edited in the grown-ups section) from D1 into content/inventory.json.
-// Usage: node tools/pull.mjs [--local] [--owner <sub>]   (default: the 'family' account, or whoever claimed it: pass their sub)
+// Usage: node tools/pull.mjs [--local] --owner <email or id>   (or $OWNER_EMAIL)
 import { readFileSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 
-const ownerArg = process.argv.indexOf('--owner');
-const owner = (ownerArg > 0 ? process.argv[ownerArg + 1] : 'family').replace(/'/g, '');
+import { owner as findOwner } from './owner.mjs';
+
 const where = process.argv.includes('--local') ? '--local' : '--remote';
+const owner = findOwner(where);
+if (!owner) throw new Error('needs --owner <email or id> (or $OWNER_EMAIL)');
 const out = execFileSync('npx', ['wrangler', 'd1', 'execute', 'yara-reads', where, '--json',
   '--command', `SELECT body FROM account_inventory WHERE sub = '${owner}'`], { encoding: 'utf8' });
 const body = JSON.parse(out)[0].results[0]?.body;

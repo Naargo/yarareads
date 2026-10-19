@@ -2,19 +2,20 @@
 // Yara can't read (books from home are exempt: they're what they are).
 // The inventory lives in D1 (edited in the app); pass --inventory to overwrite it from
 // content/inventory.json. Run `node tools/pull.mjs` first so you check against the live one.
-// Usage: node tools/push.mjs [--local] [--inventory] [--images] [--owner <sub>]   (--images uploads page pictures to R2)
-// Books from home are private to one account: --owner is that account's Google id (default: 'family', the pre-accounts
-// PIN account, which is moved to a Google account by Claim in the App tab). --inventory writes that account's inventory.
+// Usage: node tools/push.mjs [--local] [--inventory] [--images] [--owner <email or id>]   (--images uploads page pictures to R2)
+// Books from home are private to one account: --owner (or $OWNER_EMAIL) says whose. --inventory writes that account's inventory.
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
+import { owner as findOwner } from './owner.mjs';
 import { compile, storyFiles, inventory, isHomeBook, imageFile } from './build.mjs';
 
-const ownerArg = process.argv.indexOf('--owner');
-const owner = ownerArg > 0 ? process.argv[ownerArg + 1] : 'family';
+const where = process.argv.includes('--local') ? '--local' : '--remote';
+const owner = findOwner(where);
 const q = (s) => `'${String(s).replace(/'/g, "''")}'`;
 const sql = [];
 if (process.argv.includes('--inventory')) {
+  if (!owner) throw new Error('--inventory needs --owner <email or id> (or $OWNER_EMAIL)');
   const { _note, ...inv } = inventory;
   sql.push(`INSERT OR REPLACE INTO account_inventory (sub, body, updated_at) VALUES (${q(owner)}, ${q(JSON.stringify(inv))}, CURRENT_TIMESTAMP);`);
 }
@@ -29,6 +30,7 @@ for (const file of storyFiles()) {
     if (!imageFile(key)) throw new Error(`${story.id}: missing image ${key}`);
     images.add(key);
   }
+  if (isHomeBook(story) && !owner) throw new Error(`${story.id} is a book from home: needs --owner <email or id> (or $OWNER_EMAIL)`);
   if (unknown.size && !isHomeBook(story)) {
     console.error(`${story.id}: unreadable words: ${[...unknown.keys()].join(', ')}`);
     process.exit(1);
@@ -42,7 +44,6 @@ for (const file of storyFiles()) {
 }
 mkdirSync('.build', { recursive: true });
 writeFileSync('.build/push.sql', sql.join('\n'));
-const where = process.argv.includes('--local') ? '--local' : '--remote';
 execFileSync('npx', ['wrangler', 'd1', 'execute', 'yara-reads', where, '--file', '.build/push.sql'], { stdio: 'inherit' });
 if (process.argv.includes('--images')) {
   for (const key of images) {

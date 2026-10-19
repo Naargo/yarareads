@@ -5,23 +5,13 @@ import { verifyLogin } from './verify-login.js';
 
 // Tokens from login.finereli.com are made for one origin; these are ours (wrangler dev serves on 8787).
 const AUDIENCE = ['https://yarareads.finereli.com', 'http://localhost:8787'];
-// What existed before accounts: the PIN signs in as this account until someone claims its data.
+// What existed before accounts is held by this account, until env.FAMILY_EMAIL (a secret: Yara's Google account) first
+// signs in and adopts it. Its books, inventory, settings and progress then belong to her.
 const FAMILY = 'family';
 const INVENTORY_SEED = () => { const { _note, ...inv } = publicInventory; return { ...inv, names: [] }; };
 
 const json = (data, init = {}) =>
   new Response(JSON.stringify(data), { ...init, headers: { 'content-type': 'application/json', ...init.headers } });
-
-async function sessionToken(env) {
-  const bytes = new TextEncoder().encode(`${env.PIN}:${env.SESSION_SECRET}`);
-  const hash = await crypto.subtle.digest('SHA-256', bytes);
-  return [...new Uint8Array(hash)].map((b) => b.toString(16).padStart(2, '0')).join('');
-}
-
-function cookie(request, name) {
-  const match = (request.headers.get('cookie') || '').match(new RegExp(`(?:^|; )${name}=([^;]*)`));
-  return match && match[1];
-}
 
 // Voices for words, from Cloudflare Workers AI. Ids are "<model>:<speaker>"; the grown-ups Voice tab lists these.
 // Aura is Deepgram's (mp3); MeloTTS returns base64 WAV in JSON.
@@ -58,9 +48,9 @@ async function sayWord(env, voiceId, word) {
   return { body: bytes, type };
 }
 
-// The public site: the same app on another hostname (env.PUBLIC_HOST), with no PIN. It only ever shows our
+// The public site: the same app on another hostname (env.PUBLIC_HOST), with no sign-in. It only ever shows our
 // own stories, never books from home (other people's books), and never touches Yara's data: her inventory,
-// settings and events stay behind the PIN. Parents keep their child's sounds and progress on their own device.
+// settings and events need a sign-in. Parents keep their child's sounds and progress on their own device.
 const isPublic = (url, env) => !!env.PUBLIC_HOST && url.hostname === env.PUBLIC_HOST;
 const OUR_STORIES = "coalesce(json_extract(body, '$.kind'), 'story') != 'book'";
 
@@ -75,13 +65,28 @@ async function setting(env, sub, key, fallback) {
   return row ? row.value : fallback;
 }
 
-// Who is asking: a Google sign-in (Bearer token from login.finereli.com), or the family PIN (cookie), which is the
-// legacy account. Returns { sub, via, user? } or null.
+// Who is asking: a Google sign-in (Bearer token from login.finereli.com). Returns { sub, email, name } or null.
 async function account(request, env) {
   const claims = await verifyLogin(request, { audience: AUDIENCE });
-  if (claims) return { sub: claims.sub, via: 'google', user: { email: claims.email, name: claims.name } };
-  if (cookie(request, 'yr') === (await sessionToken(env))) return { sub: FAMILY, via: 'pin' };
-  return null;
+  if (!claims) return null;
+  if (env.FAMILY_EMAIL && claims.email_verified && claims.email.toLowerCase() === env.FAMILY_EMAIL.toLowerCase()) {
+    await adoptFamily(env, claims.sub);
+  }
+  return { sub: claims.sub, email: claims.email, name: claims.name };
+}
+
+// Hand what existed before accounts to this account. Safe to run twice at once (the app makes several requests at
+// startup): each step copies from 'family' and then empties it, in one transaction, so the second run finds nothing.
+async function adoptFamily(env, sub) {
+  if (!(await env.DB.prepare('SELECT 1 FROM account_inventory WHERE sub = ?').bind(FAMILY).first())) return;
+  await env.DB.batch([
+    env.DB.prepare('INSERT OR REPLACE INTO account_inventory (sub, body, updated_at) SELECT ?, body, updated_at FROM account_inventory WHERE sub = ?').bind(sub, FAMILY),
+    env.DB.prepare('DELETE FROM account_inventory WHERE sub = ?').bind(FAMILY),
+    env.DB.prepare('INSERT OR REPLACE INTO account_settings (sub, key, value, updated_at) SELECT ?, key, value, updated_at FROM account_settings WHERE sub = ?').bind(sub, FAMILY),
+    env.DB.prepare('DELETE FROM account_settings WHERE sub = ?').bind(FAMILY),
+    env.DB.prepare('UPDATE events SET sub = ? WHERE sub = ?').bind(sub, FAMILY),
+    env.DB.prepare('UPDATE stories SET owner = ? WHERE owner = ?').bind(sub, FAMILY),
+  ]);
 }
 
 // A story this account may see: the shared library, or its own books.
@@ -183,25 +188,14 @@ export default {
       return publicApi(request, env, url, path);
     }
 
-    if (path === '/api/login' && request.method === 'POST') {
-      const { pin } = await request.json().catch(() => ({}));
-      if (String(pin) !== String(env.PIN)) return json({ ok: false }, { status: 401 });
-      const token = await sessionToken(env);
-      return json({ ok: true }, {
-        headers: { 'set-cookie': `yr=${token}; Path=/; Max-Age=31536000; HttpOnly; Secure; SameSite=Lax` },
-      });
-    }
-
-    // Forget the family PIN on this device.
-    if (path === '/api/logout' && request.method === 'POST') {
-      return json({ ok: true }, { headers: { 'set-cookie': 'yr=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax' } });
-    }
-
     const who = await account(request, env);
     if (!who) return json({ error: 'sign in' }, { status: 401 });
     const sub = who.sub;
 
     if (path === '/api/stories' && request.method === 'GET') {
+      await env.DB.prepare(
+        'INSERT INTO accounts (sub, email, name) VALUES (?, ?, ?) ON CONFLICT (sub) DO UPDATE SET email = excluded.email, name = excluded.name, seen_at = CURRENT_TIMESTAMP',
+      ).bind(sub, who.email, who.name ?? null).run();
       const { results: stories } = await env.DB.prepare(
         `SELECT id, series, number, title, json_extract(body, '$.cover') AS cover,
            json_extract(body, '$.coverImage') AS coverImage, coalesce(json_extract(body, '$.kind'), 'story') AS kind
@@ -327,29 +321,6 @@ export default {
         "SELECT ts, word, detail FROM events WHERE type = 'say' AND sub = ? ORDER BY id DESC LIMIT 60",
       ).bind(sub).all();
       return json({ taps, days, sounds });
-    }
-
-    // Who is signed in, and whether the family PIN still holds data to claim.
-    if (path === '/api/me' && request.method === 'GET') {
-      return json({ sub, via: who.via, ...who.user });
-    }
-
-    // Move what existed before accounts (the family PIN's inventory, settings, progress and books from home) to this
-    // Google account. The PIN in the request proves the caller is the family. Replaces the account's own inventory
-    // and settings, so it's meant to be done once, on a fresh account.
-    if (path === '/api/claim' && request.method === 'POST') {
-      if (who.via !== 'google') return json({ error: 'sign in with Google first' }, { status: 400 });
-      const { pin } = await request.json().catch(() => ({}));
-      if (String(pin) !== String(env.PIN)) return json({ error: 'wrong PIN' }, { status: 403 });
-      await env.DB.batch([
-        env.DB.prepare('DELETE FROM account_inventory WHERE sub = ?').bind(sub),
-        env.DB.prepare('UPDATE account_inventory SET sub = ? WHERE sub = ?').bind(sub, FAMILY),
-        env.DB.prepare('DELETE FROM account_settings WHERE sub = ?').bind(sub),
-        env.DB.prepare('UPDATE account_settings SET sub = ? WHERE sub = ?').bind(sub, FAMILY),
-        env.DB.prepare('UPDATE events SET sub = ? WHERE sub = ?').bind(sub, FAMILY),
-        env.DB.prepare('UPDATE stories SET owner = ? WHERE owner = ?').bind(sub, FAMILY),
-      ]);
-      return json({ ok: true });
     }
 
     return json({ error: 'not found' }, { status: 404 });
