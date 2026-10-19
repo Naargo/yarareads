@@ -273,8 +273,8 @@ async function showLibrary() {
   forgetContent();
   const stories = await api('stories');
   if (PUBLIC) {
-    const done = local.get('finished') || {};
-    stories.forEach((s) => (s.finished = done[s.id] || 0));
+    const done = local.get('finished') || {}, spots = local.get('spot') || {};
+    stories.forEach((s) => { s.finished = done[s.id] || 0; s.spot = spots[s.id] || 0; });
   }
   const series = [...new Set(stories.map((s) => s.series))];
   const nextUp = stories.find((s) => !s.finished && s.kind !== 'book');
@@ -293,7 +293,7 @@ async function showLibrary() {
               <span class="meta">
                 <span class="num">${s.kind === 'book' ? 'From home' : `Book ${s.number}`}</span>
                 <span class="title">${esc(s.title)}</span>
-                <span class="stars">${[0, 1, 2].map((i) => STAR(i < s.finished)).join('')}</span>
+                <span class="times">${s.spot ? `On page ${s.spot + 1}` : s.finished ? (s.finished === 1 ? 'Read once' : `Read ${s.finished} times`) : ''}</span>
               </span>
             </button>`).join('')}
         </div>`).join('')}
@@ -303,7 +303,7 @@ async function showLibrary() {
         ${PUBLIC ? '<a class="link" href="/about">What is this?</a>' : ''}
       </div>
     </div>`;
-  app.querySelectorAll('.book').forEach((b) => (b.onclick = () => (location.hash = `#/read/${b.dataset.id}/0`)));
+  app.querySelectorAll('.book').forEach((b) => (b.onclick = () => (location.hash = `#/read/${b.dataset.id}/${stories.find((s) => s.id === b.dataset.id)?.spot || 0}`)));
   app.querySelector('[data-act=grownups]').onclick = () => (location.hash = '#/grownups');
   const signin = app.querySelector('[data-act=signin]');
   if (signin) signin.onclick = async () => { if (await login.signIn()) location.reload(); };
@@ -317,6 +317,11 @@ async function showReader(id, pageIndex) {
   if (pageIndex >= story.pages.length) return showEnd(story);
   if (pageIndex === 0) log('open', { storyId: id });
   log('page', { storyId: id, page: pageIndex });
+  if (PUBLIC) { // the free version keeps the place on this device
+    const spots = local.get('spot') || {};
+    spots[id] = pageIndex;
+    local.set('spot', spots);
+  }
 
   const page = story.pages[pageIndex];
   // Words she can't read yet (only in books from home) get a quiet dotted underline.
@@ -600,13 +605,15 @@ async function showEnd(story) {
     const done = local.get('finished') || {};
     done[story.id] = (done[story.id] || 0) + 1;
     local.set('finished', done);
+    const spots = local.get('spot') || {};
+    delete spots[story.id];
+    local.set('spot', spots);
   }
   const stories = await api('stories');
   const next = stories.find((s) => s.series === story.series && s.number === story.number + 1);
   app.innerHTML = `
     <div class="end">
       <h1 class="big">The End</h1>
-      <div class="stars">${STAR(true).repeat(3)}</div>
       <p class="said">You read <b>${esc(story.title)}</b>!</p>
       ${next ? `<button class="next press ember">Next: ${esc(next.title)} ${ICONS.next}</button>` : ''}
       <button class="link" data-act="home">All books</button>

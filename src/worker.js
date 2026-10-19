@@ -228,7 +228,13 @@ export default {
         "SELECT story_id, COUNT(*) AS times FROM events WHERE type = 'finish' AND sub = ? GROUP BY story_id",
       ).bind(sub).all();
       const times = Object.fromEntries(done.map((d) => [d.story_id, d.times]));
-      return json(stories.map((s) => ({ ...s, finished: times[s.id] || 0 })));
+      // Where to pick a book up again: the page of the latest page event, unless the latest event is finishing it.
+      const { results: last } = await env.DB.prepare(
+        `SELECT story_id, type, page FROM events WHERE sub = ? AND type IN ('page', 'finish')
+           AND id IN (SELECT MAX(id) FROM events WHERE sub = ? AND type IN ('page', 'finish') GROUP BY story_id)`,
+      ).bind(sub, sub).all();
+      const spot = Object.fromEntries(last.filter((l) => l.type === 'page' && l.page > 0).map((l) => [l.story_id, l.page]));
+      return json(stories.map((s) => ({ ...s, finished: times[s.id] || 0, spot: spot[s.id] || 0 })));
     }
 
     const storyMatch = path.match(/^\/api\/stories\/([\w-]+)$/);
