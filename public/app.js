@@ -1,5 +1,6 @@
 import { tokenize, isWord, normalize, classify, unreadable, forStory, letters, CATALOG_GROUPS } from './phonics.js';
 import { ICONS, STAR, LOGO, cover } from './art.js';
+import { FinereliLogin } from './login.js';
 
 const app = document.getElementById('app');
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -7,15 +8,22 @@ const BRAND = `<div class="brand">${LOGO}<span class="name">Yara <em>Reads</em><
 
 // ---------- API ----------
 
+// Signing in goes through login.finereli.com (Google). The family PIN from before accounts still works, as a cookie.
+const login = new FinereliLogin({ storageKey: 'yr.login' });
+const loginReady = login.handleRedirect();
+
 class NeedPin extends Error {}
 
 async function api(path, options = {}) {
   const res = await fetch('/api/' + path, {
     ...options,
-    headers: { 'content-type': 'application/json' },
+    headers: { 'content-type': 'application/json', ...(login.token && { authorization: `Bearer ${login.token}` }) },
     body: options.body && JSON.stringify(options.body),
   });
-  if (res.status === 401) throw new NeedPin();
+  if (res.status === 401) {
+    login.handleUnauthorized();
+    throw new NeedPin();
+  }
   if (!res.ok) throw new Error(`${path}: ${res.status}`);
   return res.json();
 }
@@ -193,6 +201,7 @@ let grownUp = session.get('grownUp') === '1';
 
 async function route() {
   await modeReady;
+  await loginReady;
   closePop();
   stopAudio();
   const [, view, id, page] = location.hash.split('/');
@@ -201,7 +210,7 @@ async function route() {
     else if (view === 'grownups') grownUp ? await showGrownups(id) : showGate();
     else await showLibrary();
   } catch (e) {
-    if (e instanceof NeedPin) showPin();
+    if (e instanceof NeedPin) showSignIn();
     else app.innerHTML = `<div class="end"><h1 class="big">Oops!</h1><p class="said">${esc(e.message)}</p></div>`;
   }
   window.scrollTo(0, 0);
@@ -246,9 +255,24 @@ function keypad({ title, hint, digits = 4, boxes = false, onCancel, onDone }) {
   if (onCancel) app.querySelector('[data-act=cancel]').onclick = onCancel;
 }
 
+function showSignIn() {
+  app.innerHTML = `
+    <div class="keyscreen">
+      ${BRAND}
+      <h2>Sign in to read</h2>
+      <button class="press ember" data-act="google">Sign in with Google</button>
+      <button class="link" data-act="pin">Use the family number instead</button>
+    </div>`;
+  app.querySelector('[data-act=google]').onclick = async () => {
+    if (await login.signIn()) route();
+  };
+  app.querySelector('[data-act=pin]').onclick = showPin;
+}
+
 function showPin() {
   keypad({
     title: 'Enter the secret number',
+    onCancel: showSignIn,
     onDone: async (pin) => {
       const res = await fetch('/api/login', { method: 'POST', body: JSON.stringify({ pin }) });
       if (res.ok) route();
@@ -735,6 +759,19 @@ async function showGrownups(tab) {
         <p>The app updates itself, and new books and pictures appear whenever the library opens. If something still looks out of date:</p>
         <button class="press check" data-act="update">Refresh now</button>
       </section>
+      ${PUBLIC ? '' : `<section class="panel">
+        <h2>Account</h2>
+        ${login.user
+          ? `<p>Signed in as <b>${esc(login.user.email)}</b>. Books, sounds, voice and progress belong to this account.</p>
+            <button class="press check" data-act="signout">Sign out</button>
+            <h3>Bring the family's data here</h3>
+            <p>Before accounts, everything was kept behind the family number: the sounds you set, voice, progress, and books from home
+              like Mittu. Type the number to move all of it into this account. This replaces this account's own sounds and settings.</p>
+            <form class="adder" data-claim><input name="pin" inputmode="numeric" autocomplete="off" placeholder="Family number" aria-label="Family number">
+              <button class="press">Move it here</button></form>`
+          : `<p>You're using the family number, the way the app worked before accounts. Sign in with Google to keep this on an account instead.</p>
+            <button class="press check" data-act="signin">Sign in with Google</button>`}
+      </section>`}
       <section class="panel">
         <h2>Sound log <small>last ${progress.sounds?.length || 0}</small></h2>
         <p>Every time a word is said: whether it played, how long it took, whether it was already loaded, the state of the
@@ -767,6 +804,26 @@ async function showGrownups(tab) {
   on('[data-act=done]', () => (location.hash = '#/'));
   // A full reload: fresh code, books, pictures and sounds. Lands back here in grown-ups.
   on('[data-act=update]', () => location.reload());
+  on('[data-act=signin]', async () => { if (await login.signIn()) { forgetContent(); route(); } });
+  on('[data-act=signout]', async () => {
+    login.signOut();
+    await fetch('/api/logout', { method: 'POST' });
+    forgetContent();
+    route();
+  });
+  const claim = app.querySelector('[data-claim]');
+  if (claim) claim.onsubmit = async (e) => {
+    e.preventDefault();
+    const res = await fetch('/api/claim', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: `Bearer ${login.token}` },
+      body: JSON.stringify({ pin: claim.pin.value.trim() }),
+    });
+    if (!res.ok) return toast(res.status === 403 ? 'Wrong number' : 'That did not work');
+    forgetContent();
+    toast('Moved here');
+    showGrownups('app');
+  };
   on('.tile', (t) => {
     const g = t.dataset.g;
     inv.graphemes = inv.graphemes.includes(g) ? inv.graphemes.filter((x) => x !== g) : [...inv.graphemes, g];

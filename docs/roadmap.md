@@ -16,7 +16,7 @@ Revised Oct 19 2026 after review. The first goal is to publish and find out whet
 - Every sound in the catalog plays one of the 45 recordings, but some play phoneme by phoneme (le, ed), and words outside the catalog have phonemes with no recording. Measure the gaps across all books, then record those.
 - Ship with Eli's voice. AI is bad at pure phonics sounds (tried). A different set can replace it later.
 
-### 3. Accounts
+### 3. Accounts (built Oct 19, not yet deployed or tested)
 
 - Log in with finereli-login, like every other app. One account owns its inventory, settings, books and progress.
 - Accounts matter because Yara needs copyrighted books we own (Mittu) that must never be public. Home books belong to an account.

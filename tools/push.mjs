@@ -2,17 +2,21 @@
 // Yara can't read (books from home are exempt: they're what they are).
 // The inventory lives in D1 (edited in the app); pass --inventory to overwrite it from
 // content/inventory.json. Run `node tools/pull.mjs` first so you check against the live one.
-// Usage: node tools/push.mjs [--local] [--inventory] [--images]   (--images uploads page pictures to R2)
+// Usage: node tools/push.mjs [--local] [--inventory] [--images] [--owner <sub>]   (--images uploads page pictures to R2)
+// Books from home are private to one account: --owner is that account's Google id (default: 'family', the pre-accounts
+// PIN account, which is moved to a Google account by Claim in the App tab). --inventory writes that account's inventory.
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { compile, storyFiles, inventory, isHomeBook, imageFile } from './build.mjs';
 
+const ownerArg = process.argv.indexOf('--owner');
+const owner = ownerArg > 0 ? process.argv[ownerArg + 1] : 'family';
 const q = (s) => `'${String(s).replace(/'/g, "''")}'`;
 const sql = [];
 if (process.argv.includes('--inventory')) {
   const { _note, ...inv } = inventory;
-  sql.push(`INSERT OR REPLACE INTO inventory (id, body, updated_at) VALUES (1, ${q(JSON.stringify(inv))}, CURRENT_TIMESTAMP);`);
+  sql.push(`INSERT OR REPLACE INTO account_inventory (sub, body, updated_at) VALUES (${q(owner)}, ${q(JSON.stringify(inv))}, CURRENT_TIMESTAMP);`);
 }
 let stories = 0;
 const images = new Set();
@@ -33,7 +37,7 @@ for (const file of storyFiles()) {
   for (const p of story.pages) if (p.image) p.image = versioned(p.image);
   stories++;
   sql.push(
-    `INSERT OR REPLACE INTO stories (id, series, number, title, body, updated_at) VALUES (${q(story.id)}, ${q(story.series)}, ${story.number}, ${q(story.title)}, ${q(JSON.stringify(story))}, CURRENT_TIMESTAMP);`,
+    `INSERT OR REPLACE INTO stories (id, series, number, title, body, owner, updated_at) VALUES (${q(story.id)}, ${q(story.series)}, ${story.number}, ${q(story.title)}, ${q(JSON.stringify(story))}, ${isHomeBook(story) ? q(owner) : 'NULL'}, CURRENT_TIMESTAMP);`,
   );
 }
 mkdirSync('.build', { recursive: true });

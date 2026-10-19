@@ -24,6 +24,15 @@ Never loosen the inventory to make a story pass.
 
 ## Layout
 
+- **Accounts** (Oct 19). Sign-in is finereli-login (login.finereli.com, Google): `public/login.js` is the kit client ported to plain JS,
+  `src/verify-login.js` checks the Bearer token in the worker (`AUDIENCE` in worker.js: the prod origin and localhost:8787).
+  `account()` in worker.js resolves every private request to a `sub`: the Google id, or `'family'` for the old PIN cookie (kept so
+  nothing broke; the PIN is the legacy account). Inventory (`account_inventory`), settings (`account_settings`), events (`events.sub`)
+  and books from home (`stories.owner`) are per account; our own series has `owner` NULL and is visible to everyone signed in.
+  Pictures are served only if a story the account can see uses them. A new account starts with the TYM seed inventory.
+  Grown-ups > App > Account shows who's signed in and has "Move it here" (`POST /api/claim`, needs the PIN): it moves the family
+  account's data to the Google account, once. `push.mjs --owner <sub>` / `pull.mjs --owner <sub>` target an account (default `family`).
+  The public site (PUBLIC_HOST) is unchanged: no login, state on the device.
 - **The live inventory is in D1**, edited by Eli in the grown-ups section (gate: type a birth year that makes you an adult, like TYM).
   `content/inventory.json` is the seed: her TYM sounds and tricky words from his screenshots (Oct 2026), plus "egg" and "house".
   Run `node tools/pull.mjs` before writing stories, so you check against what she knows now.

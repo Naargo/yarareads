@@ -1,6 +1,13 @@
 // API for Yara Reads. Static files are served from public/; everything under /api/ lands here.
 
 import publicInventory from '../content/inventory.json';
+import { verifyLogin } from './verify-login.js';
+
+// Tokens from login.finereli.com are made for one origin; these are ours (wrangler dev serves on 8787).
+const AUDIENCE = ['https://yarareads.finereli.com', 'http://localhost:8787'];
+// What existed before accounts: the PIN signs in as this account until someone claims its data.
+const FAMILY = 'family';
+const INVENTORY_SEED = () => { const { _note, ...inv } = publicInventory; return { ...inv, names: [] }; };
 
 const json = (data, init = {}) =>
   new Response(JSON.stringify(data), { ...init, headers: { 'content-type': 'application/json', ...init.headers } });
@@ -60,13 +67,25 @@ const OUR_STORIES = "coalesce(json_extract(body, '$.kind'), 'story') != 'book'";
 // What the word card's speaker button does (grown-ups > Voice). soundOut on: sound the word out first (each sound button
 // lights and plays its recording), then say it. Off: just say the word. Tapping a sound button to hear it is always on.
 const SOUND_DEFAULTS = { soundOut: true };
-const soundSettings = async (env) => Object.fromEntries(await Promise.all(Object.entries(SOUND_DEFAULTS).map(async ([k, d]) =>
-  [k, (await setting(env, k, d ? '1' : '0')) === '1'])));
+const soundSettings = async (env, sub) => Object.fromEntries(await Promise.all(Object.entries(SOUND_DEFAULTS).map(async ([k, d]) =>
+  [k, (await setting(env, sub, k, d ? '1' : '0')) === '1'])));
 
-async function setting(env, key, fallback) {
-  const row = await env.DB.prepare('SELECT value FROM settings WHERE key = ?').bind(key).first();
+async function setting(env, sub, key, fallback) {
+  const row = await env.DB.prepare('SELECT value FROM account_settings WHERE sub = ? AND key = ?').bind(sub, key).first();
   return row ? row.value : fallback;
 }
+
+// Who is asking: a Google sign-in (Bearer token from login.finereli.com), or the family PIN (cookie), which is the
+// legacy account. Returns { sub, via, user? } or null.
+async function account(request, env) {
+  const claims = await verifyLogin(request, { audience: AUDIENCE });
+  if (claims) return { sub: claims.sub, via: 'google', user: { email: claims.email, name: claims.name } };
+  if (cookie(request, 'yr') === (await sessionToken(env))) return { sub: FAMILY, via: 'pin' };
+  return null;
+}
+
+// A story this account may see: the shared library, or its own books.
+const VISIBLE = '(owner IS NULL OR owner = ?)';
 
 // The public site's API: the reader's routes, limited to our stories. Everything else (grown-ups' tools,
 // Yara's settings and progress) is refused.
@@ -113,14 +132,14 @@ async function publicApi(request, env, url, path) {
   // a missing word falls back to the browser's voice.
   if (path === '/api/say' && get) {
     const word = (url.searchParams.get('word') || '').toLowerCase().replace(/[^a-z' -]/g, '').trim().slice(0, 40);
-    const voiceId = await setting(env, 'voice', DEFAULT_VOICE);
+    const voiceId = DEFAULT_VOICE;
     const ext = 'mp3';
     const obj = word && (await env.PICTURES.get(`tts2/${voiceId.replace(':', '-')}/${encodeURIComponent(word)}.${ext}`));
     if (!obj) return json({ error: 'not ready' }, { status: 404 });
     return new Response(obj.body, { headers: { 'content-type': 'audio/mpeg', 'cache-control': 'public, max-age=86400' } });
   }
   if (path === '/api/settings' && get) {
-    return json({ voice: await setting(env, 'voice', DEFAULT_VOICE), voices: {}, public: true, ...SOUND_DEFAULTS });
+    return json({ voice: DEFAULT_VOICE, voices: {}, public: true, ...SOUND_DEFAULTS });
   }
   // The starting sounds: Teach Your Monster to Read's, which the stories are written for. Edits stay on the device.
   if (path === '/api/inventory' && get) {
@@ -173,32 +192,42 @@ export default {
       });
     }
 
-    if (cookie(request, 'yr') !== (await sessionToken(env))) return json({ error: 'pin' }, { status: 401 });
+    // Forget the family PIN on this device.
+    if (path === '/api/logout' && request.method === 'POST') {
+      return json({ ok: true }, { headers: { 'set-cookie': 'yr=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax' } });
+    }
+
+    const who = await account(request, env);
+    if (!who) return json({ error: 'sign in' }, { status: 401 });
+    const sub = who.sub;
 
     if (path === '/api/stories' && request.method === 'GET') {
       const { results: stories } = await env.DB.prepare(
         `SELECT id, series, number, title, json_extract(body, '$.cover') AS cover,
            json_extract(body, '$.coverImage') AS coverImage, coalesce(json_extract(body, '$.kind'), 'story') AS kind
-         FROM stories ORDER BY kind = 'book', series, number`,
-      ).all();
+         FROM stories WHERE ${VISIBLE} ORDER BY kind = 'book', series, number`,
+      ).bind(sub).all();
       const { results: done } = await env.DB.prepare(
-        "SELECT story_id, COUNT(*) AS times FROM events WHERE type = 'finish' GROUP BY story_id",
-      ).all();
+        "SELECT story_id, COUNT(*) AS times FROM events WHERE type = 'finish' AND sub = ? GROUP BY story_id",
+      ).bind(sub).all();
       const times = Object.fromEntries(done.map((d) => [d.story_id, d.times]));
       return json(stories.map((s) => ({ ...s, finished: times[s.id] || 0 })));
     }
 
     const storyMatch = path.match(/^\/api\/stories\/([\w-]+)$/);
     if (storyMatch && request.method === 'GET') {
-      const row = await env.DB.prepare('SELECT body FROM stories WHERE id = ?').bind(storyMatch[1]).first();
+      const row = await env.DB.prepare(`SELECT body FROM stories WHERE id = ? AND ${VISIBLE}`).bind(storyMatch[1], sub).first();
       if (!row) return json({ error: 'not found' }, { status: 404 });
       return new Response(row.body, { headers: { 'content-type': 'application/json' } });
     }
 
-    // Page pictures live in R2, behind the PIN like everything else: some are scans of books we own.
+    // Page pictures live in R2, behind sign-in: some are scans of books we own, so only a picture used by a story
+    // this account can see is served.
     const picture = path.match(/^\/api\/pictures\/([\w-]+\/[\w.-]+)$/);
     if (picture && request.method === 'GET') {
-      const obj = await env.PICTURES.get(picture[1]);
+      const used = await env.DB.prepare(`SELECT 1 FROM stories WHERE ${VISIBLE} AND instr(body, ?) > 0 LIMIT 1`)
+        .bind(sub, `"${picture[1]}`).first();
+      const obj = used && (await env.PICTURES.get(picture[1]));
       if (!obj) return json({ error: 'not found' }, { status: 404 });
       return new Response(obj.body, {
         headers: {
@@ -226,7 +255,7 @@ export default {
       const word = (url.searchParams.get('word') || '').toLowerCase().replace(/[^a-z' -]/g, '').trim().slice(0, 40);
       if (!word) return json({ error: 'no word' }, { status: 400 });
       const asked = url.searchParams.get('voice');
-      const voiceId = VOICES[asked] ? asked : await setting(env, 'voice', DEFAULT_VOICE);
+      const voiceId = VOICES[asked] ? asked : await setting(env, sub, 'voice', DEFAULT_VOICE);
       try {
         const { body, type } = await sayWord(env, VOICES[voiceId] ? voiceId : DEFAULT_VOICE, word);
         return new Response(body, { headers: { 'content-type': type, 'cache-control': 'private, max-age=86400' } });
@@ -236,12 +265,12 @@ export default {
     }
 
     if (path === '/api/settings' && request.method === 'GET') {
-      return json({ voice: await setting(env, 'voice', DEFAULT_VOICE), voices: VOICES, ...(await soundSettings(env)) });
+      return json({ voice: await setting(env, sub, 'voice', DEFAULT_VOICE), voices: VOICES, ...(await soundSettings(env, sub)) });
     }
     // Any of: voice, soundOut.
     if (path === '/api/settings' && request.method === 'PUT') {
       const body = await request.json();
-      const set = (k, v) => env.DB.prepare('INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)').bind(k, v).run();
+      const set = (k, v) => env.DB.prepare('INSERT OR REPLACE INTO account_settings (sub, key, value, updated_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)').bind(sub, k, v).run();
       if ('voice' in body) {
         if (!VOICES[body.voice]) return json({ error: 'bad voice' }, { status: 400 });
         await set('voice', body.voice);
@@ -257,8 +286,9 @@ export default {
 
     // What Yara knows. Edited from the grown-ups section.
     if (path === '/api/inventory' && request.method === 'GET') {
-      const row = await env.DB.prepare('SELECT body FROM inventory WHERE id = 1').first();
-      return new Response(row ? row.body : '{"graphemes":[],"tricky":[],"names":[]}', {
+      // A new account starts with the Teach Your Monster to Read sounds, which the shared library is written for.
+      const row = await env.DB.prepare('SELECT body FROM account_inventory WHERE sub = ?').bind(sub).first();
+      return new Response(row ? row.body : JSON.stringify(INVENTORY_SEED()), {
         headers: { 'content-type': 'application/json' },
       });
     }
@@ -271,15 +301,15 @@ export default {
       }
       const body = JSON.stringify({ graphemes: inv.graphemes, tricky: inv.tricky, names: inv.names });
       await env.DB.prepare(
-        'INSERT OR REPLACE INTO inventory (id, body, updated_at) VALUES (1, ?, CURRENT_TIMESTAMP)',
-      ).bind(body).run();
+        'INSERT OR REPLACE INTO account_inventory (sub, body, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)',
+      ).bind(sub, body).run();
       return json({ ok: true });
     }
 
     if (path === '/api/events' && request.method === 'POST') {
       const e = await request.json();
-      await env.DB.prepare('INSERT INTO events (type, story_id, page, word, detail) VALUES (?, ?, ?, ?, ?)')
-        .bind(String(e.type).slice(0, 32), e.storyId ?? null, e.page ?? null, e.word ?? null, e.detail ? String(e.detail).slice(0, 200) : null)
+      await env.DB.prepare('INSERT INTO events (type, story_id, page, word, detail, sub) VALUES (?, ?, ?, ?, ?, ?)')
+        .bind(String(e.type).slice(0, 32), e.storyId ?? null, e.page ?? null, e.word ?? null, e.detail ? String(e.detail).slice(0, 200) : null, sub)
         .run();
       return json({ ok: true });
     }
@@ -287,16 +317,39 @@ export default {
     // For grown-ups: which words she taps most, i.e. what to practise next.
     if (path === '/api/progress' && request.method === 'GET') {
       const { results: taps } = await env.DB.prepare(
-        "SELECT word, COUNT(*) AS taps FROM events WHERE type = 'tap' GROUP BY word ORDER BY taps DESC LIMIT 40",
-      ).all();
+        "SELECT word, COUNT(*) AS taps FROM events WHERE type = 'tap' AND sub = ? GROUP BY word ORDER BY taps DESC LIMIT 40",
+      ).bind(sub).all();
       const { results: days } = await env.DB.prepare(
-        "SELECT date(ts) AS day, COUNT(DISTINCT story_id) AS stories, SUM(type = 'page') AS pages FROM events GROUP BY day ORDER BY day DESC LIMIT 14",
-      ).all();
+        "SELECT date(ts) AS day, COUNT(DISTINCT story_id) AS stories, SUM(type = 'page') AS pages FROM events WHERE sub = ? GROUP BY day ORDER BY day DESC LIMIT 14",
+      ).bind(sub).all();
       // How word audio went on each device (logged by the app every time a word is said).
       const { results: sounds } = await env.DB.prepare(
-        "SELECT ts, word, detail FROM events WHERE type = 'say' ORDER BY id DESC LIMIT 60",
-      ).all();
+        "SELECT ts, word, detail FROM events WHERE type = 'say' AND sub = ? ORDER BY id DESC LIMIT 60",
+      ).bind(sub).all();
       return json({ taps, days, sounds });
+    }
+
+    // Who is signed in, and whether the family PIN still holds data to claim.
+    if (path === '/api/me' && request.method === 'GET') {
+      return json({ sub, via: who.via, ...who.user });
+    }
+
+    // Move what existed before accounts (the family PIN's inventory, settings, progress and books from home) to this
+    // Google account. The PIN in the request proves the caller is the family. Replaces the account's own inventory
+    // and settings, so it's meant to be done once, on a fresh account.
+    if (path === '/api/claim' && request.method === 'POST') {
+      if (who.via !== 'google') return json({ error: 'sign in with Google first' }, { status: 400 });
+      const { pin } = await request.json().catch(() => ({}));
+      if (String(pin) !== String(env.PIN)) return json({ error: 'wrong PIN' }, { status: 403 });
+      await env.DB.batch([
+        env.DB.prepare('DELETE FROM account_inventory WHERE sub = ?').bind(sub),
+        env.DB.prepare('UPDATE account_inventory SET sub = ? WHERE sub = ?').bind(sub, FAMILY),
+        env.DB.prepare('DELETE FROM account_settings WHERE sub = ?').bind(sub),
+        env.DB.prepare('UPDATE account_settings SET sub = ? WHERE sub = ?').bind(sub, FAMILY),
+        env.DB.prepare('UPDATE events SET sub = ? WHERE sub = ?').bind(sub, FAMILY),
+        env.DB.prepare('UPDATE stories SET owner = ? WHERE owner = ?').bind(sub, FAMILY),
+      ]);
+      return json({ ok: true });
     }
 
     return json({ error: 'not found' }, { status: 404 });
