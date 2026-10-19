@@ -140,11 +140,14 @@ function stretch(w, inv, pronunciations) {
 // pronunciations is a list of possible pronunciations for the word (may be empty).
 // Words sounded out a particular way, chosen by Eli (Oct 16): [letters, sound] per sound button. They get sound buttons even
 // if they're on her tricky list. "they": th-e-y, the e and the consonant y gliding into its /ai/ (ey isn't hers yet).
-// "again" and "said": ai says "eh" (as many people say "again"). Letters she hasn't learned would show plum.
+// "again" and "said": ai says "eh" (as many people say "again"). "looked" and "liked" end in ed saying /t/ (liked has no
+// silent-e arc here: its e is inside the ed). Letters she hasn't learned would show plum.
 export const SOUNDED = {
   they: [['th', 'DH'], ['e', 'EH'], ['y', 'Y']],
   again: [['a', 'AH'], ['g', 'G'], ['ai', 'EH'], ['n', 'N']],
   said: [['s', 'S'], ['ai', 'EH'], ['d', 'D']],
+  looked: [['l', 'L'], ['oo', 'UH'], ['k', 'K'], ['ed', 'T']],
+  liked: [['l', 'L'], ['i', 'AY'], ['k', 'K'], ['ed', 'T']],
 };
 
 export function classify(word, inv, pronunciations = []) {
