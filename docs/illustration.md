@@ -120,6 +120,10 @@ never frightening to a five-year-old. Chapter 7 pages 10-12 are panels 14-16 of 
 **The dark pictures are kept in `content/pictures/toby-7-dark/`** (10-12.jpg; the original board is unchanged) in case
 we want them back for Yara.
 
+Chapter 7 page 8 (loop the loop) was redrawn the same day with `pages`, not from the board: panel 12 showed Julia
+sitting inside a ring of sparkles, and a board edit kept the ring because it copies the old panel. Drawn alone from a
+`picture` that says the trail is behind her, not around her, it came out right on the first try.
+
 His cast entry has `sheetWhenNamed: true`: his sheet goes into a board or edit only when the chapter's text names him
 (a match word), since a sheet for a character the chapter doesn't have gets drawn into it anyway.
 When drawing chapter 8, pass `toby-7.2` as a reference board rather than `toby-7`, so the old dragon doesn't come back.
