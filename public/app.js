@@ -297,7 +297,7 @@ async function showLibrary() {
             <button class="book press ${s === nextUp ? 'next' : ''}" data-id="${esc(s.id)}">
               ${s === nextUp ? '<span class="tag">Read me next</span>' : ''}
               ${s.coverImage
-                ? `<span class="art photo"><img src="${pictureUrl(s.coverImage)}" alt=""></span>`
+                ? `<span class="art photo"><img src="${pictureUrl(s.coverImage, 640)}" alt=""></span>`
                 : `<span class="art" style="background: var(--cover-${esc(s.cover || 'egg')})">${cover(s.cover)}</span>`}
               <span class="meta">
                 <span class="num">${s.kind === 'book' ? 'From home' : `Book ${s.number}`}</span>
@@ -380,7 +380,11 @@ async function showReader(id, pageIndex) {
   }));
 }
 
-const pictureUrl = (key) => `/api/pictures/${key}`;
+// The server sends a copy sized for where it shows (WebP, at most this wide, never enlarged): pages 1600, library covers 640.
+// PICTURE_GEN resets every picture cache (each device's, and the sized copies in R2): bump it and deploy.
+// A redrawn picture doesn't need it: its ?v= changes by itself.
+const PICTURE_GEN = 1;
+const pictureUrl = (key, width = 1600) => `/api/pictures/${key}${key.includes('?') ? '&' : '?'}w=${width}&g=${PICTURE_GEN}`;
 
 // Keep the page on one screen: CSS lets the picture shrink first; if the text still
 // overflows the sheet, step its size down (never below 20px).

@@ -14,6 +14,7 @@
   "r2_buckets": [{ "binding": "PICTURES", "bucket_name": "yara-reads-pictures" }],
   // Workers AI: text to speech for words (cached in R2 under tts/).
   "ai": { "binding": "AI", "remote": true },
+  "images": { "binding": "IMAGES" },
   // Request and error metrics in the Cloudflare dashboard (Workers > yara-reads > Metrics); no personal data kept.
   "observability": { "enabled": true },
   "routes": [{ "pattern": "yarareads.finereli.com", "custom_domain": true }],

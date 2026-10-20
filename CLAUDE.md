@@ -41,8 +41,10 @@ Never loosen the inventory to make a story pass.
   refresh tokens, tokens hashed in `mcp_tokens`. Approving = signing in with Google through login.finereli.com; unlike the
   Accountant (one owner) the tokens carry the approver's `sub`, so the agent works in that account. Grown-ups > Agents shows the
   address and lists/revokes approved agents (`/api/agents`). Tools: `guide`, `get_sounds`, `check_text`, `save_book`, `set_image`,
-  `list_books`, `get_book`, `delete_book`, `preview_url`. The agent's how-to is `src/agent-guide.txt` (the `guide` tool returns it):
-  edit that, not a docs page. Books an agent saves have `stories.owner` = the account, so they're private (`OUR_STORIES` excludes
+  `list_books`, `get_book`, `delete_book`, `preview_url`. The agent's how-to is `src/agent-guide.txt` (the `guide` tool returns it,
+  and so does the MCP prompt `write_a_book`): edit that, not a docs page. It carries what we learned for agents too: writing (tense,
+  word banks, names), pictures (4:3, crop-safe middle, boards, checking for age and anatomy, covers) and checking at iPad sizes.
+  When a lesson here changes (illustration.md, a story brief), put the agent's version of it in the guide. Books an agent saves have `stories.owner` = the account, so they're private (`OUR_STORIES` excludes
   owned stories from the public site); ids are `u<6 hex of the account>-<slug>` and pictures `R2 <id>/<page|cover>.<ext>`. A `story`
   is compiled in the worker against the account's inventory and refused if any word is unreadable; a `book` isn't checked. The worker
   compiles with the CMU dictionary served as the static asset `public/lexicon.dict` (git-ignored; `tools/lexicon-asset.mjs` writes
@@ -83,6 +85,11 @@ Never loosen the inventory to make a story pass.
   `push.mjs` stores each picture in the story as `<key>?v=<hash of the file>`, and versioned URLs are cached for a year
   (immutable): a redrawn picture keeps its R2 key but gets a new URL, so every device shows the new one. Always re-push
   stories after changing a picture (`push.mjs --images` does both).
+  The app asks for a sized copy (`?w=1600` on a page, `?w=640` for a library cover): `servePicture` in worker.js makes it once
+  with the Images binding (WebP, or JPEG for a browser without WebP; never enlarged; the original if that's smaller) and keeps it
+  in R2 under `sized/`. 1600 because a 10.9" iPad in portrait shows a page picture about 1560 pixels wide: ours are 1024 and stay
+  so, agents' uploads can be bigger. To reset every picture cache (devices and R2 copies), bump `PICTURE_GEN` in app.js and deploy.
+  The pictures are behind sign-in, so Cloudflare's CDN can't share them; the browser keeps each for a year.
 - `public/`: the app (no build step). `art.js` holds the icons, logo and cover motifs; `fonts/` are self-hosted Andika (reading) and Fredoka (UI).
 - `src/worker.js`: API. `/api/login`, `/api/stories`, `/api/stories/:id`, `/api/pictures/<key>`, `/api/inventory` (GET/PUT), `/api/events`,
   `/api/say?word=&voice=` (a spoken word), `/api/settings` (GET/PUT: the voice), `/api/sounds/<key>` (the recorded phonics sounds).

@@ -220,6 +220,7 @@ Lessons:
 
 ## After drawing
 
+- **Agents** making books through MCP get the short version of this file in `src/agent-guide.txt`; keep the two in step.
 - **Compression.** gpt-image-2 returns 1536x1152 PNGs (~2.5 MB). `illustrate.mjs` resizes to the art size (1024 wide)
   and re-saves at JPEG quality 80 with mozjpeg (via `sharp`): ~60-100 KB, visually identical at reading size. `node tools/shrink.mjs` does the same for
   pictures added another way. 48 pictures went from 17 MB to 2.8 MB.

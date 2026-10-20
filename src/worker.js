@@ -73,6 +73,50 @@ async function setting(env, sub, key, fallback) {
   return row ? row.value : fallback;
 }
 
+// A page picture from R2. Stories link pictures as <key>?v=<content hash>, so a versioned URL never changes and can be
+// kept for good; an unversioned request (an old copy of the app) revalidates every time.
+// ?w=640 or ?w=1600 asks for a copy at most that wide (never enlarged), as WebP (JPEG for a browser that can't take WebP),
+// made once by the Images binding and kept in R2 under sized/<g>/<width>/<key>.<etag of the original>, so replacing a picture
+// makes a new copy, and bumping PICTURE_GEN (app.js, sent as ?g=) remakes them all. Pictures can arrive at any size (agents upload their own), so the app asks for what it shows:
+// 1600 on a page (a 10.9" iPad in portrait shows the picture about 1560 pixels wide; ours are 1024 and stay so),
+// 640 for a cover in the library (about 250 points wide at 2x).
+const PICTURE_WIDTHS = [640, 1600];
+async function servePicture(env, request, key, url, scope) {
+  const cacheControl = url.searchParams.has('v') ? `${scope}, max-age=31536000, immutable` : `${scope}, no-cache`;
+  const width = Number(url.searchParams.get('w'));
+  if (PICTURE_WIDTHS.includes(width) && env.IMAGES) {
+    const webp = /image\/webp/.test(request.headers.get('accept') || '');
+    let type = webp ? 'image/webp' : 'image/jpeg';
+    const original = await env.PICTURES.head(key);
+    if (!original) return json({ error: 'not found' }, { status: 404 });
+    const gen = (url.searchParams.get('g') || '0').replace(/\D/g, '').slice(0, 4) || '0'; // PICTURE_GEN in app.js
+    const sizedKey = `sized/${gen}/${width}/${key}.${original.etag}.${webp ? 'webp' : 'jpg'}`;
+    let sized = await env.PICTURES.get(sizedKey);
+    if (sized) type = sized.httpMetadata?.contentType || type;
+    else {
+      try {
+        const source = await env.PICTURES.get(key);
+        const out = await env.IMAGES.input(source.body).transform({ width, fit: 'scale-down' }).output({ format: type, quality: 78 });
+        let bytes = await out.response().arrayBuffer();
+        if (bytes.byteLength >= original.size) { // already small: keep the original (same type, so no surprises)
+          bytes = await (await env.PICTURES.get(key)).arrayBuffer();
+          type = original.httpMetadata?.contentType || 'image/jpeg';
+        }
+        await env.PICTURES.put(sizedKey, bytes, { httpMetadata: { contentType: type } });
+        sized = { body: bytes, httpEtag: `"${width}-${original.etag}"` };
+      } catch (e) {
+        console.log('picture resize failed', key, e.message); // fall through to the original
+      }
+    }
+    if (sized) return new Response(sized.body, { headers: { 'content-type': type, 'cache-control': cacheControl, etag: sized.httpEtag, vary: 'accept' } });
+  }
+  const obj = await env.PICTURES.get(key);
+  if (!obj) return json({ error: 'not found' }, { status: 404 });
+  return new Response(obj.body, {
+    headers: { 'content-type': obj.httpMetadata?.contentType || 'image/jpeg', 'cache-control': cacheControl, etag: obj.httpEtag },
+  });
+}
+
 // Who is asking. The app sends the Google sign-in token from login.finereli.com as a Bearer header. Page pictures are
 // plain <img> requests, which can't carry a header, so the same token also sits in a cookie (POST /api/session), honoured
 // for reads only. A preview token (made by an agent's preview_url) is a one-hour read-only view of an account.
@@ -141,15 +185,8 @@ async function publicApi(request, env, url, path) {
   if (picture && get) {
     const used = await env.DB.prepare(`SELECT 1 FROM stories WHERE ${OUR_STORIES} AND instr(body, ?) > 0 LIMIT 1`)
       .bind(`"${picture[1]}`).first();
-    const obj = used && (await env.PICTURES.get(picture[1]));
-    if (!obj) return json({ error: 'not found' }, { status: 404 });
-    return new Response(obj.body, {
-      headers: {
-        'content-type': obj.httpMetadata?.contentType || 'image/jpeg',
-        'cache-control': url.searchParams.has('v') ? 'public, max-age=31536000, immutable' : 'public, no-cache',
-        etag: obj.httpEtag,
-      },
-    });
+    if (!used) return json({ error: 'not found' }, { status: 404 });
+    return servePicture(env, request, picture[1], url, 'public');
   }
   // The phonics sounds the tiles play (Eli's recordings; he chose to share them, Oct 16). Only those: not the
   // AI takes, nor the example words recorded with them.
@@ -274,17 +311,8 @@ export default {
     if (picture && request.method === 'GET') {
       const used = await env.DB.prepare(`SELECT 1 FROM stories WHERE ${VISIBLE} AND instr(body, ?) > 0 LIMIT 1`)
         .bind(sub, `"${picture[1]}`).first();
-      const obj = used && (await env.PICTURES.get(picture[1]));
-      if (!obj) return json({ error: 'not found' }, { status: 404 });
-      return new Response(obj.body, {
-        headers: {
-          'content-type': obj.httpMetadata?.contentType || 'image/jpeg',
-          // Stories link pictures as <key>?v=<content hash>, so a versioned URL never changes and can be kept for good.
-          // An unversioned request (an old copy of the app) revalidates every time.
-          'cache-control': url.searchParams.has('v') ? 'private, max-age=31536000, immutable' : 'private, no-cache',
-          etag: obj.httpEtag,
-        },
-      });
+      if (!used) return json({ error: 'not found' }, { status: 404 });
+      return servePicture(env, request, picture[1], url, 'private');
     }
 
     // Phonics sound audio (recordings), also in R2, under sounds/.

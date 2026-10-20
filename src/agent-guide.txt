@@ -2,6 +2,7 @@ YARA READS: A GUIDE FOR AGENTS ADDING BOOKS
 
 Yara Reads is a reading app for children of about 5 to 7 who have just learned their phonics sounds. A child taps any
 word and its sound buttons appear. You are adding books to one parent's private account. Only that account sees them.
+This guide is what we learned making the app's own illustrated series (Julia and Toby, 7 chapters). Follow it.
 
 THE ONE RULE
 Every word in a story must be readable by the child: either it can be sounded out with the sounds the account has
@@ -10,31 +11,80 @@ The app checks by pronunciation, not just spelling ("cake" fails if the child do
 Never ask the parent to loosen their sounds to make a story pass. Rewrite the story.
 
 WORKFLOW
-1. get_sounds: see which sounds, tricky words and names this account has. Write only with those.
-2. Draft the story as short pages (see STYLE). Then check_text on all pages at once. It lists every unreadable word by page.
+1. Ask the parent what the child loves (animals, dragons, a best friend, a place they know) and how long it should be.
+2. get_sounds: see which sounds, tricky words and names this account has. Write only with those.
+3. Draft the story as short pages (see WRITING). Then check_text on all pages at once. It lists every unreadable word by page.
    Rewrite those words (a simpler word, or a different sentence) and check again. Repeat until nothing is unreadable.
-3. save_book with the pages. For kind "story" it refuses text with unreadable words and tells you which.
+4. save_book with the pages. For kind "story" it refuses text with unreadable words and tells you which.
    Saving again with the same title (or the id you were given) replaces the text and keeps existing pictures on pages that still exist.
-4. Pictures (optional but they make the book): set_image for the cover (page 0) and each page, from a URL or base64.
-   Use JPEG or PNG or WebP, about 1000 pixels wide, under 3 MB. A web JPEG of 60 to 150 KB is ideal. Keep the characters
-   looking the same on every page: describe them the same way, or use one reference image.
-5. preview_url returns a link that opens the app read-only as the account for an hour. Open it in a browser tool if you
-   have one, page through the book, and check the pictures, the text size and that every word has its sound buttons.
-   Fix what you see and preview again.
+5. Pictures (see PICTURES): set_image for the cover (page 0) and each page, from a URL or base64.
+6. preview_url, then look at it (see CHECKING). Fix what you see and preview again.
 
-STYLE
+WRITING
+- The point: most books for new readers are repetitive and dull, so children stop reading them. Write something the child
+  would choose: a character with a clear want, a problem, a small win. For a series, end each chapter on a hook.
+- A series of short chapters beats one long book: 8 to 13 pages a chapter. Give the chapters the same `series` and
+  numbers 1, 2, 3... Keep a short plan of the whole series (characters, places, what happens) and stay true to it.
 - Pages are short: one to three sentences, under about 25 words. The child reads each page aloud on their own.
-- Use the present tense. "-ed" endings are usually not on a beginner's sound list; check_text will say.
-- Names go in `names` (for example ["Julia", "Toby"]) and then count as readable anywhere in that book.
-- A story with a clear want, a problem and a small win beats a list of facts. Make it something the child would choose.
-- Ask the parent what the child likes before writing. Use that.
-- A "series" is just a heading in the library: give related books the same series and an increasing number.
+  A page with too many words makes the text shrink on a tablet: split it.
+- Pick one tense and keep it everywhere, in every chapter. Present tense works best: "-ed" endings are usually not on a
+  beginner's sound list. Watch for slips ("she runs... she ran") when you rewrite a sentence to pass check_text.
+- Before drafting, make a word bank: send your likely words (names of things in the story, verbs, feelings) to check_text
+  as one page and keep what passes. Many easy-looking words fail: "happy" and "mountain" use sounds a beginner may not
+  have; "scared", "jumped" need -ed. Say it another way ("peak" for mountain, "glad" for happy, "fear" for scared).
+- `names` are for characters and named places only (Julia, Toby, Super-Tall Peak). Never list an ordinary word as a name to
+  get it through: the child would meet a word she can't read.
+- Feelings carry the story; name them in words she can read (glad, sad, mad, cross, fear, joy).
+- Safe for any five-year-old: gentle peril, quick comfort, no cruelty. Villains are grumpy and mysterious, not monstrous.
+- Give each page a `picture`: a short visual description of the scene for the illustrator (who, doing what, where, mood).
+  It's never shown to the child, and it is the main lever for a good picture.
+
+PICTURES
+Shape and size
+- Landscape 4:3 (for example 1536x1152 or 1024x768), at least 1024 pixels wide. Send the full-quality image you have,
+  JPEG, PNG or WebP up to 3 MB: the server makes smaller copies sized for each screen, so don't shrink it yourself.
+- The app fills the picture box and crops: up to about a fifth off any side, a third on a page with lots of text.
+  Keep faces and the action in the middle; nothing important at the edges.
+- No words, letters or signs in the picture: the child will try to read them.
+Keeping characters the same on every page
+- Write one style line for the whole series (ours: "Children's picture book illustration. Soft watercolor with gentle
+  colored-pencil lines, warm light, rounded friendly shapes, simple uncluttered backgrounds, expressive faces.
+  No text anywhere in the image.") and a fixed description of each character, object and place. Reuse them word for word.
+- If your image tool takes reference images, first draw a character sheet for each recurring character (full body, plain
+  background), pick the best, and pass it with every picture they appear in.
+The method that worked best for us: one board per chapter
+- Ask for the whole chapter as ONE image: a 4x4 grid of 16 panels separated by thin white gutters, given the chapter's full
+  text, the style line and the character sheets. Then cut out the best panel for each page; the spare panels are the point,
+  they give you choices. Panels drawn together keep their own continuity (light, props, the same garden).
+- Draw it as large as your tool allows (we use 3072x2304, so each panel is 768x576 or more; upscale panels to at least
+  1024 wide if needed).
+- Pass the previous chapter's board as a reference for the next, plus any earlier board whose places or characters come back.
+- If a panel is wrong, ask the tool to redraw the whole board with that panel changed (an edit with the board as the
+  reference), rather than drawing one picture on its own: it stays in the same style.
+- If your tool can't do boards, draw page by page with the same style line, descriptions and sheets every time.
+Check every picture before set_image
+- Look at each one at full size, zoomed in on the characters. Reject it if:
+  - it isn't fine for any five-year-old: no fangs, snarls, gore or realistic horror; the style stays soft (a picture that
+    slides into dark-fantasy realism is wrong even if the content is mild);
+  - the anatomy is wrong: count arms, legs, hands, feet and fingers; knees and elbows bend the right way;
+  - it doesn't show what the page says at a glance;
+  - a character is off-model (different colours, clothes, size) or a place doesn't match earlier pages.
+- A failure gets a clearer description and another take. Spell out the pose when anatomy goes wrong.
+The cover
+- Use one of the book's own pictures. Choose one that is distinct for this chapter but doesn't give the plot away:
+  not the twist, not the villain's big moment.
+
+CHECKING
+preview_url opens the app as this account for an hour. If you have a browser tool, page through the whole book at tablet
+sizes, landscape 1180x820 and portrait 820x1180, and on a phone (390x844). Check: the text is large (if it has shrunk,
+the page has too many words), no face or key action is cropped off, every picture fits its page, and tapping a word
+shows its sound buttons. Then tell the parent what you made and ask them to read it with the child.
 
 TWO KINDS OF BOOK
 - kind "story" (default): written for this child, so every word must be readable. save_book enforces it.
 - kind "book": a real published book the family owns, typed in as pages. Its words are not checked; the app marks the words the
   child can't sound out yet with a dotted underline, and the parent sees what share is readable. Only add books the parent says they own.
-  The book stays private to their account.
+  The book stays private to their account. Use the book's own pictures (photos or scans of its pages, cropped to the illustration).
 
 LIMITS
 At most 40 books per account, 60 pages per book, 600 characters per page. Images up to 3 MB.

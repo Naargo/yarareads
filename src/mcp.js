@@ -22,7 +22,7 @@ const getLexicon = (env, origin) => (lexicon ||= env.ASSETS.fetch(new Request(`$
 const TOOLS = [
   {
     name: 'guide',
-    description: 'Read this first. How Yara Reads works, the one rule every story must follow, and the workflow for adding a book.',
+    description: 'Read this first, before writing anything. How Yara Reads works, the one rule every story must follow, the workflow, and how to write the story and make and check its pictures.',
     inputSchema: { type: 'object', properties: {} },
   },
   {
@@ -65,7 +65,7 @@ const TOOLS = [
   },
   {
     name: 'set_image',
-    description: 'Set the cover (page 0) or a page picture (page 1, 2, ...) of a book, from an https URL or base64 data. JPEG, PNG or WebP, up to 3 MB, about 1000 px wide.',
+    description: 'Set the cover (page 0) or a page picture (page 1, 2, ...) of a book, from an https URL or base64 data. JPEG, PNG or WebP up to 3 MB, landscape 4:3, at least 1024 px wide; send full quality, the server makes the smaller copies. Check each picture first (guide: PICTURES).',
     inputSchema: {
       type: 'object',
       properties: {
@@ -98,6 +98,13 @@ const TOOLS = [
     inputSchema: { type: 'object', properties: { book_id: { type: 'string' }, page: { type: 'integer', description: 'Page to open, from 1.' } } },
   },
 ];
+
+// The same guide as an MCP prompt, for clients that offer prompts (as a slash command, say) rather than reading tools first.
+const PROMPTS = [{
+  name: 'write_a_book',
+  description: 'Write and illustrate a book for this account\'s child, following the Yara Reads guide.',
+  arguments: [{ name: 'idea', description: 'What the book should be about (optional).', required: false }],
+}];
 
 const text = (t, isError = false) => ({ content: [{ type: 'text', text: typeof t === 'string' ? t : JSON.stringify(t, null, 2) }], ...(isError && { isError: true }) });
 const fail = (t) => text(t, true);
@@ -259,12 +266,21 @@ async function rpc(msg, ctx) {
     case 'initialize':
       return reply({
         protocolVersion: ['2025-06-18', '2025-03-26', '2024-11-05'].includes(msg.params?.protocolVersion) ? msg.params.protocolVersion : '2025-03-26',
-        capabilities: { tools: {} },
+        capabilities: { tools: {}, prompts: {} },
         serverInfo: { name: 'yara-reads', version: '1.0.0' },
-        instructions: 'Adds books to one parent\'s private Yara Reads account. Call the guide tool first.',
+        instructions: 'Adds books to one parent\'s private Yara Reads account. Call the guide tool before writing anything: it has the one rule every word must follow and how to write the story and make its pictures.',
       });
     case 'ping': return reply({});
     case 'tools/list': return reply({ tools: TOOLS });
+    case 'prompts/list': return reply({ prompts: PROMPTS });
+    case 'prompts/get': {
+      if (msg.params?.name !== 'write_a_book') return error(-32602, `unknown prompt ${msg.params?.name}`);
+      const idea = String(msg.params?.arguments?.idea || '').slice(0, 500);
+      return reply({
+        description: PROMPTS[0].description,
+        messages: [{ role: 'user', content: { type: 'text', text: `${GUIDE}\n\nFollow this guide to write and illustrate a book for my child.${idea ? ` The idea: ${idea}` : ' Ask me what they love first.'}` } }],
+      });
+    }
     case 'tools/call': {
       const tool = TOOLS.find((t) => t.name === msg.params?.name);
       if (!tool) return error(-32602, `unknown tool ${msg.params?.name}`);
