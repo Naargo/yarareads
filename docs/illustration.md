@@ -106,9 +106,23 @@ node tools/push.mjs --images
 | julia | 6, curly brown hair in two puffs, freckles, yellow t-shirt, blue denim dungarees, red sneakers | candidate 2 |
 | toby | small young dragon (big-dog size), pure white scales shimmering with tiny pink, green and blue sparkles, round friendly face, big dark eyes, small wings, soft rounded spikes, long tail | candidate 2 |
 | playhouse | small plastic playhouse, pink walls, window and door, green roof | candidate 2 (object) |
+| blackdragon | big round grumpy storybook villain: charcoal scales with a purple sheen, short blunt horns, amber eyes, mouth closed, no fangs | candidate 3 (Oct 20) |
 
 Julia's look is ours, not Tom's; he can change it (edit `look`, redraw her sheet, then redraw the pages she's in).
 All candidates are kept in `candidates/` so a different pick is just a copy.
+
+### The black dragon (Oct 20)
+
+At first the black dragon had no sheet, only a description ("menacing and frightening, nothing cute"), and chapter 7
+drew him as a realistic dark-fantasy monster with fangs, out of the book's style. Yara liked him, but he was too much
+for most kids. Now he has a sheet (`blackdragon.jpg`) and a softer `look`: a grumpy, brooding villain, ominous but
+never frightening to a five-year-old. Chapter 7 pages 10-12 are panels 14-16 of edit 2 (`boards/toby-7.2.jpg`).
+**The dark pictures are kept in `content/pictures/toby-7-dark/`** (10-12.jpg; the original board is unchanged) in case
+we want them back for Yara.
+
+His cast entry has `sheetWhenNamed: true`: his sheet goes into a board or edit only when the chapter's text names him
+(a match word), since a sheet for a character the chapter doesn't have gets drawn into it anyway.
+When drawing chapter 8, pass `toby-7.2` as a reference board rather than `toby-7`, so the old dragon doesn't come back.
 
 ## The per-page method (for one-off redraws)
 

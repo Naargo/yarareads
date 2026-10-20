@@ -30,12 +30,6 @@
       "look": "Julia's playhouse: a small children's plastic playhouse, pink walls with a little window and door, and a green roof.",
       "object": true
     },
-    "blackdragon": {
-      "match": [
-        "black dragon"
-      ],
-      "look": "a huge, ancient black dragon, many times bigger than a house, with jagged horns, cracked dark scales like cooled lava, ragged bat wings, long curved claws and narrow glowing red eyes. Menacing and frightening, nothing cute or friendly about it, but not gory."
-    },
     "scooter": {
       "match": [],
       "look": "Julia's scooter: a red kick scooter with a red handlebar, black grips and small grey wheels.",
@@ -75,6 +69,13 @@
       "match": [],
       "look": "a small leafy branch, about as long as Julia's arm.",
       "object": true
+    },
+    "blackdragon": {
+      "match": [
+        "black dragon"
+      ],
+      "look": "a big black dragon, the villain of the book, drawn as a storybook villain in the same soft watercolor style as Toby: a huge, heavy, rounded body of dark charcoal scales with a faint purple sheen, two short blunt curved horns, folded leathery wings, a long tail, chunky rounded claws, and big glowing amber eyes under heavy brows. Grumpy, brooding and mysterious, like a grumpy old king, not a monster: mouth closed or a sly small smile, no fangs, no snarl, no drool, no sharp teeth showing. Ominous enough to be a villain but never frightening to a five-year-old.",
+      "sheetWhenNamed": true
     }
   },
   "settings": {
@@ -88,7 +89,7 @@
       "look": "the woods just past Julia's garden gate: a sunny clearing with one big old oak tree in the middle, a mossy tree stump, a fallen log, soft grass and ferns, and a small round pond at the edge of the clearing, tall trees all around."
     },
     "cave": {
-      "look": "a huge dark cave near the top of Super-Tall Peak, a very tall, pointy, bare grey mountain: rough black rock walls, a rocky floor scattered with boulders and scorch marks, a wide cave mouth looking out on a cold night sky. Dark and frightening, lit only faintly."
+      "look": "a huge cave near the top of Super-Tall Peak, a very tall, pointy, bare grey mountain: rough dark rock walls, a rocky floor with a few boulders, a wide cave mouth looking out on a deep blue night sky with stars and a big moon. Shadowy and mysterious, lit by soft moonlight and a warm glow, not frightening."
     }
   }
 }

@@ -92,6 +92,12 @@ async function preview(dir, stem) {
   await sharp(join(dir, 'boards', `${stem}.jpg`)).resize(W, H).composite([{ input: svg }]).jpeg({ quality: 82 }).toFile(join(dir, 'boards', `${stem}-numbered.jpg`));
 }
 
+// Cast with a sheet, for a board or an edit. `sheetWhenNamed` cast (the black dragon) only when the chapter names them:
+// a reference sheet for a character the chapter doesn't have gets drawn into it anyway.
+const sheetsFor = (art, dir, chapterText) => Object.entries(art.cast)
+  .filter(([c, v]) => existsSync(join(dir, `${c}.jpg`)) && (!v.sheetWhenNamed || v.match.some((m) => chapterText.includes(` ${m} `))))
+  .map(([c]) => c);
+
 const [cmd, ...args] = process.argv.slice(2);
 
 if (cmd === 'sheet') {
@@ -154,7 +160,8 @@ if (cmd === 'sheet') {
   const { art, dir } = loadArt(story.series);
   const boards = join(dir, 'boards');
   mkdirSync(boards, { recursive: true });
-  const sheets = Object.keys(art.cast).filter((c) => existsSync(join(dir, `${c}.jpg`)));
+  const chapterText = ` ${story.pages.map((p) => p.text).join(' ').toLowerCase().replace(/[^a-z ]/g, ' ')} `;
+  const sheets = sheetsFor(art, dir, chapterText);
   const refs = [...sheets.map((c) => join(dir, `${c}.jpg`)), ...withBoards.map((b) => join(boards, `${b}.jpg`))];
   const said = [
     ...sheets.map((c, i) => `Image ${i + 1} is ${art.cast[c].look} Keep this exact design.`),
@@ -162,7 +169,6 @@ if (cmd === 'sheet') {
   ].join(' ');
   // Characters without a sheet are described only if this chapter mentions them: told about the black dragon
   // "if the story has" one, the chapter 5 board drew it anyway, two chapters early.
-  const chapterText = ` ${story.pages.map((p) => p.text).join(' ').toLowerCase().replace(/[^a-z ]/g, ' ')} `;
   const unsheeted = Object.entries(art.cast)
     .filter(([c, v]) => !sheets.includes(c) && !v.object && v.match.some((m) => chapterText.includes(` ${m} `)))
     .map(([, v]) => `The ${v.match[0]} in this chapter is ${v.look}`).join(' ');
@@ -192,7 +198,7 @@ ${text}`;
   const boards = join(dir, 'boards');
   const panels = panelList.split(',').map(Number);
   const where = panels.map((n) => `panel ${n} (row ${Math.ceil(n / 4)}, column ${((n - 1) % 4) + 1})`).join(' and ');
-  const sheets = Object.keys(art.cast).filter((c) => existsSync(join(dir, `${c}.jpg`)));
+  const sheets = sheetsFor(art, dir, ` ${story.pages.map((p) => p.text).join(' ').toLowerCase().replace(/[^a-z ]/g, ' ')} `);
   const refs = [join(boards, `${id}.jpg`), ...sheets.map((c) => join(dir, `${c}.jpg`))];
   const prompt = `${art.style}
 
