@@ -23,11 +23,28 @@ in as references carry it from chapter to chapter. Details in "Boards" below.
    node tools/illustrate.mjs cover toby-8 3                  # optional: page 3's picture as the library cover
    node tools/push.mjs --images                              # upload and publish
    ```
+   **Before pushing, check every picked picture** (see "Check every picture" below). Look at each one at full size, not
+   only on the board.
 4. Commit the board, its numbered preview, the pictures and the story JSON (which records each page's `panel`).
 5. Tell Eli which panels went where (send the numbered board); he and Tom review in the app.
 
 A new recurring character needs a sheet first (`illustrate.mjs sheet`, below) and a `cast` entry in the art file,
 so every board draws them the same way. A new recurring place doesn't: the first board that shows it becomes its reference.
+
+## Check every picture
+
+No picture goes live unchecked. Look at each one at full size (crop and zoom on the characters) and reject it if:
+
+- **Not age appropriate.** It should be fine for any five-year-old, not just Yara: no fangs, snarls, gore or
+  realistic horror. Villains are grumpy and mysterious, not monsters. The style stays soft watercolor; a picture that
+  slides into dark-fantasy realism is wrong even if the content is mild. (Oct 20: the black dragon.)
+- **Bad anatomy.** Count arms, legs, hands and feet. Knees, elbows and ankles bend the right way, hands have a
+  normal number of fingers, the pose is one a child's body can make. (Oct 20: Julia's bent feet in the loop.)
+- **Not what the page says.** The action reads at a glance (she flies the loop, not sits inside a ring).
+- **Off-model.** Characters match their sheets; places match earlier chapters.
+
+A failure gets a clearer `picture` and another run (draw 2-3 takes and pick the best, about 7 cents each), or a board
+edit. Spell out the pose when anatomy goes wrong ("legs straight and together, feet pointing back").
 
 ## The model
 
@@ -122,7 +139,8 @@ we want them back for Yara.
 
 Chapter 7 page 8 (loop the loop) was redrawn the same day with `pages`, not from the board: panel 12 showed Julia
 sitting inside a ring of sparkles, and a board edit kept the ring because it copies the old panel. Drawn alone from a
-`picture` that says the trail is behind her, not around her, it came out right on the first try.
+`picture` that says the trail is behind her, not around her, the ring was gone on the first try, but her legs bent oddly. Three more takes with the pose spelled out; the second
+was clean. That's where the "Check every picture" step came from.
 
 His cast entry has `sheetWhenNamed: true`: his sheet goes into a board or edit only when the chapter's text names him
 (a match word), since a sheet for a character the chapter doesn't have gets drawn into it anyway.

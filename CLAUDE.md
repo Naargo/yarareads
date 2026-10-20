@@ -76,7 +76,8 @@ Never loosen the inventory to make a story pass.
   They're exempt from the readability rule; the checker reports what share she can read, and the reader underlines words she can't read yet.
   To add one: extract text and pictures (for PDFs, `pdftohtml -xml` gives each illustration's tile positions; render with `pdftoppm -aaVector no`
   or tile seams show), split into short pages, set `coverImage`, then `node tools/push.mjs --images`.
-- Page pictures: **read docs/illustration.md** before making any. `node tools/illustrate.mjs` (gpt-image-2 via OpenRouter; a chapter is drawn as one 4x4 board, then a panel picked per page; approved
+- Page pictures: **read docs/illustration.md** before making any. Check every picture before pushing it: age appropriate for any
+  five-year-old (no fangs or horror) and correct anatomy (count limbs, joints bend the right way). `node tools/illustrate.mjs` (gpt-image-2 via OpenRouter; a chapter is drawn as one 4x4 board, then a panel picked per page; approved
   character sheets in content/art/ as references) writes web-quality JPEGs (~60 KB); `node tools/shrink.mjs` for others.
 - Page pictures are served from R2 (bucket `yara-reads-pictures`) at `/api/pictures/<key>`: our own stories' pictures to anyone, an account's private pictures only to that account.
   `push.mjs` stores each picture in the story as `<key>?v=<hash of the file>`, and versioned URLs are cached for a year
