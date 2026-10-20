@@ -35,7 +35,7 @@ Never loosen the inventory to make a story pass.
   account, kept out of the public repo) makes the worker hand it all over the first time that account signs in (`adoptFamily`).
   `push.mjs` / `pull.mjs` take `--owner <email or id>` (or `$OWNER_EMAIL`); the account must have signed in once so it's in `accounts`.
   The public site (PUBLIC_HOST) is unchanged: no login, state on the device.
-- **Agents (MCP)** (Oct 19). The reusable pattern is the `mcp` skill and the pwa kit item `mcp`; this app is a reference implementation of it. A parent's own agent (Claude, ChatGPT...) adds books to their account through `/mcp` (`src/mcp.js`,
+- **Agents (MCP)** (Oct 19). The reusable pattern is the `mcp-server` skill and the pwa kit item `mcp`; this app is a reference implementation of it. A parent's own agent (Claude, ChatGPT...) adds books to their account through `/mcp` (`src/mcp.js`,
   Streamable HTTP with JSON replies). Auth is OAuth 2.1 as the MCP spec asks, ported from the Accountant's `functions/_mcp-auth.ts`
   (`src/mcp-auth.js`): discovery under `/.well-known/`, dynamic client registration, authorization code with PKCE (S256), rotating
   refresh tokens, tokens hashed in `mcp_tokens`. Approving = signing in with Google through login.finereli.com; unlike the
