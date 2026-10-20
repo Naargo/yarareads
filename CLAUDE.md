@@ -89,7 +89,8 @@ Never loosen the inventory to make a story pass.
   with the Images binding (WebP, or JPEG for a browser without WebP; never enlarged; the original if that's smaller) and keeps it
   in R2 under `sized/`. 1600 because a 10.9" iPad in portrait shows a page picture about 1560 pixels wide: ours are 1024 and stay
   so, agents' uploads can be bigger. To reset every picture cache (devices and R2 copies), bump `PICTURE_GEN` in app.js and deploy.
-  The pictures are behind sign-in, so Cloudflare's CDN can't share them; the browser keeps each for a year.
+  The browser keeps each for a year, and the worker keeps sized copies in Cloudflare's edge cache (`caches.default`, keyed by
+  v and g, after the sign-in check), so a repeat request skips the R2 reads: ~0.2 s, like a static file (was ~0.45 s).
 - `public/`: the app (no build step). `art.js` holds the icons, logo and cover motifs; `fonts/` are self-hosted Andika (reading) and Fredoka (UI).
 - `src/worker.js`: API. `/api/login`, `/api/stories`, `/api/stories/:id`, `/api/pictures/<key>`, `/api/inventory` (GET/PUT), `/api/events`,
   `/api/say?word=&voice=` (a spoken word), `/api/settings` (GET/PUT: the voice), `/api/sounds/<key>` (the recorded phonics sounds).

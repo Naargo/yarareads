@@ -87,6 +87,11 @@ async function servePicture(env, request, key, url, scope) {
   if (PICTURE_WIDTHS.includes(width) && env.IMAGES) {
     const webp = /image\/webp/.test(request.headers.get('accept') || '');
     let type = webp ? 'image/webp' : 'image/jpeg';
+    // Cloudflare's edge cache in front of R2 (per data centre; the sign-in check before this still runs every time).
+    // Keyed by the URL's v and g, so a redrawn picture or a PICTURE_GEN bump misses it.
+    const edgeKey = new Request(`${url.origin}/__edge/${key}?v=${url.searchParams.get('v')}&w=${width}&g=${url.searchParams.get('g')}&${webp ? 'webp' : 'jpg'}`);
+    const edge = url.searchParams.has('v') && (await caches.default.match(edgeKey).catch(() => null));
+    if (edge) return new Response(edge.body, { headers: { 'content-type': edge.headers.get('content-type'), 'cache-control': cacheControl, etag: edge.headers.get('etag') || '', vary: 'accept' } });
     const original = await env.PICTURES.head(key);
     if (!original) return json({ error: 'not found' }, { status: 404 });
     const gen = (url.searchParams.get('g') || '0').replace(/\D/g, '').slice(0, 4) || '0'; // PICTURE_GEN in app.js
@@ -108,7 +113,11 @@ async function servePicture(env, request, key, url, scope) {
         console.log('picture resize failed', key, e.message); // fall through to the original
       }
     }
-    if (sized) return new Response(sized.body, { headers: { 'content-type': type, 'cache-control': cacheControl, etag: sized.httpEtag, vary: 'accept' } });
+    if (sized) {
+      const bytes = await new Response(sized.body).arrayBuffer();
+      if (url.searchParams.has('v')) await caches.default.put(edgeKey, new Response(bytes, { headers: { 'content-type': type, etag: sized.httpEtag, 'cache-control': 'public, max-age=2592000' } })).catch(() => {});
+      return new Response(bytes, { headers: { 'content-type': type, 'cache-control': cacheControl, etag: sized.httpEtag, vary: 'accept' } });
+    }
   }
   const obj = await env.PICTURES.get(key);
   if (!obj) return json({ error: 'not found' }, { status: 404 });
