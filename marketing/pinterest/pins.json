@@ -1,0 +1,179 @@
+[
+ {
+  "id": "01-tap-a-word",
+  "kicker": "Free chapter book for new readers",
+  "headline": "A real story. Help on every word.",
+  "sub": "Stuck on a word? Tap it, and its sound buttons pop up so they can sound it out.",
+  "image": "marketing/pinterest/src/card.png",
+  "shot": true,
+  "title": "A free chapter book with sound buttons on every word",
+  "description": "Yara Reads is a free chapter book app for kids who just learned their phonics sounds. Every word can be sounded out, and when they get stuck they tap the word to see its sound buttons, with a dot for one letter and a bar for letter pairs like oo and er, just like in class. Works on any tablet. No ads, no account.",
+  "link": "https://yarareads.finereli.com/about",
+  "board": "Decodable books for beginning readers"
+ },
+ {
+  "id": "02-after-tym",
+  "kicker": "For new readers",
+  "headline": "What to read after Teach Your Monster to Read",
+  "sub": "A free dragon chapter book made only of words they can sound out.",
+  "image": "content/pictures/toby-1/4.jpg",
+  "title": "What to read after Teach Your Monster to Read",
+  "description": "Finished Teach Your Monster to Read (or Jolly Phonics, Little Wandle, Letters and Sounds) and looking for a real book? Julia and Toby is a free, illustrated, seven-chapter dragon adventure where every word can be sounded out with the phonics sounds and tricky words they already know. Free on any tablet, no account needed.",
+  "link": "https://yarareads.finereli.com/about",
+  "board": "Decodable books for beginning readers"
+ },
+ {
+  "id": "03-not-boring",
+  "kicker": "Free to read",
+  "headline": "Decodable books that aren't boring",
+  "sub": "A runaway dragon whose feelings make things float. 7 illustrated chapters.",
+  "image": "content/pictures/toby-7/8.jpg",
+  "line": "She loops the loop! She spins!",
+  "title": "Decodable books that aren't boring: a free dragon chapter book",
+  "description": "Most decodable readers are dull. Julia and Toby is a real adventure for kids aged 5 to 7: a runaway dragon whose feelings make things float, and the girl who hides him in her playhouse. Every word can be sounded out. Seven illustrated chapters, free to read in the browser.",
+  "link": "https://yarareads.finereli.com/about",
+  "board": "Decodable books for beginning readers"
+ },
+ {
+  "id": "04-every-word",
+  "kicker": "Phonics chapter book",
+  "headline": "Every word can be sounded out",
+  "sub": "Checked word by word against the sounds they've learned.",
+  "image": "content/pictures/toby-4/4.jpg",
+  "line": "A big bee buzzes at Toby's nose. Buzz! Buzz!",
+  "title": "A chapter book where every word can be sounded out",
+  "description": "Each word in Julia and Toby is checked, by how it is said and not just how it is spelled, against the phonics sounds and tricky words a child has learned. Grown-ups can switch sounds on or off to match their child. Free, illustrated, for ages 5 to 7.",
+  "link": "https://yarareads.finereli.com/about",
+  "board": "Decodable books for beginning readers"
+ },
+ {
+  "id": "05-story-chapter-1",
+  "kicker": "Read a bit  ·  Julia and Toby, chapter 1",
+  "headline": "A real story they can read on their own",
+  "pages": [
+   {
+    "image": "content/pictures/toby-1/4.jpg",
+    "text": "Under a tree sits a dragon. He is white, and his scales shine pink and green and blue."
+   },
+   {
+    "image": "content/pictures/toby-1/5.jpg",
+    "text": "The dragon looks up. A big tear drips down his nose."
+   },
+   {
+    "image": "content/pictures/toby-1/6.jpg",
+    "text": "\"I am Toby,\" he said. \"I ran away from home.\""
+   }
+  ],
+  "title": "A free decodable chapter book: read the start of Julia and Toby",
+  "description": "Three pages from chapter 1 of Julia and Toby: Julia finds a runaway dragon crying under a tree. Every word can be sounded out with the phonics sounds and tricky words a new reader knows, and tapping a word shows its sound buttons. Free, illustrated, seven chapters, for ages 5 to 7.",
+  "link": "https://yarareads.finereli.com/#/read/toby-1/0",
+  "board": "Julia and Toby: a free dragon chapter book"
+ },
+ {
+  "id": "06-story-chapter-4",
+  "kicker": "Read a bit  ·  Julia and Toby, chapter 4",
+  "headline": "When Toby gets cross, things fly",
+  "pages": [
+   {
+    "image": "content/pictures/toby-4/5.jpg",
+    "text": "Toby gets cross. His spikes stick up."
+   },
+   {
+    "image": "content/pictures/toby-4/6.jpg",
+    "text": "And then her dolls zoom up, high, high, high! Her drum zooms up. Her tea set zooms up!"
+   },
+   {
+    "image": "content/pictures/toby-4/7.jpg",
+    "text": "Crash! Bang! Smash! They all come down."
+   }
+  ],
+  "title": "Decodable story for new readers: when the dragon gets cross, things fly",
+  "description": "From chapter 4 of Julia and Toby: a bee buzzes at Toby, he gets cross, and everything in the play house zooms up. Real excitement, in words a child who just finished phonics can sound out alone. Free, illustrated, for ages 5 to 7.",
+  "link": "https://yarareads.finereli.com/#/read/toby-4/0",
+  "board": "Julia and Toby: a free dragon chapter book"
+ },
+ {
+  "id": "11-chapter-1",
+  "kicker": "Julia and Toby  ·  Chapter 1 of 7",
+  "headline": "Julia Meets Toby",
+  "sub": "Julia hears a yelp in the wood. Under a tree sits a crying dragon.",
+  "line": "The dragon looks up. A big tear drips down his nose.",
+  "image": "content/pictures/toby-1/4.jpg",
+  "title": "Julia and Toby, chapter 1: Julia Meets Toby (free decodable chapter book)",
+  "description": "Julia hears a yelp in the wood. Under a tree sits a crying dragon. Chapter 1 of Julia and Toby, a free illustrated dragon adventure for new readers aged 5 to 7. Every word can be sounded out with their phonics sounds, and tapping a word shows its sound buttons.",
+  "link": "https://yarareads.finereli.com/#/read/toby-1/0",
+  "board": "Julia and Toby: a free dragon chapter book"
+ },
+ {
+  "id": "12-chapter-2",
+  "kicker": "Julia and Toby  ·  Chapter 2 of 7",
+  "headline": "The Bent Wheel",
+  "sub": "Julia hides Toby in her play house. Then her scooter turns up broken.",
+  "line": "Her scooter is on its side, and the wheel is bent!",
+  "image": "content/pictures/toby-2/2.jpg",
+  "title": "Julia and Toby, chapter 2: The Bent Wheel (free decodable chapter book)",
+  "description": "Julia hides Toby in her play house. Then her scooter turns up broken. Chapter 2 of Julia and Toby, a free illustrated dragon adventure for new readers aged 5 to 7. Every word can be sounded out with their phonics sounds, and tapping a word shows its sound buttons.",
+  "link": "https://yarareads.finereli.com/#/read/toby-2/0",
+  "board": "Julia and Toby: a free dragon chapter book"
+ },
+ {
+  "id": "13-chapter-3",
+  "kicker": "Julia and Toby  ·  Chapter 3 of 7",
+  "headline": "The Painting",
+  "sub": "Julia paints Toby. She steps away for one minute.",
+  "line": "There is paint on the play house, on Toby, and on her painting!",
+  "image": "content/pictures/toby-3/2.jpg",
+  "title": "Julia and Toby, chapter 3: The Painting (free decodable chapter book)",
+  "description": "Julia paints Toby. She steps away for one minute. Chapter 3 of Julia and Toby, a free illustrated dragon adventure for new readers aged 5 to 7. Every word can be sounded out with their phonics sounds, and tapping a word shows its sound buttons.",
+  "link": "https://yarareads.finereli.com/#/read/toby-3/0",
+  "board": "Julia and Toby: a free dragon chapter book"
+ },
+ {
+  "id": "14-chapter-4",
+  "kicker": "Julia and Toby  ·  Chapter 4 of 7",
+  "headline": "Whoa!",
+  "sub": "Things keep breaking. Today Julia finally sees how.",
+  "line": "Julia's chin drops. \"Whoa!\"",
+  "image": "content/pictures/toby-4/4.jpg",
+  "title": "Julia and Toby, chapter 4: Whoa! (free decodable chapter book)",
+  "description": "Things keep breaking. Today Julia finally sees how. Chapter 4 of Julia and Toby, a free illustrated dragon adventure for new readers aged 5 to 7. Every word can be sounded out with their phonics sounds, and tapping a word shows its sound buttons.",
+  "link": "https://yarareads.finereli.com/#/read/toby-4/0",
+  "board": "Julia and Toby: a free dragon chapter book"
+ },
+ {
+  "id": "15-chapter-5",
+  "kicker": "Julia and Toby  ·  Chapter 5 of 7",
+  "headline": "Float Lessons",
+  "sub": "Julia sets out to teach Toby his power. It does not go well.",
+  "line": "The stick shoots up and bonks Julia on the chin!",
+  "image": "content/pictures/toby-5/3.jpg",
+  "title": "Julia and Toby, chapter 5: Float Lessons (free decodable chapter book)",
+  "description": "Julia sets out to teach Toby his power. It does not go well. Chapter 5 of Julia and Toby, a free illustrated dragon adventure for new readers aged 5 to 7. Every word can be sounded out with their phonics sounds, and tapping a word shows its sound buttons.",
+  "link": "https://yarareads.finereli.com/#/read/toby-5/0",
+  "board": "Julia and Toby: a free dragon chapter book"
+ },
+ {
+  "id": "16-chapter-6",
+  "kicker": "Julia and Toby  ·  Chapter 6 of 7",
+  "headline": "Day After Day",
+  "sub": "Ten days of lessons that go wrong. Then, at dusk, something changes.",
+  "line": "It floats down, soft as a leaf, and lands in Julia's hand.",
+  "image": "content/pictures/toby-6/5.jpg",
+  "title": "Julia and Toby, chapter 6: Day After Day (free decodable chapter book)",
+  "description": "Ten days of lessons that go wrong. Then, at dusk, something changes. Chapter 6 of Julia and Toby, a free illustrated dragon adventure for new readers aged 5 to 7. Every word can be sounded out with their phonics sounds, and tapping a word shows its sound buttons.",
+  "link": "https://yarareads.finereli.com/#/read/toby-6/0",
+  "board": "Julia and Toby: a free dragon chapter book"
+ },
+ {
+  "id": "17-chapter-7",
+  "kicker": "Julia and Toby  ·  Chapter 7 of 7",
+  "headline": "Julia Floats",
+  "sub": "Julia finally floats. And far away, something wakes up.",
+  "line": "Up, up, up she floats! Higher than the gate.",
+  "image": "content/pictures/toby-7/7.jpg",
+  "title": "Julia and Toby, chapter 7: Julia Floats (free decodable chapter book)",
+  "description": "Julia finally floats. And far away, something wakes up. Chapter 7 of Julia and Toby, a free illustrated dragon adventure for new readers aged 5 to 7. Every word can be sounded out with their phonics sounds, and tapping a word shows its sound buttons.",
+  "link": "https://yarareads.finereli.com/#/read/toby-7/0",
+  "board": "Julia and Toby: a free dragon chapter book"
+ }
+]
