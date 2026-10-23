@@ -302,7 +302,7 @@ async function showLibrary() {
                 ? `<span class="art photo"><img src="${pictureUrl(s.coverImage, 640)}" alt=""></span>`
                 : `<span class="art" style="background: var(--cover-${esc(s.cover || 'egg')})">${cover(s.cover)}</span>`}
               <span class="meta">
-                <span class="num">${s.bookSeries ? `${esc(s.bookSeries)}${s.bookNumber ? ` ${s.bookNumber}` : ''}` : s.kind === 'book' ? 'From home' : `Book ${s.number}`}</span>
+                <span class="num">${s.bookSeries ? `${esc(s.bookSeries)}${s.bookNumber ? `&nbsp;${s.bookNumber}` : ''}` : s.kind === 'book' ? 'From home' : `Book ${s.number}`}</span>
                 <span class="title">${esc(s.title)}</span>
                 <span class="times">${s.spot ? (s.chapters ? `On chapter ${s.chapters.filter((start) => start <= s.spot).length}` : `On page ${s.spot + 1}`) : s.finished ? (s.finished === 1 ? 'Read once' : `Read ${s.finished} times`) : ''}</span>
               </span>
@@ -655,7 +655,7 @@ async function showCover(id) {
           ? `<img src="${pictureUrl(story.coverImage)}" alt="">`
           : `<span class="art" style="background: var(--cover-${esc(story.cover || 'egg')})">${cover(story.cover)}</span>`}</div>
         <div class="title-text">
-          ${series ? `<div class="title-series">${esc(series)}</div>` : ''}
+          ${series ? `<div class="title-series">${esc(series).replace(/ (\d+)$/, '&nbsp;$1')}</div>` : ''}
           <h1 class="text">${tokenize(story.title).map((t) => (isWord(t) ? `<span class="w ${known(t) ? '' : 'new'}" data-word="${esc(t)}">${esc(t)}</span>` : esc(t))).join('')}</h1>
           ${story.author ? `<div class="byline">by ${esc(story.author)}</div>` : ''}
           ${story.illustrator ? `<div class="byline">illustrated by ${esc(story.illustrator)}</div>` : ''}
