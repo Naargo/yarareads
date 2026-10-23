@@ -126,6 +126,11 @@ Never loosen the inventory to make a story pass.
   with the Images binding (WebP, or JPEG for a browser without WebP; never enlarged; the original if that's smaller) and keeps it
   in R2 under `sized/`. 1600 because a 10.9" iPad in portrait shows a page picture about 1560 pixels wide: ours are 1024 and stay
   so, agents' uploads can be bigger. To reset every picture cache (devices and R2 copies), bump `PICTURE_GEN` in app.js and deploy.
+  **D1 and R2 are in eastern North America** (ENAM) and the worker runs at the edge near the reader (Sofia for Eli,
+  ~130 ms a round trip): a picture nobody had viewed took ~1.75 s (Oct 23). So sized copies are keyed by the URL's
+  `v` (`sized/<g>/<w>/<key>.<v>.<webp|jpg>`, no lookup of the original), `push.mjs --images` makes them ahead of time
+  with sharp, the worker stores a copy it had to make after responding (`ctx.waitUntil`), and the reader fetches the
+  next two pages' pictures while she reads.
   The browser keeps each for a year, and the worker keeps sized copies in Cloudflare's edge cache (`caches.default`, keyed by
   v and g, after the sign-in check), so a repeat request skips the R2 reads: ~0.2 s, like a static file (was ~0.45 s).
 - `public/`: the app (no build step). `art.js` holds the icons, logo and cover motifs; `fonts/` are self-hosted Andika (reading) and Fredoka (UI).
