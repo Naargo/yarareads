@@ -172,7 +172,7 @@ Recordings are levelled to -23 LUFS over the active part of each clip (the media
 sound (`ADJUST` in tools/sounds-record.mjs) from Zwicker loudness (ISO 532-1, sones, via MoSQITo), which unlike LUFS hears
 broadband hiss as loud as people do; plus 2.5 dB off the unvoiced hisses by Eli's ear (f, s, h were "extremely loud").
 
-**Word voice.** Words are spoken by a Cloudflare Workers AI voice (Deepgram Aura 2, American voices only: Luna, Asteria and 13 men; `VOICES` in worker.js, chosen in grown-ups > Voice,
+**Word voice.** Words are spoken by a Cloudflare Workers AI voice (Deepgram Aura 2, American voices only: Luna, Asteria and 8 men; `VOICES` in worker.js, chosen in grown-ups > Voice,
 stored in D1 `settings`; default Luna since Oct 23, Hyperion before). `/api/say` generates a word once and caches it in R2 under `tts2/<voice>/<word>.mp3` (~0.5-1 s new, ~10 ms cached).
 The word is sent as a sentence (`playing.`): a bare word gets its end clipped.
 The word card starts fetching the word when it opens, so it's usually ready by the tap; if not,

@@ -25,19 +25,14 @@ function cookie(request, name) {
 const VOICES = {
   'aura-2:luna': { model: '@cf/deepgram/aura-2-en', speaker: 'luna', label: 'Luna', about: 'American woman' },
   'aura-2:asteria': { model: '@cf/deepgram/aura-2-en', speaker: 'asteria', label: 'Asteria', about: 'American woman' },
-  'aura-2:apollo': { model: '@cf/deepgram/aura-2-en', speaker: 'apollo', label: 'Apollo', about: 'American man' },
   'aura-2:arcas': { model: '@cf/deepgram/aura-2-en', speaker: 'arcas', label: 'Arcas', about: 'American man' },
   'aura-2:aries': { model: '@cf/deepgram/aura-2-en', speaker: 'aries', label: 'Aries', about: 'American man' },
-  'aura-2:atlas': { model: '@cf/deepgram/aura-2-en', speaker: 'atlas', label: 'Atlas', about: 'American man' },
   'aura-2:hermes': { model: '@cf/deepgram/aura-2-en', speaker: 'hermes', label: 'Hermes', about: 'American man' },
   'aura-2:jupiter': { model: '@cf/deepgram/aura-2-en', speaker: 'jupiter', label: 'Jupiter', about: 'American man' },
   'aura-2:mars': { model: '@cf/deepgram/aura-2-en', speaker: 'mars', label: 'Mars', about: 'American man' },
-  'aura-2:neptune': { model: '@cf/deepgram/aura-2-en', speaker: 'neptune', label: 'Neptune', about: 'American man' },
-  'aura-2:odysseus': { model: '@cf/deepgram/aura-2-en', speaker: 'odysseus', label: 'Odysseus', about: 'American man' },
   'aura-2:orion': { model: '@cf/deepgram/aura-2-en', speaker: 'orion', label: 'Orion', about: 'American man' },
   'aura-2:orpheus': { model: '@cf/deepgram/aura-2-en', speaker: 'orpheus', label: 'Orpheus', about: 'American man' },
   'aura-2:saturn': { model: '@cf/deepgram/aura-2-en', speaker: 'saturn', label: 'Saturn', about: 'American man' },
-  'aura-2:zeus': { model: '@cf/deepgram/aura-2-en', speaker: 'zeus', label: 'Zeus', about: 'American man' },
 };
 const DEFAULT_VOICE = 'aura-2:luna'; // Eli's pick (Oct 23; Hyperion before)
 
