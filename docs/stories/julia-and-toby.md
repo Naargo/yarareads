@@ -33,7 +33,7 @@ inventory (TYM + silent e, Oct 2026):
 - **Present tense.** -ed endings aren't hers yet (jumped, floated), so chapters are told in the present,
   like the Fizz books: "Julia hears a yelp."
 - **Works:** float, floats, scooter, dragon, cave, peak, wheel, broke, yelp, backyard, shine, white, spin,
-  zoom, cool, whoa, and the feelings glad, mad, sad, fear, joy, cross.
+  zoom, cool, whoa, and the feelings glad, mad, sad, fear, joy.
 - **Doesn't, so we say it another way:** mountain (use "peak"), rainbow, sparkles, playhouse, breakfast,
   scared, calm, happy, fence, village, hover.
 - **Names:** Julia, Toby, Super and Tall are the series' `names` (in every chapter's JSON), with
@@ -45,9 +45,9 @@ inventory (TYM + silent e, Oct 2026):
   allowed anywhere, broken into sounds on the word card, new sounds in plum.
 - **Toby's look, in her words:** white, and his scales shine pink and green and blue.
 - **The magic system (Tom):** Toby's feelings make things float, the way a porcupine's spikes show how it feels
-  (in the text: "His spikes stick up" when he's cross).
+  (in the text: "His spikes stick up" when he's mad).
   - Sad: things float low and slow; several things hover a little. In her words: lift up just a bit, drift, bob.
-  - Cross/mad: things shoot up high and quick, uncontrolled, then crash down hard. In her words: zoom up high, crash, smash.
+  - Mad: things shoot up high and quick, uncontrolled, then crash down hard. In her words: zoom up high, crash, smash.
   - Happy: nothing floats. That's because of how Toby *thinks* about his feelings: he believes feeling good
     keeps him from breaking things. **This will change later; it's part of the plot. Don't resolve it yet.**
 - **Toby has no idea how his powers work (Tom, rewrite).** He never explains them, and he hides them: in chapter 1
@@ -71,9 +71,9 @@ inventory (TYM + silent e, Oct 2026):
 | # | Title | Covers |
 |---|---|---|
 | 1 | Julia Meets Toby | Backyard, a yelp, up the gate and down, Toby crying under a tree. He ran away from his cave on Super-Tall Peak, but won't say why. Julia hides him in her play house: "Mom must not see you." |
-| 2 | The Bent Wheel | Julia goes to class. After lunch she runs back: her scooter wheel is bent (break 1). Toby just looks sad. She huffs and stomps off, but can't stay cross; back with her kite. |
+| 2 | The Bent Wheel | Julia goes to class. After lunch she runs back: her scooter wheel is bent (break 1). Toby just looks sad. She huffs and stomps off, but can't stay mad; back with her kite. |
 | 3 | The Painting | She paints Toby, goes in for a drink; comes back to paint everywhere and her painting ruined (break 2). Toby's tail droops. She sulks on the step, then he has a pink nose and they're friends again. |
-| 4 | Whoa! | Her best cup in bits (break 3). Then she peeks into the play house: a bee buzzes, Toby gets cross, spikes up, and her dolls, drum and tea set zoom sky-high and crash (break 4). The twist. "Do it on me! Make me float!" "I can not help it." "Then we will fix it." |
+| 4 | Whoa! | Her best cup in bits (break 3). Then she peeks into the play house: a bee buzzes, Toby gets mad, spikes up, and her dolls, drum and tea set zoom sky-high and crash (break 4). The twist. "Do it on me! Make me float!" "I can not help it." "Then we will fix it." |
 | 5 | Float Lessons | Every afternoon they sneak to the woods. "I bet floating is like feelings." A tin can lands in a tree; a stick bonks Julia's chin. "I am no good at this." Day after day, nothing floats the right way. |
 | 6 | Day After Day | Day six: a log in the pond. Day nine: a branch on the play house. Day ten: "I give up." At dusk, not even trying, Toby looks at Julia, and a branch drifts down soft as a leaf into her hand. "You did it!" "But how?" |
 | 7 | Julia Floats | They do it again: branch, stick, can. "Now me." Her feet lift; higher than the gate, the play house; gliding past treetops with the birds, looping the loop, dipping to the pond. "This is the best day!" Then: far away, a big black dragon wakes. "Toby. I can feel you." |
@@ -83,7 +83,7 @@ Story files: `content/stories/toby-1.json` ... `toby-7.json`. Pictures kept from
 
 ## Open threads for the next arc
 
-- Who is the big dragon looking for Toby? (His mom? A cross elder?)
+- Who is the big dragon looking for Toby? (His mom? An angry elder?)
 - Learning that glad feelings can float too: the plot change Tom planned.
-- How did Toby float Julia when he wasn't cross or sad? Calm/focused might be its own feeling; Tom decides.
+- How did Toby float Julia when he wasn't mad or sad? Calm/focused might be its own feeling; Tom decides.
 - Fixing Julia's scooter wheel (with a careful float?).

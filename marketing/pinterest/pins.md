@@ -56,11 +56,11 @@ Post one or two a day, story first: 01, 02, 20 (video), 03, 11, 05, 04, 06, 12, 
 
 **Board:** Julia and Toby: a dragon series for new readers
 
-## 06-when-toby-gets-cross
+## 06-when-toby-gets-mad
 
-**Title:** When the dragon gets cross, things fly: a story new readers can read themselves
+**Title:** When the dragon gets mad, things fly: a story new readers can read themselves
 
-**Description:** From book 4 of Julia and Toby: a bee buzzes at Toby, he gets cross, and everything in the play house zooms up. Real excitement, in words a kid who just learned to read can sound out alone. A fantasy series for ages 5 to 7. Free to read on any tablet, phone or computer. No ads, no account.
+**Description:** From book 4 of Julia and Toby: a bee buzzes at Toby, he gets mad, and everything in the play house zooms up. Real excitement, in words a kid who just learned to read can sound out alone. A fantasy series for ages 5 to 7. Free to read on any tablet, phone or computer. No ads, no account.
 
 **Link:** https://yarareads.finereli.com/#/read/toby-4/0
 

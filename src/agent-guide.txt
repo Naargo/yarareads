@@ -34,7 +34,7 @@ WRITING
   have; "scared", "jumped" need -ed. Say it another way ("peak" for mountain, "glad" for happy, "fear" for scared).
 - `names` are for characters and named places only (Julia, Toby, Super-Tall Peak). Never list an ordinary word as a name to
   get it through: the child would meet a word she can't read.
-- Feelings carry the story; name them in words she can read (glad, sad, mad, cross, fear, joy).
+- Feelings carry the story; name them in words she can read (glad, sad, mad, fear, joy).
 - Safe for any five-year-old: gentle peril, quick comfort, no cruelty. Villains are grumpy and mysterious, not monstrous.
 - Give each page a `picture`: a short visual description of the scene for the illustrator (who, doing what, where, mood).
   It's never shown to the child, and it is the main lever for a good picture.
