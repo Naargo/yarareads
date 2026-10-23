@@ -16,7 +16,7 @@ for (const file of files) {
     console.log(`       not yet: ${[...unknown.keys()].join(', ')}`);
     continue;
   }
-  console.log(`${unknown.size ? 'FAIL' : 'ok  '} ${story.id}  "${story.title}"  ${count} words, ${tricky} distinct tricky`);
+  console.log(`${unknown.size ? 'FAIL' : 'ok  '} ${story.id}  "${story.title}"  ${count} words, ${tricky} distinct sight words`);
   for (const [w, pages] of unknown) console.log(`       ✗ ${w} (page ${pages.join(', ')})`);
   if (unknown.size) failed = true;
 }

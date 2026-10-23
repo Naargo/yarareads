@@ -43,7 +43,7 @@ const page = (p) => `<!doctype html><meta charset="utf-8"><style>${css}</style>
 ${p.pages ? `<div class="strip">${p.pages.map((g) => `<div class="spread"><img src="${uri(`${root}${g.image}`, 'image/jpeg')}"><p>${esc(g.text)}</p></div>`).join('')}</div>`
   : `<div class="pic${p.shot ? ' shot' : ''}"><img src="${uri(`${root}${p.image}`, p.image.endsWith('.png') ? 'image/png' : 'image/jpeg')}"></div>`}
 ${p.line ? `<p class="line">${esc(p.line)}</p>` : ''}
-<footer>${logo}<span>Yara Reads</span><span class="url">yarareads.finereli.com</span></footer>`;
+<footer>${logo}<span>Read it free</span><span class="url">yarareads.finereli.com</span></footer>`;
 
 mkdirSync(`${here}pins`, { recursive: true });
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || '/opt/pw-browsers/chromium' });
@@ -57,8 +57,9 @@ for (const p of pins) {
 }
 await browser.close();
 writeFileSync(`${here}pins.md`, `# Pinterest pins\n\nMade by make.mjs from pins.json (the video by video.sh). Upload pins/<id> with the title, description, link and board below.\n\n` +
-  `Post one or two a day, story first: 05, 02, 20 (video), 11, 01, 06, 12, 03, 13, 04, 14, 15, 16, 17. Two boards: "Decodable books for beginning readers" and "Julia and Toby: a free dragon chapter book".\n\n` +
+  `The positioning they follow: finereli/claude-skills, promote/apps/yarareads/positioning.md. Story first, American English, no "decodable" or "app" in headlines (those words live in descriptions, for search).\n\n` +
+  `Post one or two a day, story first: 01, 02, 20 (video), 03, 11, 05, 04, 06, 12, 13, 14, 15, 16, 17. Two boards: "${pins[0].board}" and "${pins[1].board}".\n\n` +
   pins.map((p) => `## ${p.id}\n\n**Title:** ${p.title}\n\n**Description:** ${p.description}\n\n**Link:** ${p.link}\n\n**Board:** ${p.board}\n`).join('\n') +
-  `\n## 20-chapter-1-video (video.sh)\n\n**Title:** Julia and Toby, chapter 1: a free decodable chapter book for new readers\n\n` +
-  `**Description:** Page through chapter 1 of Julia and Toby, a free illustrated dragon adventure for kids aged 5 to 7 who just learned their phonics sounds. Every word can be sounded out, and tapping a word shows its sound buttons. Free on any tablet, no account needed.\n\n` +
-  `**Link:** https://yarareads.finereli.com/#/read/toby-1/0\n\n**Board:** Julia and Toby: a free dragon chapter book\n`);
+  `\n## 20-video (video.sh)\n\n**Title:** Julia and Toby, book 1: a dragon story new readers can read themselves\n\n` +
+  `**Description:** Page through book 1 of Julia and Toby, a fantasy series for kids who have just learned to read. Julia finds a runaway dragon crying under a tree, and a new reader can read every word. Stuck on one? Tap it and its sounds appear. Free to read on any tablet, phone or computer. No ads, no account.\n\n` +
+  `**Link:** https://yarareads.finereli.com/#/read/toby-1/0\n\n**Board:** ${pins[0].board}\n`);

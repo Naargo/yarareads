@@ -7,7 +7,7 @@ node video-frames.mjs "$F"
 python3 - "$F" <<'PY'
 import subprocess, sys
 S = sys.argv[1]
-items = [('pins/11-chapter-1.jpg', 3)] + [(f'{S}/{i:02d}.png', 3.2 if i != 2 else 2.6) for i in range(1, 9)] + [('pins/01-tap-a-word.jpg', 3.5)]
+items = [('pins/11-book-1.jpg', 3)] + [(f'{S}/{i:02d}.png', 3.2 if i != 2 else 2.6) for i in range(1, 9)] + [('pins/04-tap-a-word.jpg', 3.5)]
 F = 0.5
 args = ['ffmpeg', '-y', '-loglevel', 'error']
 for f, d in items: args += ['-loop', '1', '-t', str(d + F), '-i', f]
@@ -16,7 +16,7 @@ prev, off = 'v0', 0
 for i in range(1, len(items)):
     off += items[i - 1][1]
     fl.append(f'[{prev}][v{i}]xfade=transition=fade:duration={F}:offset={off:.2f}[x{i}]'); prev = f'x{i}'
-args += ['-filter_complex', ';'.join(fl), '-map', f'[{prev}]', '-c:v', 'libx264', '-crf', '20', '-preset', 'slow', '-movflags', '+faststart', 'pins/20-chapter-1-video.mp4']
+args += ['-filter_complex', ';'.join(fl), '-map', f'[{prev}]', '-c:v', 'libx264', '-crf', '20', '-preset', 'slow', '-movflags', '+faststart', 'pins/20-video.mp4']
 subprocess.run(args, check=True)
 PY
 rm -r "$F"

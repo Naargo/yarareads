@@ -70,7 +70,7 @@ inventory (TYM + silent e, Oct 2026):
 
 | # | Title | Covers |
 |---|---|---|
-| 1 | Julia Meets Toby | Backyard, a yelp, up the gate and down, Toby crying under a tree. He ran away from his cave on Super-Tall Peak, but won't say why. Julia hides him in her play house: "Mum must not see you." |
+| 1 | Julia Meets Toby | Backyard, a yelp, up the gate and down, Toby crying under a tree. He ran away from his cave on Super-Tall Peak, but won't say why. Julia hides him in her play house: "Mom must not see you." |
 | 2 | The Bent Wheel | Julia goes to class. After lunch she runs back: her scooter wheel is bent (break 1). Toby just looks sad. She huffs and stomps off, but can't stay cross; back with her kite. |
 | 3 | The Painting | She paints Toby, goes in for a drink; comes back to paint everywhere and her painting ruined (break 2). Toby's tail droops. She sulks on the step, then he has a pink nose and they're friends again. |
 | 4 | Whoa! | Her best cup in bits (break 3). Then she peeks into the play house: a bee buzzes, Toby gets cross, spikes up, and her dolls, drum and tea set zoom sky-high and crash (break 4). The twist. "Do it on me! Make me float!" "I can not help it." "Then we will fix it." |
@@ -83,7 +83,7 @@ Story files: `content/stories/toby-1.json` ... `toby-7.json`. Pictures kept from
 
 ## Open threads for the next arc
 
-- Who is the big dragon looking for Toby? (His mum? A cross elder?)
+- Who is the big dragon looking for Toby? (His mom? A cross elder?)
 - Learning that glad feelings can float too: the plot change Tom planned.
 - How did Toby float Julia when he wasn't cross or sad? Calm/focused might be its own feeling; Tom decides.
 - Fixing Julia's scooter wheel (with a careful float?).

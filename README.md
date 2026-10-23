@@ -24,7 +24,7 @@ Tom wrote the first story, and the app is built so there can be many more.
 
 ## Run your own
 
-It's a Cloudflare Worker with static assets, D1 for data and R2 for pictures. No build step. If you're a tech dad (or mum) with a
+It's a Cloudflare Worker with static assets, D1 for data and R2 for pictures. No build step. If you're a tech dad (or mom) with a
 kid who's learning to read, I'd love you to take this and make it yours.
 
 ```sh
