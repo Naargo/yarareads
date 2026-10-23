@@ -371,7 +371,7 @@ async function showReader(id, pageIndex) {
         <div class="title">${esc(story.title)}</div>
         ${parts.length ? `<button class="round press" data-act="contents" aria-label="Chapters">${ICONS.contents}</button>` : '<span class="spacer"></span>'}
       </div>
-      <div class="sheet ${page.image ? 'with-picture' : ''}">
+      <div class="sheet ${page.image ? 'with-picture' : ''} ${story.fit === 'book' ? 'book-fit' : ''}">
         ${page.image ? `<div class="picture"><img src="${pictureUrl(page.image)}" alt=""></div>` : ''}
         <div class="text">${pageHtml(pageIndex)}</div>
       </div>
@@ -419,8 +419,8 @@ const bookSizes = new Map();
 function fitPage() {
   const sheet = app.querySelector('.sheet'), text = app.querySelector('.text');
   if (!sheet || !text) return;
-  const fit = (text) => {
-    text.style.fontSize = '';
+  const fit = (text, start) => {
+    text.style.fontSize = start ? `${start}px` : '';
     sheet.classList.remove('tight');
     let size = parseFloat(getComputedStyle(text).fontSize);
     const over = () => sheet.scrollHeight > sheet.clientHeight + 1;
@@ -451,11 +451,11 @@ function fitPage() {
   const size = Math.min(bookSizes.get(key), parseFloat(getComputedStyle(text).fontSize));
   text.style.fontSize = `${size}px`;
   // the size fits the fullest pages; this one may still need the picture cropped a little more, as they did
-  if (sheet.scrollHeight > sheet.clientHeight + 1 && sheet.classList.contains('with-picture') && size < 34) sheet.classList.add('tight');
-  if (sheet.scrollHeight > sheet.clientHeight + 1) fit(text);
+  if (sheet.scrollHeight > sheet.clientHeight + 1 && sheet.classList.contains('with-picture')) sheet.classList.add('tight');
+  if (sheet.scrollHeight > sheet.clientHeight + 1) fit(text, size); // never bigger than the book's size
 }
 addEventListener('resize', fitPage);
-document.fonts?.ready.then(fitPage);
+document.fonts?.ready.then(() => { bookSizes.clear(); fitPage(); }); // a size measured in the fallback font is wrong
 
 // ---------- Word card: the hint lives right on the word ----------
 

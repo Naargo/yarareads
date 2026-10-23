@@ -213,6 +213,9 @@ button { border: none; background: none; cursor: pointer; padding: 0; }
 }
 .sheet.with-picture .text { flex: 0 0 auto; align-self: center; margin-block: auto; padding: 18px 24px 22px; }
 .sheet.with-picture .text { font-size: clamp(28px, 5vw, 44px); line-height: 1.7; }
+/* A book in one text size has more words a page than ours: a 21ch column left wide margins in portrait and pushed the
+   text down to 29px on a 10.9" iPad; 30ch lets it be 37px (Oct 23). */
+.sheet.book-fit .text { max-width: 30ch; }
 /* Long text on a tall screen: the picture may lose up to about a third rather than the text getting tiny. */
 .sheet.with-picture.tight .picture { min-height: calc(100cqw / (var(--ia) * 1.6)); }
 @media (min-width: 760px) and (min-aspect-ratio: 5/4) {

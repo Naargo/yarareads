@@ -5,7 +5,7 @@
 // Usage: node tools/push.mjs [--local] [--inventory] [--images] [--owner <email or id>] [--share <email or id,...>] [--only <story id>]   (--images uploads page pictures to R2)
 // Books from home are private to one account: --owner (or $OWNER_EMAIL) says whose. --inventory writes that account's inventory.
 // --share lets other accounts (the rest of the family) see the books from home pushed too (story_readers).
-import { readFileSync, writeFileSync, mkdirSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, statSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 import sharp from 'sharp';
@@ -39,6 +39,10 @@ for (const file of storyFiles()) {
   if (story.coverImage) covers.add(story.coverImage);
   for (const key of [story.coverImage, ...story.pages.map((p) => p.image)].filter(Boolean)) {
     if (!imageFile(key)) throw new Error(`${story.id}: missing image ${key}`);
+    // a book from home's color-NNN.jpg is assemble.py's copy of color/final/NNN.jpg: a redrawn picture needs assemble first
+    const final = imageFile(key).replace(/color-(\w+\.jpg)$/, 'color/final/$1');
+    if (final !== imageFile(key) && existsSync(final) && !readFileSync(final).equals(readFileSync(imageFile(key))))
+      throw new Error(`${story.id}: ${key} is older than color/final: run tools/kindle/assemble.py first`);
     images.add(key);
   }
   if (isHomeBook(story) && !owner) throw new Error(`${story.id} is a book from home: needs --owner <email or id> (or $OWNER_EMAIL)`);
