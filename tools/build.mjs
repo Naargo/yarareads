@@ -9,15 +9,23 @@ const root = new URL('..', import.meta.url).pathname;
 export const inventory = JSON.parse(readFileSync(join(root, 'content/inventory.json'), 'utf8'));
 
 // Our decodable stories (content/stories, in git) and books from home (content/home/<id>/book.json,
-// gitignored: the repo is public and those are other people's books).
+// encrypted with git-crypt: the repo is public and those are other people's books).
 export function storyFiles() {
   const stories = join(root, 'content/stories');
   const home = join(root, 'content/home');
   return [
     ...readdirSync(stories).filter((f) => f.endsWith('.json')).sort().map((f) => join(stories, f)),
-    ...(existsSync(home) ? readdirSync(home).sort().map((d) => join(home, d, 'book.json')).filter(existsSync) : []),
+    ...(existsSync(home) ? readdirSync(home).sort().map((d) => join(home, d, 'book.json')).filter(existsSync).filter(unlocked) : []),
   ];
 }
+
+// Books from home are encrypted with git-crypt. Without the key (a fresh clone, a cloud session) they're skipped, with a note.
+const unlocked = (file) => {
+  const head = readFileSync(file).subarray(0, 10);
+  if (head.toString('latin1') !== '\0GITCRYPT\0') return true;
+  console.warn(`skipped ${file.split('/content/')[1]}: encrypted (git-crypt unlock to include it)`);
+  return false;
+};
 
 // Where a page image key ("mittu/1.jpg") lives on disk.
 export function imageFile(key) {
