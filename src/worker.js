@@ -166,7 +166,8 @@ async function adoptFamily(env, sub) {
 }
 
 // A story this account may see: the shared library, or its own books.
-const VISIBLE = '(owner IS NULL OR owner = ?)';
+// An account sees our stories (no owner), its own books, and books shared with it (story_readers). Binds sub twice.
+const VISIBLE = '(owner IS NULL OR owner = ? OR id IN (SELECT story_id FROM story_readers WHERE sub = ?))';
 
 // The public site's API: the reader's routes, limited to our stories. Everything else (grown-ups' tools,
 // Yara's settings and progress) is refused.
@@ -292,7 +293,7 @@ export default {
            json_extract(body, '$.bookSeries') AS bookSeries, json_extract(body, '$.bookNumber') AS bookNumber,
            (SELECT json_group_array(key) FROM json_each(body, '$.pages') WHERE json_extract(value, '$.chapter') IS NOT NULL) AS chapters
          FROM stories WHERE ${VISIBLE} ORDER BY kind = 'book', series, number`,
-      ).bind(sub).all();
+      ).bind(sub, sub).all();
       const { results: done } = await env.DB.prepare(
         "SELECT story_id, COUNT(*) AS times FROM events WHERE type = 'finish' AND sub = ? GROUP BY story_id",
       ).bind(sub).all();
@@ -311,7 +312,7 @@ export default {
 
     const storyMatch = path.match(/^\/api\/stories\/([\w-]+)$/);
     if (storyMatch && request.method === 'GET') {
-      const row = await env.DB.prepare(`SELECT body FROM stories WHERE id = ? AND ${VISIBLE}`).bind(storyMatch[1], sub).first();
+      const row = await env.DB.prepare(`SELECT body FROM stories WHERE id = ? AND ${VISIBLE}`).bind(storyMatch[1], sub, sub).first();
       if (!row) return json({ error: 'not found' }, { status: 404 });
       return new Response(row.body, { headers: { 'content-type': 'application/json' } });
     }
@@ -321,7 +322,7 @@ export default {
     const picture = path.match(/^\/api\/pictures\/([\w-]+\/[\w.-]+)$/);
     if (picture && request.method === 'GET') {
       const used = await env.DB.prepare(`SELECT 1 FROM stories WHERE ${VISIBLE} AND instr(body, ?) > 0 LIMIT 1`)
-        .bind(sub, `"${picture[1]}`).first();
+        .bind(sub, sub, `"${picture[1]}`).first();
       if (!used) return json({ error: 'not found' }, { status: 404 });
       return servePicture(env, request, picture[1], url, 'private');
     }
@@ -420,6 +421,7 @@ export default {
         }
       }
       await env.DB.batch([
+        env.DB.prepare('DELETE FROM story_readers WHERE sub = ? OR story_id IN (SELECT id FROM stories WHERE owner = ?)').bind(sub, sub),
         env.DB.prepare('DELETE FROM stories WHERE owner = ?').bind(sub),
         env.DB.prepare('DELETE FROM account_inventory WHERE sub = ?').bind(sub),
         env.DB.prepare('DELETE FROM account_settings WHERE sub = ?').bind(sub),

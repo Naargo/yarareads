@@ -2,16 +2,19 @@
 // Yara can't read (books from home are exempt: they're what they are).
 // The inventory lives in D1 (edited in the app); pass --inventory to overwrite it from
 // content/inventory.json. Run `node tools/pull.mjs` first so you check against the live one.
-// Usage: node tools/push.mjs [--local] [--inventory] [--images] [--owner <email or id>] [--only <story id>]   (--images uploads page pictures to R2)
+// Usage: node tools/push.mjs [--local] [--inventory] [--images] [--owner <email or id>] [--share <email or id,...>] [--only <story id>]   (--images uploads page pictures to R2)
 // Books from home are private to one account: --owner (or $OWNER_EMAIL) says whose. --inventory writes that account's inventory.
+// --share lets other accounts (the rest of the family) see the books from home pushed too (story_readers).
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { owner as findOwner } from './owner.mjs';
+import { owner as findOwner, account } from './owner.mjs';
 import { compile, storyFiles, inventory, isHomeBook, imageFile } from './build.mjs';
 
 const where = process.argv.includes('--local') ? '--local' : '--remote';
 const owner = findOwner(where);
+const shareArg = process.argv.includes('--share') ? process.argv[process.argv.indexOf('--share') + 1] : '';
+const readers = shareArg.split(',').filter(Boolean).map((who) => account(who, where));
 const q = (s) => `'${String(s).replace(/'/g, "''")}'`;
 const sql = [];
 if (process.argv.includes('--inventory')) {
@@ -43,6 +46,7 @@ for (const file of storyFiles()) {
   stories++;
   sql.push(
     `INSERT OR REPLACE INTO stories (id, series, number, title, body, owner, updated_at) VALUES (${q(story.id)}, ${q(story.series)}, ${story.number}, ${q(story.title)}, ${q(JSON.stringify(story))}, ${isHomeBook(story) ? q(owner) : 'NULL'}, CURRENT_TIMESTAMP);`,
+    ...(isHomeBook(story) ? readers.map((r) => `INSERT OR IGNORE INTO story_readers (story_id, sub) VALUES (${q(story.id)}, ${q(r)});`) : []),
   );
 }
 mkdirSync('.build', { recursive: true });

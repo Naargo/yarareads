@@ -39,6 +39,9 @@ Never loosen the inventory to make a story pass.
   Everything that existed before accounts is held by the placeholder account `'family'`; the secret `FAMILY_EMAIL` (Yara's Google
   account, kept out of the public repo) makes the worker hand it all over the first time that account signs in (`adoptFamily`).
   `push.mjs` / `pull.mjs` take `--owner <email or id>` (or `$OWNER_EMAIL`); the account must have signed in once so it's in `accounts`.
+  A book from home has one owner but can be shared with the rest of the family: `story_readers` (story_id, sub) rows,
+  written by `push.mjs --share <email or id,...>` (Oct 23). Both books from home are Yara's, shared with Eli's account.
+  A book with no owner is visible to every signed-in account, so a book from home must always have one.
   The public site (PUBLIC_HOST) is unchanged: no login, state on the device.
 - **Agents (MCP)** (Oct 19). The reusable pattern is the `mcp-server` skill and the pwa kit item `mcp`; this app is a reference implementation of it. A parent's own agent (Claude, ChatGPT...) adds books to their account through `/mcp` (`src/mcp.js`,
   Streamable HTTP with JSON replies). Auth is OAuth 2.1 as the MCP spec asks, ported from the Accountant's `functions/_mcp-auth.ts`
