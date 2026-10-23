@@ -19,7 +19,7 @@ Tom wrote the first story, and the app is built so there can be many more.
   just spelling ("cake" fails if the child hasn't learned the split a). `npm run check` fails a story with a word they can't read.
 - **Bring your own books.** Connect your own agent (Claude, ChatGPT, anything that speaks MCP) and it writes stories inside your
   child's sounds, or types in books you own. It checks its own words, adds pictures, and shows you the result. Only your account sees them.
-- **You set what your child knows.** Switch sounds and tricky words on or off. Words with a sound they haven't learned get a dotted
+- **You set what your child knows.** Switch sounds and sight words on or off. Words with a sound they haven't learned get a dotted
   underline and the new sound shows in purple.
 
 ## Run your own

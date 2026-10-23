@@ -477,8 +477,8 @@ function openPop(el, story, inv) {
   pop = document.createElement('div');
   pop.className = 'pop';
   // Anything that can be sounded out gets sound buttons: her words, names, and new words (whose unfamiliar sounds are
-  // plum). Words on her tricky list stay whole (t-o for "to" sounded odd, Oct 23), and so does a word nothing in the
-  // catalog explains: both are tricky words.
+  // plum). Words on her sight word list (inventory.tricky) stay whole (t-o for "to" sounded odd, Oct 23), and so does a word nothing in the
+  // catalog explains: both show as sight words.
   const badge = info.kind === 'name' ? 'A name' : info.parts?.some((p) => p.new) ? 'New sounds' : '';
   if (info.parts) {
     pop.innerHTML = `
@@ -488,7 +488,7 @@ function openPop(el, story, inv) {
         <button class="press speak" data-a="sound" aria-label="Say it">${ICONS.speaker}</button>
       </div>`;
   } else {
-    const badge = info.kind === 'name' ? 'A name' : `${STAR(true)} Tricky word`;
+    const badge = info.kind === 'name' ? 'A name' : `${STAR(true)} Sight word`;
     pop.innerHTML = `
       <div class="whole">${esc(word)}</div>
       ${badge ? `<div class="badge">${badge}</div>` : ''}
@@ -816,10 +816,10 @@ function renderGrownups(tab) {
       </section>`,
     words: () => `
       <section class="panel">
-        <h2>Tricky words <small>${inv.tricky.length}</small></h2>
+        <h2>Sight words <small>${inv.tricky.length}</small></h2>
         <p>Words read on sight, without sounding out.</p>
         <div class="wordlist">${words('tricky')}</div>
-        ${adder('tricky', 'Add a tricky word')}
+        ${adder('tricky', 'Add a sight word')}
       </section>
       <section class="panel">
         <h2>Names <small>${inv.names.length}</small></h2>

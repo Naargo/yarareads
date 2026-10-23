@@ -27,7 +27,7 @@ const TOOLS = [
   },
   {
     name: 'get_sounds',
-    description: "The sounds, tricky words and names this account's child can read. Write only with these.",
+    description: "The sounds, sight words and names this account's child can read. Write only with these.",
     inputSchema: { type: 'object', properties: {} },
   },
   {
@@ -139,8 +139,8 @@ async function callTool(name, args, ctx) {
 
     case 'get_sounds': {
       const inv = await inventoryFor(env, sub, seed);
-      return text({ sounds: inv.graphemes, tricky_words: inv.tricky, names: inv.names,
-        note: 'A word is readable if it can be sounded out with these sounds, is a tricky word, or is a character name listed on the book.' });
+      return text({ sounds: inv.graphemes, sight_words: inv.tricky, names: inv.names,
+        note: 'A word is readable if it can be sounded out with these sounds, is a sight word, or is a character name listed on the book.' });
     }
 
     case 'check_text': {

@@ -11,7 +11,7 @@
 - Price: free. No account needed (signing in with Google is optional), no ads, no in-app purchases.
 - Platform: web app for any tablet, phone or computer. Can be added to the iPad Home Screen.
 - Content: "Julia and Toby", 7 chapters of 8-12 short pages each, illustrated. Julia (six) finds Toby, a runaway dragon whose feelings make things float.
-- Every word can be sounded out: each is checked, by pronunciation, against the sound set (all single letters, ck ff ll ss zz qu sh ch th ng wh ph ai ee igh oa oo ar or ur ow oi ear air ure er ay ou ie ea oy ir ue aw, split vowels a_e e_e i_e o_e u_e) and about 40 tricky words. Present tense, no -ed endings.
+- Every word can be sounded out: each is checked, by pronunciation, against the sound set (all single letters, ck ff ll ss zz qu sh ch th ng wh ph ai ee igh oa oo ar or ur ow oi ear air ure er ay ou ie ea oy ir ue aw, split vowels a_e e_e i_e o_e u_e) and about 40 sight words. Present tense, no -ed endings.
 - Help: tapping a word shows its sound buttons (dot for one letter, bar for letter pairs, arc for split vowels). One speaker button sounds the word out, then says it. It never reads whole pages aloud.
 - Personal: grown-ups can switch sounds on or off to match their child; words with an unlearned sound get a dotted underline. Saved on the device, or on the account if signed in.
 - Coming: adding your own books through your own agent (Claude, ChatGPT), private to your account.

@@ -6,13 +6,13 @@ This guide is what we learned making the app's own illustrated series (Julia and
 
 THE ONE RULE
 Every word in a story must be readable by the child: either it can be sounded out with the sounds the account has
-switched on, or it is one of the account's "tricky words" (read on sight), or it is a character name you list in `names`.
+switched on, or it is one of the account's "sight words" (read on sight), or it is a character name you list in `names`.
 The app checks by pronunciation, not just spelling ("cake" fails if the child doesn't know the split vowel a_e).
 Never ask the parent to loosen their sounds to make a story pass. Rewrite the story.
 
 WORKFLOW
 1. Ask the parent what the child loves (animals, dragons, a best friend, a place they know) and how long it should be.
-2. get_sounds: see which sounds, tricky words and names this account has. Write only with those.
+2. get_sounds: see which sounds, sight words and names this account has. Write only with those.
 3. Draft the story as short pages (see WRITING). Then check_text on all pages at once. It lists every unreadable word by page.
    Rewrite those words (a simpler word, or a different sentence) and check again. Repeat until nothing is unreadable.
 4. save_book with the pages. For kind "story" it refuses text with unreadable words and tells you which.

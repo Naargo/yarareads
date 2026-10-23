@@ -8,7 +8,7 @@ The repo is public: README.md is the pitch and how to run your own; stories and 
 
 TYM was the best thing they found, and she still struggled with it:
 - The reading hints were buried in other menus. Here the hint lives on the word: tap it, and its sound buttons pop up in place.
-- The stories were repetitive and dull. Here stories are a serialized adventure (Beast Quest / Dragon Masters style, but shorter), written only with phonics and tricky words she already knows.
+- The stories were repetitive and dull. Here stories are a serialized adventure (Beast Quest / Dragon Masters style, but shorter), written only with phonics and sight words she already knows.
 
 **Positioning (Oct 23, chosen with Tom):** "A fantasy book series for kids who've just learned to read, wrapped in an app that helps
 them sound out the words they get stuck on, so they can get lost in a story by themselves." Lead with the story and market through
@@ -16,7 +16,7 @@ it, not the app. Tom is writing the full serial. The full document is in finerel
 
 ## The one rule for content
 
-Every word in a story must be readable by Yara: decodable with her graphemes, a tricky word she knows, or a name.
+Every word in a story must be readable by Yara: decodable with her graphemes, a sight word she knows, or a name.
 `npm run check` enforces this, and `tools/push.mjs` refuses to upload a story that fails.
 
 The check uses pronunciation, not just spelling. `public/phonics.js#decode` aligns each word's CMU dictionary
@@ -62,21 +62,21 @@ Never loosen the inventory to make a story pass.
   `/exchange` that accepts any code, enough to walk the MCP approval), `npx wrangler dev`.
 - **Progress** is books finished ("Read N times" in the library) and the page to pick a book up from (`spot`): the free version keeps both in localStorage.
 - **The live inventory is in D1**, edited by Eli in the grown-ups section (gate: type a birth year that makes you an adult, like TYM).
-  `content/inventory.json` is the seed: her TYM sounds and tricky words from his screenshots (Oct 2026), plus "egg" and "house".
+  `content/inventory.json` is the seed: her TYM sounds and sight words from his screenshots (Oct 2026), plus "egg" and "house".
   Run `node tools/pull.mjs` before writing stories, so you check against what she knows now.
-- **Tricky words** (Oct 23): words on her tricky list stay whole (we tried breaking them down, t-o and h-e sounded odd),
-  and so does a word nothing in the catalog explains: both are labelled "Tricky word" (there's no "New word" any more).
+- **Sight words** (the UK says "tricky words"; the app says sight words since Oct 23, American English; the data key stays `tricky`): words on her sight word list stay whole (we tried breaking them down, t-o and h-e sounded odd),
+  and so does a word nothing in the catalog explains: both are labelled "Sight word" (there's no "New word" any more).
   The list stays; adjust it as she reads. "Coming later" gained the 15 spellings that unlocked the most of Dragon Masters' unbreakable words
   (or in word, ar in wizard, ou in touch, ve, a in any, o in do, gu, ture, oor, ough, al, all, oul, ge, urr; about 75
-  words); rarer ones (eigh, stle, eau...) are left as tricky. le / se / ce only count at a word's end.
+  words); rarer ones (eigh, stle, eau...) are left as sight words. le / se / ce only count at a word's end.
 - `public/phonics.js#CATALOG_GROUPS`: every grapheme with its ARPAbet sounds, grouped (TYM, Silent e, Coming later). The inventory lists only grapheme names.
   Silent e is a split digraph (a_e, i_e...): `decode` returns parts in spelling order, `{ text, g }`, so "make" is m, a (g a_e), k, e (g a_e, silent).
   The word card links the vowel and its e with an arc under the consonant, as taught in class, and sounds them out together.
   "Coming later" includes alternative sounds for letters she knows, with ids like "ow (snow)" (`letters(id)` gives the letters).
   Names and words she can't read yet are still broken down, using the whole catalog: tiles for sounds she hasn't learned are plum (`part.new`).
-  Only tricky words and words no catalog sound can explain show as one block.
+  Only sight words and words no catalog sound can explain show as one block.
   `SOUNDED` in phonics.js lists words sounded out a particular way, by Eli's choice, as [letters, sound] per button, ahead of
-  the tricky list: "they" is th-e-y (the e and consonant y glide into its /ai/), "again" and "said" play their ai as "eh", "looked" and "liked" end in ed as /t/ (Oct 19).
+  the sight word list: "they" is th-e-y (the e and consonant y glide into its /ai/), "again" and "said" play their ai as "eh", "looked" and "liked" end in ed as /t/ (Oct 19).
   Add to it one word at a time; it changes only the word card, not what counts as readable.
 - `docs/stories/`: one brief per series (Tom's briefs, decisions, chapter outline). Read it before writing the next chapter.
 - `docs/vocabulary.md`: coverage findings and the queue of what to teach or add next. `node tools/coverage.mjs` re-measures.
