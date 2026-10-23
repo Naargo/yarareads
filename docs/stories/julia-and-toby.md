@@ -55,7 +55,7 @@ inventory (TYM + silent e, Oct 2026):
 - **The breakages (Tom):** Toby breaks four things of Julia's. He never blames anyone or explains; he just gets very sad.
   Julia isn't very mad, just annoyed: she huffs, stomps off, and is back to play a few minutes later.
   The fourth time she sees it happen ("Whoa! Do it on me!"), which starts the lessons.
-- **Timeline (Tom):** Julia goes to class; they meet and practise in the afternoon, sneaking off to the wood every day.
+- **Timeline (Tom):** Julia goes to class; they meet and practice in the afternoon, sneaking off to the woods every day.
   ("School" isn't readable for her yet; the text says "class".)
 - **The lessons (Tom):** about two weeks, over two chapters. They go horribly: when Toby gets upset, cans and sticks
   go flying. The breakthrough is an accident, like all learning breakthroughs: he isn't even trying, and a branch
@@ -74,7 +74,7 @@ inventory (TYM + silent e, Oct 2026):
 | 2 | The Bent Wheel | Julia goes to class. After lunch she runs back: her scooter wheel is bent (break 1). Toby just looks sad. She huffs and stomps off, but can't stay cross; back with her kite. |
 | 3 | The Painting | She paints Toby, goes in for a drink; comes back to paint everywhere and her painting ruined (break 2). Toby's tail droops. She sulks on the step, then he has a pink nose and they're friends again. |
 | 4 | Whoa! | Her best cup in bits (break 3). Then she peeks into the play house: a bee buzzes, Toby gets cross, spikes up, and her dolls, drum and tea set zoom sky-high and crash (break 4). The twist. "Do it on me! Make me float!" "I can not help it." "Then we will fix it." |
-| 5 | Float Lessons | Every afternoon they sneak to the wood. "I bet floating is like feelings." A tin can lands in a tree; a stick bonks Julia's chin. "I am no good at this." Day after day, nothing floats the right way. |
+| 5 | Float Lessons | Every afternoon they sneak to the woods. "I bet floating is like feelings." A tin can lands in a tree; a stick bonks Julia's chin. "I am no good at this." Day after day, nothing floats the right way. |
 | 6 | Day After Day | Day six: a log in the pond. Day nine: a branch on the play house. Day ten: "I give up." At dusk, not even trying, Toby looks at Julia, and a branch drifts down soft as a leaf into her hand. "You did it!" "But how?" |
 | 7 | Julia Floats | They do it again: branch, stick, can. "Now me." Her feet lift; higher than the gate, the play house; gliding past treetops with the birds, looping the loop, dipping to the pond. "This is the best day!" Then: far away, a big black dragon wakes. "Toby. I can feel you." |
 
