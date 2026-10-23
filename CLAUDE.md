@@ -10,6 +10,10 @@ TYM was the best thing they found, and she still struggled with it:
 - The reading hints were buried in other menus. Here the hint lives on the word: tap it, and its sound buttons pop up in place.
 - The stories were repetitive and dull. Here stories are a serialized adventure (Beast Quest / Dragon Masters style, but shorter), written only with phonics and tricky words she already knows.
 
+**Positioning (Oct 23, chosen with Tom):** "A fantasy book series for kids who've just learned to read, wrapped in an app that helps
+them sound out the words they get stuck on, so they can get lost in a story by themselves." Lead with the story and market through
+it, not the app. Tom is writing the full serial. The full document is in finereli/claude-skills, `promote/apps/yarareads/positioning.md`.
+
 ## The one rule for content
 
 Every word in a story must be readable by Yara: decodable with her graphemes, a tricky word she knows, or a name.
