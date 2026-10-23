@@ -68,7 +68,16 @@ if (process.argv.includes('--images')) {
   const gen = readFileSync('public/app.js', 'utf8').match(/const PICTURE_GEN = (\d+)/)[1];
   const tmp = '.build/sized';
   mkdirSync(tmp, { recursive: true });
-  const put = (key, file, type) => promisify(execFile)('npx', ['wrangler', 'r2', 'object', 'put', `yara-reads-pictures/${key}`, where, '--file', file, '--content-type', type]);
+  // A book is hundreds of uploads, and now and then one fails on the network (Oct 23): try each up to four times.
+  const put = async (key, file, type, tries = 4) => {
+    try {
+      await promisify(execFile)('npx', ['wrangler', 'r2', 'object', 'put', `yara-reads-pictures/${key}`, where, '--file', file, '--content-type', type]);
+    } catch (e) {
+      if (tries <= 1) throw e;
+      await new Promise((ok) => setTimeout(ok, 2000));
+      return put(key, file, type, tries - 1);
+    }
+  };
   const jobs = [];
   for (const key of images) {
     const file = imageFile(key);
