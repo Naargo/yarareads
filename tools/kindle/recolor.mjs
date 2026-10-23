@@ -8,7 +8,8 @@
 //   node tools/kindle/recolor.mjs cut <book> <name>               cut the board into color/NNN.jpg (1024x768)
 //   node tools/kindle/recolor.mjs one <book> <model> <NNN,...>    each drawing colored alone at full size -> color/final/NNN.jpg
 //   node tools/kindle/recolor.mjs bakeoff <book> <model,...> <NNN,...>   the same through several models -> color/bakeoff/
-//   node tools/kindle/recolor.mjs cover <book> <model> [aspect]   the book's cover (cover.jpg) redrawn to the library card's shape, title kept -> cover-color.jpg
+//   node tools/kindle/recolor.mjs cover <book> <model> [aspect] [picture]   the book's cover (cover.jpg) redrawn to the library card's shape,
+//                                                                  title kept -> cover-color.jpg; or a picture with no title (Mittu's 7.jpg), redrawn sharp
 //
 // Every model call's cost goes to color/costs.log; each run prints the book's total so far.
 // The cast and their colors live in content/home/<book>/color.json: { style, key: [{ name, look, ref }], panels: {NNN: who is in it},
@@ -26,7 +27,7 @@ const [cmd, book, ...args] = process.argv.slice(2);
 const dir = join(root, 'content/home', book);
 const out = join(dir, 'color');
 mkdirSync(out, { recursive: true });
-const art = JSON.parse(readFileSync(join(dir, 'color.json'), 'utf8'));
+const art = existsSync(join(dir, 'color.json')) ? JSON.parse(readFileSync(join(dir, 'color.json'), 'utf8')) : {};
 // Boards: N x N cells (RECOLOR_GRID, default 4) on a 3072x2304 sheet, drawn by RECOLOR_MODEL (default gpt-image-2).
 const W = 3072, H = 2304, N = Number(process.env.RECOLOR_GRID || 4), GUT = 24;
 const CELL_W = Math.floor((W - (N + 1) * GUT) / N), CELL_H = Math.floor((H - (N + 1) * GUT) / N);
@@ -136,12 +137,14 @@ Image 2 is the color key for the cast: ${art.key.map((c) => c.name).join(', ')},
   for (let i = 0; i < jobs.length; i += 4) await Promise.all(jobs.slice(i, i + 4).map(run));
 } else if (cmd === 'cover') {
   // The library card is about 10:9, a book cover taller than wide: object-fit crops the title off. Redraw it wider.
-  const [model, aspect = '5:4'] = args;
-  const prompt = `Image 1 is the front cover of a children's book. Redraw it as a ${aspect} landscape picture: the same artwork, characters, colors and style, with the scene extended naturally at the sides.
+  const [model, aspect = '5:4', picture] = args;
+  const prompt = picture
+    ? `Image 1 is a picture from a children's picture book, scanned at low resolution. Redraw it as a crisp, high-resolution ${aspect} landscape picture: exactly the same artwork, characters, poses, colors and flat cartoon style, with clean sharp outlines and no blur or JPEG noise, and the scene extended naturally at the sides so everything is fully inside the frame. No text.`
+    : `Image 1 is the front cover of a children's book. Redraw it as a ${aspect} landscape picture: the same artwork, characters, colors and style, with the scene extended naturally at the sides.
 Keep the title lettering exactly as on the cover, same font, colors and spelling, complete and uncut: "DRAGON MASTERS" and under it "RISE OF THE EARTH DRAGON". Put the title in the upper middle, with a margin on every side, so nothing touches an edge.
 Remove the badge in the top right corner. No other text.
 Keep everyone fully inside the frame: Drake the boy and Worm the dragon, his whole head.`;
-  const png = await draw(prompt, [join(dir, 'cover.jpg')], null, model, aspect);
+  const png = await draw(prompt, [join(dir, picture || 'cover.jpg')], null, model, aspect);
   writeFileSync(join(dir, 'cover-color.jpg'), await sharp(png).resize({ width: 1280, withoutEnlargement: true }).jpeg({ quality: 86, mozjpeg: true }).toBuffer());
   console.log(`cover-color.jpg  ${aspect}  total for ${book}: $${total().toFixed(2)}`);
 } else if (cmd === 'cut') {
