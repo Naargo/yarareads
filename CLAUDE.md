@@ -215,6 +215,10 @@ Content changes need only `tools/push.mjs`, no deploy.
    `node tools/sounds-upload.mjs eli --local` puts them in the local R2 so sounding out works under `wrangler dev`. All 45 recorded by Eli in one take (Oct 16, `all`): with exactly
    two pieces per sound the tool pairs them in order, since Whisper mishears single words ("yeah" for hat).
    ~~The tiles play each sound as they light.~~
+   **AI voices can't say lone phonics sounds** (Oct 23): Azure with IPA `<phoneme>` lost the voicing (v as f, z as s, b as p).
+   What does work is **voice conversion**: `tools/sounds-convert.py` (Seed-VC, on the Mac) re-voices a recorded sheet into any voice,
+   so one good human recording gives every AI word voice matching sounds. First try (Eli into Luna) kept every sound but came out
+   strained; parked, settings to try are in the script. A cleaner American recording (Tom?) is the other half.
 5. ~~Books from home, with pictures (first: Mittu and the Yellow Mango).~~ Next: show which *sounds* a book needs, not just words.
 6. Release plan: docs/roadmap.md.
 

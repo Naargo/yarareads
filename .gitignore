@@ -16,3 +16,5 @@ content/home/*/color/*
 content/home/*/color-*.jpg
 .notes/
 .venv/
+.cache/
+secrets/
