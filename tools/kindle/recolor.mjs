@@ -8,6 +8,7 @@
 //   node tools/kindle/recolor.mjs cut <book> <name>               cut the board into color/NNN.jpg (1024x768)
 //   node tools/kindle/recolor.mjs one <book> <model> <NNN,...>    each drawing colored alone at full size -> color/final/NNN.jpg
 //   node tools/kindle/recolor.mjs bakeoff <book> <model,...> <NNN,...>   the same through several models -> color/bakeoff/
+//   node tools/kindle/recolor.mjs sharpen <book> <model> <file,...>   a book's own low-res pictures redrawn sharp in place (originals to orig/)
 //   node tools/kindle/recolor.mjs cover <book> <model> [aspect] [picture]   the book's cover (cover.jpg) redrawn to the library card's shape,
 //                                                                  title kept -> cover-color.jpg; or a picture with no title (Mittu's 7.jpg), redrawn sharp
 //
@@ -147,6 +148,22 @@ Keep everyone fully inside the frame: Drake the boy and Worm the dragon, his who
   const png = await draw(prompt, [join(dir, picture || 'cover.jpg')], null, model, aspect);
   writeFileSync(join(dir, 'cover-color.jpg'), await sharp(png).resize({ width: 1280, withoutEnlargement: true }).jpeg({ quality: 86, mozjpeg: true }).toBuffer());
   console.log(`cover-color.jpg  ${aspect}  total for ${book}: $${total().toFixed(2)}`);
+} else if (cmd === 'sharpen') {
+  // A book's own low-resolution pictures (Mittu's scans), redrawn sharp in place, at the standard shape nearest their own.
+  // The originals are kept in orig/.
+  const [model, list] = args;
+  mkdirSync(join(dir, 'orig'), { recursive: true });
+  await Promise.all(list.split(',').map(async (file) => {
+    if (!existsSync(join(dir, 'orig', file))) writeFileSync(join(dir, 'orig', file), readFileSync(join(dir, file)));
+    const { width, height } = await sharp(join(dir, 'orig', file)).metadata();
+    const shapes = { '1:1': 1, '5:4': 1.25, '4:3': 4 / 3, '3:2': 1.5 };
+    const aspect = Object.keys(shapes).sort((a, b) => Math.abs(shapes[a] - width / height) - Math.abs(shapes[b] - width / height))[0];
+    const prompt = `Image 1 is a picture from a children's picture book, scanned at low resolution. Redraw it as a crisp, high-resolution ${aspect} picture: exactly the same artwork, characters, poses, expressions, colors and flat cartoon style, with clean sharp outlines and no blur or JPEG noise. Keep the composition; where the new shape needs more, extend the scene naturally. No text.`;
+    const png = await draw(prompt, [join(dir, 'orig', file)], null, model, aspect);
+    writeFileSync(join(dir, file), await sharp(png).resize({ width: 1600, withoutEnlargement: true }).jpeg({ quality: 86, mozjpeg: true }).toBuffer());
+    console.log(`${file}  ${width}x${height} -> ${aspect}`);
+  }));
+  console.log(`total for ${book}: $${total().toFixed(2)}`);
 } else if (cmd === 'cut') {
   // The model keeps the grid only roughly, so find it along the white gutters (as illustrate.mjs pick does).
   const [name] = args;

@@ -359,8 +359,8 @@ async function showReader(id, pageIndex) {
     pages: story.pages.map((p, i) => ({ i, image: !!p.image, length: (p.chapter || '').length + 30 * !!p.chapter + p.text.length }))
       .filter((p) => p.image === !!page.image).sort((a, b) => b.length - a.length).slice(0, 6).map((p) => pageHtml(p.i)),
   } : null;
-  const next = story.pages[pageIndex + 1];
-  if (next?.image) new Image().src = pictureUrl(next.image);
+  // The next two pages' pictures load while she reads this one (a new picture can take a second or two to arrive).
+  for (const p of story.pages.slice(pageIndex + 1, pageIndex + 3)) if (p.image) new Image().src = pictureUrl(p.image);
   const last = pageIndex === story.pages.length - 1;
   const chapterEnd = ch && pageIndex === to - 1 && !last;
 
@@ -666,7 +666,7 @@ async function showCover(id) {
         <button class="round press ember" data-act="next" aria-label="Start reading">${ICONS.next}</button>
       </div>
     </div>`;
-  if (story.pages[0]?.image) new Image().src = pictureUrl(story.pages[0].image);
+  for (const p of story.pages.slice(0, 2)) if (p.image) new Image().src = pictureUrl(p.image);
   app.querySelector('[data-act=home]').onclick = () => (location.hash = '#/');
   app.querySelector('[data-act=next]').onclick = () => (location.hash = `#/read/${id}/0`);
   app.querySelectorAll('.w').forEach((el) => (el.onclick = (e) => { e.stopPropagation(); openPop(el, story, inv); }));
