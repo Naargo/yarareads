@@ -23,8 +23,9 @@ The check uses pronunciation, not just spelling. `public/phonics.js#decode` alig
 pronunciation (`data/cmudict.dict`) with the sounds she knows for each grapheme (`content/inventory.json`).
 That's what rejects "cake" (c-a-k-e spells, but the a isn't /a/) and "dry". Unstressed single vowels may be schwa (the o in "dragon").
 Weak forms with no stressed syllable are ignored (otherwise "into" sneaks through as IH0 N T AH0); one-letter words like "a" are special-cased.
-CMU is a US dictionary. `data/extra.dict` adds British pronunciations next to CMU's (from, been, parrot) and names CMU lacks (Yara, Mittu);
-add to it when a word fails only because of American English. Words in neither dictionary are built from their stem (pecked = peck + T).
+CMU is a US dictionary, and the app is **American English** throughout (Eli, Oct 23: the voices are American too; the British
+pronunciations and voices are gone). `data/extra.dict` adds names and words CMU lacks (Yara, Mittu, tingly) and the odd other
+American pronunciation ("frahm" for from). Words in neither dictionary are built from their stem (pecked = peck + T).
 Never loosen the inventory to make a story pass.
 
 ## Layout
@@ -63,6 +64,11 @@ Never loosen the inventory to make a story pass.
 - **The live inventory is in D1**, edited by Eli in the grown-ups section (gate: type a birth year that makes you an adult, like TYM).
   `content/inventory.json` is the seed: her TYM sounds and tricky words from his screenshots (Oct 2026), plus "egg" and "house".
   Run `node tools/pull.mjs` before writing stories, so you check against what she knows now.
+- **Tricky words** (Oct 23): words on her tricky list stay whole (we tried breaking them down, t-o and h-e sounded odd),
+  and so does a word nothing in the catalog explains: both are labelled "Tricky word" (there's no "New word" any more).
+  The list stays; adjust it as she reads. "Coming later" gained the 15 spellings that unlocked the most of Dragon Masters' unbreakable words
+  (or in word, ar in wizard, ou in touch, ve, a in any, o in do, gu, ture, oor, ough, al, all, oul, ge, urr; about 75
+  words); rarer ones (eigh, stle, eau...) are left as tricky. le / se / ce only count at a word's end.
 - `public/phonics.js#CATALOG_GROUPS`: every grapheme with its ARPAbet sounds, grouped (TYM, Silent e, Coming later). The inventory lists only grapheme names.
   Silent e is a split digraph (a_e, i_e...): `decode` returns parts in spelling order, `{ text, g }`, so "make" is m, a (g a_e), k, e (g a_e, silent).
   The word card links the vowel and its e with an arc under the consonant, as taught in class, and sounds them out together.
@@ -78,10 +84,34 @@ Never loosen the inventory to make a story pass.
   (egg, tear, bog, sun, moon, sparkle, wheel, crash, whoa, feelings, float; add new ones there with a `--cover-<name>` color in style.css). `picture` is a scene description for image generation;
   `image` is an R2 key ("fizz-1/1.jpg") for the page's actual picture, with the file in `content/pictures/<key>`. `names` are characters known only in that story.
 - **Books from home** (`kind: "book"`): real books the family owns, e.g. Mittu and the Yellow Mango. They live in `content/home/<id>/book.json` plus
-  their page images, and that folder is **gitignored (and purged from history): the repo is public and these are other people's books**. D1 and R2 hold the real copies.
+  their page images. **The repo is public and these are other people's books**: the folder is in git **encrypted with git-crypt**
+  (`.gitattributes`, Oct 23; before that it was gitignored and purged from history). The key is the shared git-crypt key in
+  1Password (Private vault, Document "git-crypt"): on a fresh clone `op document get git-crypt --out-file <tmp>`, `git-crypt unlock <tmp>`,
+  delete the tmp file. Kindle captures (`raw/`), bake-offs and trial boards stay out (.gitignore). D1 and R2 hold the served copies.
   They're exempt from the readability rule; the checker reports what share she can read, and the reader underlines words she can't read yet.
   To add one: extract text and pictures (for PDFs, `pdftohtml -xml` gives each illustration's tile positions; render with `pdftoppm -aaVector no`
   or tile seams show), split into short pages, set `coverImage`, then `node tools/push.mjs --images`.
+  Kindle books (Dragon Masters 1, Oct 22): open the book in Kindle Cloud Reader in Brave, page with the right arrow and
+  `screencapture -l <window id>` each screen into `content/home/<id>/raw/` (the window must be on screen and the Mac
+  unlocked: keep it awake with `caffeinate`). `tools/kindle/extract.py` OCRs each capture (Apple Vision, `ocr.swift`) and crops
+  its drawing with the text painted out; `assemble.py` reflows the text into ~40-word pages using a `meta.json` (chapter
+  titles, the drop caps OCR misses, text fixes) and writes book.json. Push one book with `push.mjs --only <id>`.
+  Picture keys must be `<book>/<file>`: `/api/pictures` takes one slash.
+- **Chapters** (Oct 23). A long book is read a chapter at a time: the page a chapter starts on has `chapter: "<title>"`
+  (numbered in order). The reader shows the title above that page's text (tappable, like the rest), the dots count only
+  the chapter's pages, a list button opens the chapters, and finishing a chapter shows "End of Chapter N" with the next
+  one (event `chapter`, its page is where the next starts, so the library picks up there and says "On chapter N").
+  A book with no `chapter` on any page reads as before.
+- **Title page** (Oct 23): a book from home opens on `#/cover/<id>` (from the library when there's no place to pick up from, and
+  back from page 1): the whole cover (`coverImage`, contained, never cropped), the series and number (`bookSeries`/`bookNumber`
+  , which also label the library card), the title (tappable) and
+  `author` / `illustrator`.
+- **One text size per book** (`fit: "book"`, Oct 23): for books we cut into pages ourselves (Kindle imports), `fitPage`
+  measures the six longest pages once per screen size (in a stand-in, with a 4:3 picture) and shows every page at the
+  size the fullest one needs; a page may still crop its picture a bit more (`.tight`). Without it each page is fitted on
+  its own, which suits books kept page for page (Mittu). `assemble.py` cuts each chapter into even pages (~200
+  characters, a DP over sentence breaks that prefers paragraph ends), so one long page doesn't shrink the whole book. Julia and Toby stay separate books for now; later the first
+  seven may become chapters of one book.
 - Page pictures: **read docs/illustration.md** before making any. Check every picture before pushing it: age appropriate for any
   five-year-old (no fangs or horror) and correct anatomy (count limbs, joints bend the right way). `node tools/illustrate.mjs` (gpt-image-2 via OpenRouter; a chapter is drawn as one 4x4 board, then a panel picked per page; approved
   character sheets in content/art/ as references) writes web-quality JPEGs (~60 KB); `node tools/shrink.mjs` for others.
@@ -114,7 +144,8 @@ Never loosen the inventory to make a story pass.
   Content (books, pictures, inventory) isn't versioned: the app drops its cached books and inventory whenever the library
   shows, and re-renders the library on returning to the foreground. Grown-ups has "Refresh now" (a full reload).
 - Icons: `public/icons/*.svg` are the sources; the PNGs are rendered from them (Playwright screenshot at each size).
-- Local dev: `node tools/lexicon-asset.mjs` (the dictionary the worker needs), `npx wrangler d1 migrations apply yara-reads --local`, `node tools/push.mjs --local --inventory`, `npx wrangler dev`.
+- Local dev: `node tools/lexicon-asset.mjs` (the dictionary the worker needs), `npx wrangler d1 migrations apply yara-reads --local`, `node tools/push.mjs --local --inventory`,
+  `node tools/sounds-upload.mjs eli --local` (the recorded sounds), `npx wrangler dev`.
 
 ## Design
 
@@ -130,24 +161,21 @@ card. Text she can read comes first: `fitPage` shrinks it to 34px, then lets the
 a plain half-card box in landscape had cut a third off every picture. No inner dashed border.
 Word cards shrink their tiles (`--chip`) for long words instead of scrolling, so the whole word stays visible.
 Double-tap zoom is off (`touch-action: manipulation` on everything): quick taps on words kept zooming the iPad.
-Word cards have **one speaker button**. If the word has tiles, it always sounds it out first (tiles light in turn) and only
-then says the word: Eli doesn't want the voice reading words for her without the sounding out. Tricky words just get said.
-**Recorded sounds** (Eli's, R2 `sounds/recorded/eli/<id>.mp3`, `RECORDED` in app.js). Tapping a sound button always plays
-its sound (a silent e plays its vowel). One switch in grown-ups > Voice, `soundOut` (D1 `settings`, default on, worker.js
-`SOUND_DEFAULTS`; the public site uses the default): on, the speaker sounds the word out first (each tile lights and plays its
-sound), then says it; off, it just says the word. No silent animation: Eli found it odd (Oct 16).
+Word cards have **one speaker button**: it says the word (the sound buttons light). Tapping a sound button plays that
+sound (a silent e plays its vowel). The speaker used to sound the word out first (the `soundOut` setting); Eli dropped it
+on Oct 23: his recorded sounds then the AI voice saying the word sounded odd together.
+**Recorded sounds** (Eli's, R2 `sounds/recorded/eli/<id>.mp3`, `RECORDED` in app.js).
 `decode` gives every part its `sound` in ARPAbet ("Z" for the s in "is", "K S" for x), and `SOUND_FILES` maps it to a
-recording (a sequence with no recording of its own plays phoneme by phoneme; a silent e plays nothing). A tile stays lit for
-its sound plus a gap, at least 500 ms; with no recording, 650 ms as before. Recordings load when the card opens.
+recording (a sequence with no recording of its own plays phoneme by phoneme). Recordings load when the card opens.
 The public site serves these 45 recordings too (Eli's call, Oct 16), but not the recorded example words.
 Recordings are levelled to -23 LUFS over the active part of each clip (the median of Hyperion's words), then corrected per
 sound (`ADJUST` in tools/sounds-record.mjs) from Zwicker loudness (ISO 532-1, sones, via MoSQITo), which unlike LUFS hears
 broadband hiss as loud as people do; plus 2.5 dB off the unvoiced hisses by Eli's ear (f, s, h were "extremely loud").
 
-**Word voice.** Words are spoken by a Cloudflare Workers AI voice (Deepgram Aura; `VOICES` in worker.js, chosen in grown-ups > Voice,
-stored in D1 `settings`). `/api/say` generates a word once and caches it in R2 under `tts2/<voice>/<word>.mp3` (~0.5-1 s new, ~10 ms cached).
-The word is sent as a sentence (`playing.`): a bare word gets its end clipped. Eli's voice is Hyperion (also the default).
-The word card starts fetching when it opens, so the audio is ready by the end of the sounding out (650 ms a sound); if not,
+**Word voice.** Words are spoken by a Cloudflare Workers AI voice (Deepgram Aura 2, American voices only: Luna, Asteria and 13 men; `VOICES` in worker.js, chosen in grown-ups > Voice,
+stored in D1 `settings`; default Luna since Oct 23, Hyperion before). `/api/say` generates a word once and caches it in R2 under `tts2/<voice>/<word>.mp3` (~0.5-1 s new, ~10 ms cached).
+The word is sent as a sentence (`playing.`): a bare word gets its end clipped.
+The word card starts fetching the word when it opens, so it's usually ready by the tap; if not,
 the speaker button shows a spinner. Audio plays through Web Audio: iOS only allows sound started inside a tap, so the tap
 resumes the AudioContext (`unlockAudio`) and the word can play later from a timer. Browser speech is only the fallback.
 Words are made on demand the first time they're said (the free, signed-out version only plays words already made). Cost is negligible (Aura ~$0.03 per 1k characters).
@@ -175,7 +203,8 @@ Content changes need only `tools/push.mjs`, no deploy.
    `node tools/sounds-record.mjs <file> <part> [who]` slices at the silences, finds each example word with Whisper (in order;
    the sound is the piece just before it, so stray noises and redos don't matter), levels and fades each clip, and uploads it to R2
    `sounds/recorded/<who>/<id>.mp3` (+ `words/`). Local copies in content/sounds/recorded/
-   are gitignored: family voices stay out of the public repo. All 45 recorded by Eli in one take (Oct 16, `all`): with exactly
+   are in git, public (Eli's call, Oct 23: the app doesn't work well without them).
+   `node tools/sounds-upload.mjs eli --local` puts them in the local R2 so sounding out works under `wrangler dev`. All 45 recorded by Eli in one take (Oct 16, `all`): with exactly
    two pieces per sound the tool pairs them in order, since Whisper mishears single words ("yeah" for hat).
    ~~The tiles play each sound as they light.~~
 5. ~~Books from home, with pictures (first: Mittu and the Yellow Mango).~~ Next: show which *sounds* a book needs, not just words.

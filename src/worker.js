@@ -23,15 +23,23 @@ function cookie(request, name) {
 // Voices for words, from Cloudflare Workers AI. Ids are "<model>:<speaker>"; the grown-ups Voice tab lists these.
 // Aura is Deepgram's (mp3); MeloTTS returns base64 WAV in JSON.
 const VOICES = {
-  'aura-2:pandora': { model: '@cf/deepgram/aura-2-en', speaker: 'pandora', label: 'Pandora', about: 'British woman' },
-  'aura-2:draco': { model: '@cf/deepgram/aura-2-en', speaker: 'draco', label: 'Draco', about: 'British man' },
-  'aura-2:theia': { model: '@cf/deepgram/aura-2-en', speaker: 'theia', label: 'Theia', about: 'Australian woman' },
-  'aura-2:hyperion': { model: '@cf/deepgram/aura-2-en', speaker: 'hyperion', label: 'Hyperion', about: 'Australian man' },
   'aura-2:luna': { model: '@cf/deepgram/aura-2-en', speaker: 'luna', label: 'Luna', about: 'American woman' },
   'aura-2:asteria': { model: '@cf/deepgram/aura-2-en', speaker: 'asteria', label: 'Asteria', about: 'American woman' },
   'aura-2:apollo': { model: '@cf/deepgram/aura-2-en', speaker: 'apollo', label: 'Apollo', about: 'American man' },
+  'aura-2:arcas': { model: '@cf/deepgram/aura-2-en', speaker: 'arcas', label: 'Arcas', about: 'American man' },
+  'aura-2:aries': { model: '@cf/deepgram/aura-2-en', speaker: 'aries', label: 'Aries', about: 'American man' },
+  'aura-2:atlas': { model: '@cf/deepgram/aura-2-en', speaker: 'atlas', label: 'Atlas', about: 'American man' },
+  'aura-2:hermes': { model: '@cf/deepgram/aura-2-en', speaker: 'hermes', label: 'Hermes', about: 'American man' },
+  'aura-2:jupiter': { model: '@cf/deepgram/aura-2-en', speaker: 'jupiter', label: 'Jupiter', about: 'American man' },
+  'aura-2:mars': { model: '@cf/deepgram/aura-2-en', speaker: 'mars', label: 'Mars', about: 'American man' },
+  'aura-2:neptune': { model: '@cf/deepgram/aura-2-en', speaker: 'neptune', label: 'Neptune', about: 'American man' },
+  'aura-2:odysseus': { model: '@cf/deepgram/aura-2-en', speaker: 'odysseus', label: 'Odysseus', about: 'American man' },
+  'aura-2:orion': { model: '@cf/deepgram/aura-2-en', speaker: 'orion', label: 'Orion', about: 'American man' },
+  'aura-2:orpheus': { model: '@cf/deepgram/aura-2-en', speaker: 'orpheus', label: 'Orpheus', about: 'American man' },
+  'aura-2:saturn': { model: '@cf/deepgram/aura-2-en', speaker: 'saturn', label: 'Saturn', about: 'American man' },
+  'aura-2:zeus': { model: '@cf/deepgram/aura-2-en', speaker: 'zeus', label: 'Zeus', about: 'American man' },
 };
-const DEFAULT_VOICE = 'aura-2:hyperion'; // Eli's pick (Oct 7)
+const DEFAULT_VOICE = 'aura-2:luna'; // Eli's pick (Oct 23; Hyperion before)
 
 // Say one word in a voice: from the R2 cache (tts2/<voice>/<word>.<ext>), or generated once and stored.
 // The word goes in as a sentence ("playing."): as a bare word Aura stops mid-sound and clips the end
@@ -61,12 +69,6 @@ async function sayWord(env, voiceId, word) {
 const isPublic = (url, env) => !!env.PUBLIC_HOST && url.hostname === env.PUBLIC_HOST;
 // Ours: not a book from home, and not a book an account's own agent added (those have an owner).
 const OUR_STORIES = "coalesce(json_extract(body, '$.kind'), 'story') != 'book' AND owner IS NULL";
-
-// What the word card's speaker button does (grown-ups > Voice). soundOut on: sound the word out first (each sound button
-// lights and plays its recording), then say it. Off: just say the word. Tapping a sound button to hear it is always on.
-const SOUND_DEFAULTS = { soundOut: true };
-const soundSettings = async (env, sub) => Object.fromEntries(await Promise.all(Object.entries(SOUND_DEFAULTS).map(async ([k, d]) =>
-  [k, (await setting(env, sub, k, d ? '1' : '0')) === '1'])));
 
 async function setting(env, sub, key, fallback) {
   const row = await env.DB.prepare('SELECT value FROM account_settings WHERE sub = ? AND key = ?').bind(sub, key).first();
@@ -216,7 +218,7 @@ async function publicApi(request, env, url, path) {
     return new Response(obj.body, { headers: { 'content-type': 'audio/mpeg', 'cache-control': 'public, max-age=86400' } });
   }
   if (path === '/api/settings' && get) {
-    return json({ voice: DEFAULT_VOICE, voices: {}, public: true, ...SOUND_DEFAULTS });
+    return json({ voice: DEFAULT_VOICE, voices: {}, public: true });
   }
   // The starting sounds: Teach Your Monster to Read's, which the stories are written for. Edits stay on the device.
   if (path === '/api/inventory' && get) {
@@ -291,7 +293,9 @@ export default {
       ).bind(sub, who.email, who.name ?? null).run();
       const { results: stories } = await env.DB.prepare(
         `SELECT id, series, number, title, json_extract(body, '$.cover') AS cover,
-           json_extract(body, '$.coverImage') AS coverImage, coalesce(json_extract(body, '$.kind'), 'story') AS kind
+           json_extract(body, '$.coverImage') AS coverImage, coalesce(json_extract(body, '$.kind'), 'story') AS kind,
+           json_extract(body, '$.bookSeries') AS bookSeries, json_extract(body, '$.bookNumber') AS bookNumber,
+           (SELECT json_group_array(key) FROM json_each(body, '$.pages') WHERE json_extract(value, '$.chapter') IS NOT NULL) AS chapters
          FROM stories WHERE ${VISIBLE} ORDER BY kind = 'book', series, number`,
       ).bind(sub).all();
       const { results: done } = await env.DB.prepare(
@@ -299,12 +303,15 @@ export default {
       ).bind(sub).all();
       const times = Object.fromEntries(done.map((d) => [d.story_id, d.times]));
       // Where to pick a book up again: the page of the latest page event, unless the latest event is finishing it.
+      // Finishing a chapter ('chapter', its page is where the next one starts) picks up at the next chapter.
       const { results: last } = await env.DB.prepare(
-        `SELECT story_id, type, page FROM events WHERE sub = ? AND type IN ('page', 'finish')
-           AND id IN (SELECT MAX(id) FROM events WHERE sub = ? AND type IN ('page', 'finish') GROUP BY story_id)`,
+        `SELECT story_id, type, page FROM events WHERE sub = ? AND type IN ('page', 'chapter', 'finish')
+           AND id IN (SELECT MAX(id) FROM events WHERE sub = ? AND type IN ('page', 'chapter', 'finish') GROUP BY story_id)`,
       ).bind(sub, sub).all();
-      const spot = Object.fromEntries(last.filter((l) => l.type === 'page' && l.page > 0).map((l) => [l.story_id, l.page]));
-      return json(stories.map((s) => ({ ...s, finished: times[s.id] || 0, spot: spot[s.id] || 0 })));
+      const spot = Object.fromEntries(last.filter((l) => l.type !== 'finish' && l.page > 0).map((l) => [l.story_id, l.page]));
+      // chapters: the page each chapter starts on, for a book in chapters (null otherwise)
+      return json(stories.map(({ chapters, ...s }) => ({ ...s, chapters: JSON.parse(chapters || '[]').length ? JSON.parse(chapters) : null,
+        finished: times[s.id] || 0, spot: spot[s.id] || 0 })));
     }
 
     const storyMatch = path.match(/^\/api\/stories\/([\w-]+)$/);
@@ -349,21 +356,14 @@ export default {
     }
 
     if (path === '/api/settings' && request.method === 'GET') {
-      return json({ voice: await setting(env, sub, 'voice', DEFAULT_VOICE), voices: VOICES, ...(await soundSettings(env, sub)) });
+      return json({ voice: await setting(env, sub, 'voice', DEFAULT_VOICE), voices: VOICES });
     }
-    // Any of: voice, soundOut.
     if (path === '/api/settings' && request.method === 'PUT') {
       const body = await request.json();
       const set = (k, v) => env.DB.prepare('INSERT OR REPLACE INTO account_settings (sub, key, value, updated_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)').bind(sub, k, v).run();
       if ('voice' in body) {
         if (!VOICES[body.voice]) return json({ error: 'bad voice' }, { status: 400 });
         await set('voice', body.voice);
-      }
-      for (const k of Object.keys(SOUND_DEFAULTS)) {
-        if (k in body) {
-          if (typeof body[k] !== 'boolean') return json({ error: `bad ${k}` }, { status: 400 });
-          await set(k, body[k] ? '1' : '0');
-        }
       }
       return json({ ok: true });
     }

@@ -259,3 +259,38 @@ their sheet; changing a sheet means redrawing every page they appear in.
 2. Draw 4 sheet candidates each, review them side by side, copy the picks.
 3. Test 3-4 pages that mix the cast differently before drawing everything: consistency problems show up there.
 4. Draw all pages, upload, review in the app.
+
+## Coloring a book's own drawings (Dragon Masters 1, Oct 22)
+
+A book from home's black-and-white drawings colored and extended to 4:3 with `tools/kindle/recolor.mjs`: a color key of
+the cast first (approved), then each drawing alone with the key and a note of who is in it (`panels` in the book's
+`color.json`). Costs go to `color/costs.log`; the script stops at $5 a book (`RECOLOR_BUDGET`).
+
+- **Boards don't fit this job.** A 4x4 board of the drawings (as for Julia and Toby) kept the drawings but couldn't tell
+  the black-and-white characters apart (Shu came out orange, Bo in Drake's yellow, two Roris), and each panel cut from a
+  3072 board is only ~750 px wide. One drawing at a time, with "who is in it" spelled out, got every one right.
+- **Name who is in every picture**, with their colours ("Bo (cream tunic)"): a colourist can't tell children or dragons
+  apart in grey.
+- **Bake-off, 3 hard drawings x 7 models** (`color/bakeoff/index.html`, $1.88):
+  - Nano Banana Pro (google/gemini-3-pro-image, $0.14, 1200x896) is the most faithful: the illustrator's quirks and
+    line work kept. The choice for a true redo.
+  - GPT Image 2.5 Sunburst (openai/gpt-image-2.5-sunburst, $0.03, 1536x1152) cleans the drawing up a little, more
+    modern and a quarter of the price. **Chosen** for Dragon Masters: Eli let the quirkiness go for cost.
+  - Seedream 5.0 Pro ($0.09, 2048) close behind; GPT Image 2 ($0.07) good; FLUX.3 left a pale border; Qwen 2.1 Pro washed
+    out; Krea K3 Edit changed Bo's hair. Nano Banana 2.1 was out of quota at Google.
+- **Grids, Oct 22** (4800x3584 at the 4K tier, cut into panels): Nano Banana Pro in a 2x2 keeps faces but softens
+  line detail; at 3x3 it redraws faces and swaps hair colours. **Nano Banana 2 (google/gemini-3.1-flash-image) in a 2x2
+  is the sweet spot: faithful and crisp, $0.15 a grid = $0.04 a picture.** At 3x3 it stays crisp but invents settings
+  (sky behind an underground scene). Spell out hair colours too, or the cast's one redhead spreads.
+- **Say where every picture happens too** (`settings`). Without it Sunburst moved 21 of 55 underground scenes outdoors
+  (blue sky, trees). Read the story for it: Dragon Masters trains, sleeps and keeps its dragons underground.
+- **Two-page pictures** (`spreads`): both halves stitched side by side and colored as one 16:9 picture; a half that is
+  only a tail goes in `drop`.
+- Dragon Masters 1: 81 pictures, $6.61 in all including the bake-offs (Sunburst itself ~$0.033 a picture).
+- OpenRouter's image models change monthly: list them (`/api/v1/images/models`) before choosing, don't go from memory.
+
+**When words aren't enough, label the drawing.** The map (008) has a winding road and a river drawn alike, and two tries with a written description still gave two rivers. Eli wrote "road", "river" and "bridge over river" on the drawing in green with arrows; with that as the input (`color/annotated/NNN.png`, which `recolor.mjs one` uses in place of the capture, telling the model the green notes are not to be drawn) it came out right the first time, with no green left in it. Likewise, in a picture with several dragons, say where each one is ("top left is Worm, not red"): a plain list of who's in it got the colors swapped.
+
+**Covers for the library card.** The card shows a cover at about 10:9 with object-fit cover, so a book's tall cover loses its title. `recolor.mjs cover` has Nano Banana Pro redraw it at 5:4 with the scene extended at the sides and the title lettering kept, centered with a margin ($0.14; it kept the lettering exactly). Check redraws for children's faces too: a Sunburst redo gave nine-year-old Bo stubble until the note said "a smooth child's face, no beard".
+
+**Describe the picture yourself, don't trust the model to read it.** The image models misread the drawings: a soldier became the king, Drake walked instead of riding, a river appeared from nowhere (007), Worm and Vulcan swapped colors (079), underground rooms went outdoors. Claude reads the drawings better than they do. So before coloring, write each picture's description from looking at the original and reading its page of the story: who is where, doing what, on what, and where it happens; and say what is NOT in it when the model is likely to add it (no crown, no river). After, compare each result with its original and its text, and redo what's wrong.

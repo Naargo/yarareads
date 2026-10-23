@@ -2,7 +2,7 @@
 // Yara can't read (books from home are exempt: they're what they are).
 // The inventory lives in D1 (edited in the app); pass --inventory to overwrite it from
 // content/inventory.json. Run `node tools/pull.mjs` first so you check against the live one.
-// Usage: node tools/push.mjs [--local] [--inventory] [--images] [--owner <email or id>]   (--images uploads page pictures to R2)
+// Usage: node tools/push.mjs [--local] [--inventory] [--images] [--owner <email or id>] [--only <story id>]   (--images uploads page pictures to R2)
 // Books from home are private to one account: --owner (or $OWNER_EMAIL) says whose. --inventory writes that account's inventory.
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -24,8 +24,11 @@ const images = new Set();
 // Pictures are cached on devices for a long time, and a redrawn picture keeps its R2 key, so the stored story
 // points at "toby-1/3.jpg?v=<hash of the file>": a new picture is a new URL, and every device fetches it.
 const versioned = (key) => key && `${key}?v=${createHash('sha1').update(readFileSync(imageFile(key))).digest('hex').slice(0, 10)}`;
+// --only <id>: push just that story (and its pictures), leaving the others as they are in D1
+const only = process.argv.includes('--only') ? process.argv[process.argv.indexOf('--only') + 1] : null;
 for (const file of storyFiles()) {
   const { story, unknown } = compile(JSON.parse(readFileSync(file, 'utf8')));
+  if (only && story.id !== only) continue;
   for (const key of [story.coverImage, ...story.pages.map((p) => p.image)].filter(Boolean)) {
     if (!imageFile(key)) throw new Error(`${story.id}: missing image ${key}`);
     images.add(key);

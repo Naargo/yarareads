@@ -4,7 +4,15 @@ node_modules/
 .dev.vars
 public/version.json
 content/sounds/candidates/
-content/sounds/recorded/
 public/lexicon.dict
-content/home/
+# books from home are in git encrypted (.gitattributes), but not the captures, trial runs or derived copies
+content/home/*/raw/
+content/home/*/color/*
+!content/home/*/color/final/
+!content/home/*/color/annotated/
+!content/home/*/color/key.jpg
+!content/home/*/color/costs.log
+!content/home/*/color/spread-*.jpg
+content/home/*/color-*.jpg
 .notes/
+.venv/

@@ -35,6 +35,10 @@ export const CATALOG_GROUPS = [
     ['ed (jumped)', ['T']], ['d (liked)', ['T']], ['ed (lived)', ['D']], ['ed (wanted)', ['IH D', 'AH D']],
     ['are (care)', ['EH R']], ['ore (more)', ['AO R']], ['tch', ['CH']], ['dge', ['JH']],
     ['kn', ['N']], ['wr', ['R']], ['mb', ['M']],
+    // The spellings that unlocked the most words Dragon Masters 1 couldn't break down at all (Oct 23).
+    ['or (word)', ['ER']], ['ar (wizard)', ['ER']], ['ear (learn)', ['ER']], ['urr (purr)', ['ER']], ['ou (touch)', ['AH']],
+    ['ve (love)', ['V']], ['a (any)', ['EH']], ['o (do)', ['UW']], ['gu (guard)', ['G']], ['ture', ['CH ER']],
+    ['oor (door)', ['AO R']], ['ough (thought)', ['AO']], ['al (talk)', ['AO']], ['all (ball)', ['AO L']], ['oul (could)', ['UH']], ['ge (village)', ['JH']],
     ['bb', ['B']], ['dd', ['D']], ['gg', ['G']], ['mm', ['M']], ['nn', ['N']], ['pp', ['P']], ['rr', ['R']], ['tt', ['T']],
   ]],
 ];
@@ -102,6 +106,8 @@ export function decode(word, graphemes, pronunciation) {
     }
     for (const g of keys) {
       if (found || !w.startsWith(letters(g), i)) continue;
+      // le (little), se (house), ce (voice) end a word (or a word plus s, d): not the le in "learn", the se in "searched"
+      if (['le', 'se', 'ce'].includes(letters(g)) && !['', 's', 'd'].includes(w.slice(i + 2))) continue;
       for (const n of matches(g, j)) {
         const rest = go(i + letters(g).length, j + n);
         if (rest) { found = [{ text: letters(g), g, sound: said(j, n) }, ...rest]; break; }

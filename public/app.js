@@ -211,6 +211,8 @@ async function route() {
   const [, view, id, page] = location.hash.split('/');
   try {
     if (view === 'read' && id) await showReader(id, Number(page) || 0);
+    else if (view === 'chapter' && id) await showChapterEnd(id, Number(page) || 0);
+    else if (view === 'cover' && id) await showCover(id);
     else if (view === 'grownups') grownUp ? await showGrownups(id) : showGate();
     else await showLibrary();
   } catch (e) {
@@ -300,9 +302,9 @@ async function showLibrary() {
                 ? `<span class="art photo"><img src="${pictureUrl(s.coverImage, 640)}" alt=""></span>`
                 : `<span class="art" style="background: var(--cover-${esc(s.cover || 'egg')})">${cover(s.cover)}</span>`}
               <span class="meta">
-                <span class="num">${s.kind === 'book' ? 'From home' : `Book ${s.number}`}</span>
+                <span class="num">${s.bookSeries ? `${esc(s.bookSeries)}${s.bookNumber ? ` ${s.bookNumber}` : ''}` : s.kind === 'book' ? 'From home' : `Book ${s.number}`}</span>
                 <span class="title">${esc(s.title)}</span>
-                <span class="times">${s.spot ? `On page ${s.spot + 1}` : s.finished ? (s.finished === 1 ? 'Read once' : `Read ${s.finished} times`) : ''}</span>
+                <span class="times">${s.spot ? (s.chapters ? `On chapter ${s.chapters.filter((start) => start <= s.spot).length}` : `On page ${s.spot + 1}`) : s.finished ? (s.finished === 1 ? 'Read once' : `Read ${s.finished} times`) : ''}</span>
               </span>
             </button>`).join('')}
         </div>`).join('')}
@@ -313,7 +315,11 @@ async function showLibrary() {
         <span class="fine-links"><a href="/privacy">Privacy</a> <a href="/terms">Terms</a></span>
       </div>
     </div>`;
-  app.querySelectorAll('.book').forEach((b) => (b.onclick = () => (location.hash = `#/read/${b.dataset.id}/${stories.find((s) => s.id === b.dataset.id)?.spot || 0}`)));
+  app.querySelectorAll('.book').forEach((b) => (b.onclick = () => {
+    const spot = stories.find((s) => s.id === b.dataset.id)?.spot || 0;
+    const book = stories.find((s) => s.id === b.dataset.id)?.kind === 'book'; // books from home open on their title page
+    location.hash = spot || !book ? `#/read/${b.dataset.id}/${spot}` : `#/cover/${b.dataset.id}`;
+  }));
   app.querySelector('[data-act=grownups]').onclick = () => (location.hash = '#/grownups');
   const signin = app.querySelector('[data-act=signin]');
   if (signin) signin.onclick = async () => { if (await login.signIn()) location.reload(); };
@@ -334,30 +340,45 @@ async function showReader(id, pageIndex) {
   }
 
   const page = story.pages[pageIndex];
+  // A book in chapters: the dots and the contents are for the chapter she's in.
+  const parts = chapters(story);
+  const ch = parts.findLast((c) => c.start <= pageIndex);
+  const [from, to] = ch ? [ch.start, ch.end] : [0, story.pages.length];
   // Words she can't read yet (only in books from home) get a quiet dotted underline.
   const known = (t) => classify(t, inv, story.words?.[normalize(t)] || []).kind !== 'unknown';
-  const words = tokenize(page.text).map((t) =>
+  const tappable = (text) => tokenize(text).map((t) =>
     isWord(t) ? `<span class="w ${known(t) ? '' : 'new'}" data-word="${esc(t)}">${esc(t)}</span>` : esc(t),
-  );
+  ).join('');
+  const heading = (i) => (story.pages[i].chapter
+    ? `<div class="chapter-head"><span class="chapter-num">Chapter ${chapters(story).findLast((c) => c.start <= i).n}</span><span class="chapter-title">${tappable(story.pages[i].chapter)}</span></div>` : '');
+  const pageHtml = (i) => heading(i) + tappable(story.pages[i].text);
+  // fit: "book" (a book we cut into pages ourselves) keeps one text size on every page: the size its fullest pages need.
+  // fitPage measures the longest few, with or without a picture like this one.
+  fullest = story.fit === 'book' ? {
+    key: `${id}:${story.pages.length}`,
+    pages: story.pages.map((p, i) => ({ i, image: !!p.image, length: (p.chapter || '').length + 30 * !!p.chapter + p.text.length }))
+      .filter((p) => p.image === !!page.image).sort((a, b) => b.length - a.length).slice(0, 6).map((p) => pageHtml(p.i)),
+  } : null;
   const next = story.pages[pageIndex + 1];
   if (next?.image) new Image().src = pictureUrl(next.image);
   const last = pageIndex === story.pages.length - 1;
+  const chapterEnd = ch && pageIndex === to - 1 && !last;
 
   app.innerHTML = `
     <div class="reader">
       <div class="topbar">
         <button class="round press" data-act="home" aria-label="All books">${ICONS.home}</button>
         <div class="title">${esc(story.title)}</div>
-        <span class="spacer"></span>
+        ${parts.length ? `<button class="round press" data-act="contents" aria-label="Chapters">${ICONS.contents}</button>` : '<span class="spacer"></span>'}
       </div>
       <div class="sheet ${page.image ? 'with-picture' : ''}">
         ${page.image ? `<div class="picture"><img src="${pictureUrl(page.image)}" alt=""></div>` : ''}
-        <div class="text">${words.join('')}</div>
+        <div class="text">${pageHtml(pageIndex)}</div>
       </div>
       <div class="nav">
-        <button class="round press" data-act="prev" ${pageIndex === 0 ? 'disabled' : ''} aria-label="Back">${ICONS.prev}</button>
-        <div class="progress">${story.pages.map((_, i) => `<span class="${i <= pageIndex ? 'on' : ''}"></span>`).join('')}</div>
-        <button class="round press ${last ? 'ember' : ''}" data-act="next" aria-label="Next">${ICONS.next}</button>
+        <button class="round press" data-act="prev" ${pageIndex === 0 && story.kind !== 'book' ? 'disabled' : ''} aria-label="Back">${ICONS.prev}</button>
+        <div class="progress">${story.pages.slice(from, to).map((_, i) => `<span class="${from + i <= pageIndex ? 'on' : ''}"></span>`).join('')}</div>
+        <button class="round press ${last || chapterEnd ? 'ember' : ''}" data-act="next" aria-label="Next">${ICONS.next}</button>
       </div>
     </div>`;
 
@@ -372,8 +393,10 @@ async function showReader(id, pageIndex) {
 
   const go = (i) => (location.hash = `#/read/${id}/${i}`);
   app.querySelector('[data-act=home]').onclick = () => (location.hash = '#/');
-  app.querySelector('[data-act=prev]').onclick = () => pageIndex > 0 && go(pageIndex - 1);
-  app.querySelector('[data-act=next]').onclick = () => go(pageIndex + 1);
+  app.querySelector('[data-act=prev]').onclick = () => (pageIndex > 0 ? go(pageIndex - 1) : story.kind === 'book' && (location.hash = `#/cover/${id}`));
+  app.querySelector('[data-act=next]').onclick = () => (chapterEnd ? (location.hash = `#/chapter/${id}/${ch.n}`) : go(pageIndex + 1));
+  const contents = app.querySelector('[data-act=contents]');
+  if (contents) contents.onclick = () => showContents(story, parts, ch);
   app.querySelectorAll('.w').forEach((el) => (el.onclick = (e) => {
     e.stopPropagation();
     openPop(el, story, inv);
@@ -390,21 +413,46 @@ const pictureUrl = (key, width = 1600) => `/api/pictures/${key}${key.includes('?
 // overflows the sheet, step its size down (never below 20px).
 // With a picture, text she can read comes first: shrink it to 34px, then let the picture crop more
 // (.tight, up to about a third), and only then shrink the text further.
+// A book in one text size (fullest, set by showReader) starts from the size its fullest pages fit at on this screen.
+let fullest = null;
+const bookSizes = new Map();
 function fitPage() {
   const sheet = app.querySelector('.sheet'), text = app.querySelector('.text');
   if (!sheet || !text) return;
+  const fit = (text) => {
+    text.style.fontSize = '';
+    sheet.classList.remove('tight');
+    let size = parseFloat(getComputedStyle(text).fontSize);
+    const over = () => sheet.scrollHeight > sheet.clientHeight + 1;
+    while (over() && size > 20) {
+      if (size - 2 < 34 && !sheet.classList.contains('tight') && sheet.classList.contains('with-picture')) {
+        sheet.classList.add('tight');
+        continue;
+      }
+      size -= 2;
+      text.style.fontSize = `${size}px`;
+    }
+    return size;
+  };
+  if (!fullest) return fit(text);
+  const key = `${fullest.key}:${sheet.clientWidth}x${sheet.clientHeight}`;
+  if (!bookSizes.has(key)) { // measured in a stand-in for the text, so this page's words keep their tap handlers
+    const probe = text.cloneNode(false), ia = sheet.style.getPropertyValue('--ia');
+    text.after(probe);
+    text.hidden = true;
+    sheet.style.setProperty('--ia', 4 / 3); // with a 4:3 picture, so a wide one doesn't change the size
+    bookSizes.set(key, Math.min(...fullest.pages.map((html) => { probe.innerHTML = html; return fit(probe); })));
+    sheet.style.setProperty('--ia', ia);
+    probe.remove();
+    text.hidden = false;
+  }
   text.style.fontSize = '';
   sheet.classList.remove('tight');
-  let size = parseFloat(getComputedStyle(text).fontSize);
-  const over = () => sheet.scrollHeight > sheet.clientHeight + 1;
-  while (over() && size > 20) {
-    if (size - 2 < 34 && !sheet.classList.contains('tight') && sheet.classList.contains('with-picture')) {
-      sheet.classList.add('tight');
-      continue;
-    }
-    size -= 2;
-    text.style.fontSize = `${size}px`;
-  }
+  const size = Math.min(bookSizes.get(key), parseFloat(getComputedStyle(text).fontSize));
+  text.style.fontSize = `${size}px`;
+  // the size fits the fullest pages; this one may still need the picture cropped a little more, as they did
+  if (sheet.scrollHeight > sheet.clientHeight + 1 && sheet.classList.contains('with-picture') && size < 34) sheet.classList.add('tight');
+  if (sheet.scrollHeight > sheet.clientHeight + 1) fit(text);
 }
 addEventListener('resize', fitPage);
 document.fonts?.ready.then(fitPage);
@@ -428,21 +476,19 @@ function openPop(el, story, inv) {
 
   pop = document.createElement('div');
   pop.className = 'pop';
-  // Anything that can be sounded out gets sound buttons: her words, names, and new words
-  // (whose unfamiliar sounds are marked). Only tricky words and the truly irregular stay whole.
-  const badge = {
-    name: 'A name',
-    unknown: info.parts?.some((p) => p.new) ? 'New sounds' : 'New word',
-  }[info.kind];
+  // Anything that can be sounded out gets sound buttons: her words, names, and new words (whose unfamiliar sounds are
+  // plum). Words on her tricky list stay whole (t-o for "to" sounded odd, Oct 23), and so does a word nothing in the
+  // catalog explains: both are tricky words.
+  const badge = info.kind === 'name' ? 'A name' : info.parts?.some((p) => p.new) ? 'New sounds' : '';
   if (info.parts) {
     pop.innerHTML = `
       <div class="chips">${info.parts.map((p, i) => `<div class="chip ${chipClass(p)}" data-i="${i}">${esc(p.text)}<span class="mark"></span></div>`).join('')}</div>
       ${badge ? `<div class="badge ${info.kind === 'unknown' ? 'new' : ''}">${badge}</div>` : ''}
       <div class="actions">
-        <button class="press speak" data-a="sound" aria-label="Sound it out">${ICONS.speaker}</button>
+        <button class="press speak" data-a="sound" aria-label="Say it">${ICONS.speaker}</button>
       </div>`;
   } else {
-    const badge = { tricky: `${STAR(true)} Tricky word`, name: 'A name', unknown: 'New word' }[info.kind];
+    const badge = info.kind === 'name' ? 'A name' : `${STAR(true)} Tricky word`;
     pop.innerHTML = `
       <div class="whole">${esc(word)}</div>
       ${badge ? `<div class="badge">${badge}</div>` : ''}
@@ -457,8 +503,7 @@ function openPop(el, story, inv) {
   if (info.parts) drawLinks(pop, info.parts);
   place(pop, el);
 
-  // One speaker button. If the word can be sounded out, it always is (tiles light in turn) before
-  // the word is said, so the voice never reads a word for her without the sounding out.
+  // One speaker button: it says the word. The sound buttons play their sounds when tapped.
   const say = pop.querySelector('[data-a=say]');
   if (say) say.onclick = () => {
     unlockAudio();
@@ -467,7 +512,7 @@ function openPop(el, story, inv) {
   const sound = pop.querySelector('[data-a=sound]');
   if (sound) sound.onclick = () => {
     unlockAudio();
-    soundOut(pop, word, info.parts, sound);
+    sayLit(pop, word, sound);
   };
   // Tap a sound button to hear that one sound (always on); a silent e plays its vowel's sound.
   const card = pop;
@@ -570,35 +615,13 @@ function playSounds(buffers) {
   });
 }
 
-// The speaker button. Setting soundOut on (default): light up each sound in turn and play it (a silent-e vowel lights
-// with its e), then blend: say the whole word. Off: just say the word (no silent animation; Eli found it odd).
-// A tile stays lit for its sound plus a short gap, and at least half a second; with no recording, 650 ms.
-async function soundOut(p, word, parts, button) {
-  if (p.dataset.busy) return; // one sounding-out at a time
-  p.dataset.busy = '1';
+// The speaker button says the word, all its sound buttons lit. It doesn't sound the word out first any more:
+// Eli's recorded sounds and the AI voice saying the word together sounded odd (Oct 23). Tapping a sound button plays it.
+async function sayLit(p, word, button) {
   const chips = [...p.querySelectorAll('.chip')];
-  if ((await getSettings().catch(() => ({}))).soundOut === false) {
-    chips.forEach((c) => c.classList.add('lit'));
-    await sayWord(word, button);
-    setTimeout(() => chips.forEach((c) => c.classList.remove('lit')), 600);
-    delete p.dataset.busy;
-    return;
-  }
-  const wait = (ms) => new Promise((ok) => setTimeout(ok, ms));
-  for (const i of parts.map((_, k) => k).filter((k) => !parts[k].silent)) {
-    if (!pop || pop !== p) return; // card closed mid-way
-    chips.forEach((x) => x.classList.remove('lit'));
-    chips[i].classList.add('lit');
-    if (isSplit(parts[i])) chips[partner(parts, i)].classList.add('lit');
-    const buffers = (await Promise.all(partFiles(parts[i]).map(loadSound))).filter(Boolean);
-    const t0 = performance.now();
-    await playSounds(buffers);
-    const played = performance.now() - t0;
-    await wait(buffers.length ? Math.max(500 - played, 180) : 650);
-  }
   chips.forEach((c) => c.classList.add('lit'));
   await sayWord(word, button);
-  delete p.dataset.busy;
+  setTimeout(() => chips.forEach((c) => c.classList.remove('lit')), 600);
 }
 
 function place(p, el) {
@@ -612,6 +635,91 @@ function place(p, el) {
 }
 
 // ---------- The End ----------
+
+// ---------- Title page ----------
+// A book from home opens like a book: the whole cover (not cropped), the title, its series and number, who wrote and drew it.
+async function showCover(id) {
+  const [story, all] = await Promise.all([getStory(id), getInventory()]);
+  const inv = forStory(all, story);
+  const known = (t) => classify(t, inv, story.words?.[normalize(t)] || []).kind !== 'unknown';
+  const series = story.bookSeries ? `${story.bookSeries}${story.bookNumber ? ` ${story.bookNumber}` : ''}`
+    : '';
+  app.innerHTML = `
+    <div class="reader">
+      <div class="topbar">
+        <button class="round press" data-act="home" aria-label="All books">${ICONS.home}</button>
+        <span class="spacer"></span>
+      </div>
+      <div class="sheet title-page">
+        <div class="cover-art">${story.coverImage
+          ? `<img src="${pictureUrl(story.coverImage)}" alt="">`
+          : `<span class="art" style="background: var(--cover-${esc(story.cover || 'egg')})">${cover(story.cover)}</span>`}</div>
+        <div class="title-text">
+          ${series ? `<div class="title-series">${esc(series)}</div>` : ''}
+          <h1 class="text">${tokenize(story.title).map((t) => (isWord(t) ? `<span class="w ${known(t) ? '' : 'new'}" data-word="${esc(t)}">${esc(t)}</span>` : esc(t))).join('')}</h1>
+          ${story.author ? `<div class="byline">by ${esc(story.author)}</div>` : ''}
+          ${story.illustrator ? `<div class="byline">illustrated by ${esc(story.illustrator)}</div>` : ''}
+        </div>
+      </div>
+      <div class="nav">
+        <span class="spacer"></span>
+        <button class="round press ember" data-act="next" aria-label="Start reading">${ICONS.next}</button>
+      </div>
+    </div>`;
+  if (story.pages[0]?.image) new Image().src = pictureUrl(story.pages[0].image);
+  app.querySelector('[data-act=home]').onclick = () => (location.hash = '#/');
+  app.querySelector('[data-act=next]').onclick = () => (location.hash = `#/read/${id}/0`);
+  app.querySelectorAll('.w').forEach((el) => (el.onclick = (e) => { e.stopPropagation(); openPop(el, story, inv); }));
+}
+
+// ---------- Chapters ----------
+// A long book is read a chapter at a time: a page that starts a chapter carries its title (page.chapter).
+// [{ n, title, start, end }], or [] for a book with no chapters.
+function chapters(story) {
+  const starts = story.pages.flatMap((p, i) => (p.chapter ? [i] : []));
+  return starts.map((start, k) => ({ n: k + 1, title: story.pages[start].chapter, start, end: starts[k + 1] ?? story.pages.length }));
+}
+
+// Between chapters: a place to stop for today, or go on.
+async function showChapterEnd(id, n) {
+  const story = await getStory(id);
+  const parts = chapters(story);
+  const done = parts[n - 1], next = parts[n];
+  if (!done || !next) return showLibrary();
+  log('chapter', { storyId: id, page: next.start });
+  if (PUBLIC) { // pick up at the next chapter
+    const spots = local.get('spot') || {};
+    spots[id] = next.start;
+    local.set('spot', spots);
+  }
+  app.innerHTML = `
+    <div class="end">
+      <h1 class="big">End of Chapter ${n}</h1>
+      <p class="said">${esc(done.title)}</p>
+      <button class="next press ember">Chapter ${next.n}: ${esc(next.title)} ${ICONS.next}</button>
+      <button class="link" data-act="home">All books</button>
+    </div>`;
+  app.querySelector('.next').onclick = () => (location.hash = `#/read/${id}/${next.start}`);
+  app.querySelector('[data-act=home]').onclick = () => (location.hash = '#/');
+}
+
+function showContents(story, parts, current) {
+  const box = document.createElement('div');
+  box.className = 'contents-wrap';
+  box.innerHTML = `
+    <div class="contents" role="dialog" aria-label="Chapters">
+      <div class="contents-head"><h2>${esc(story.title)}</h2>
+        <button class="round press" data-act="close" aria-label="Close">${ICONS.close}</button></div>
+      <ol>${parts.map((c) => `<li><button class="press ${c === current ? 'here' : ''}" data-start="${c.start}">
+        <span class="chapter-num">${c.n}</span><span>${esc(c.title)}</span></button></li>`).join('')}</ol>
+    </div>`;
+  const close = () => box.remove();
+  box.onclick = (e) => e.target === box && close();
+  box.querySelector('[data-act=close]').onclick = close;
+  box.querySelectorAll('[data-start]').forEach((b) => (b.onclick = () => { close(); location.hash = `#/read/${story.id}/${b.dataset.start}`; }));
+  app.append(box);
+  box.querySelector('.here')?.scrollIntoView({ block: 'center' });
+}
 
 async function showEnd(story) {
   log('finish', { storyId: story.id });
@@ -746,7 +854,7 @@ function renderGrownups(tab) {
     voice: () => `
       <section class="panel">
         <h2>Voice</h2>
-        <p>The voice that says a word after the sounding out, and says tricky words. Tap a voice's speaker to hear it,
+        <p>The voice that says a word when the speaker button is tapped. Tap a voice's speaker to hear it,
           and tap a name to use that voice.</p>
         <div class="voices">
           ${Object.entries(prefs.voices).map(([id, v]) => `
@@ -756,16 +864,6 @@ function renderGrownups(tab) {
               ${id === prefs.voice ? `<span class="inuse">${ICONS.check} In use</span>` : ''}
             </div>`).join('')}
         </div>
-      </section>
-      <section class="panel">
-        <h2>Speaker button</h2>
-        <p>What the speaker button on the word card does.</p>
-        ${[['soundOut', 'Sound it out before saying the word', 'The speaker button lights each sound button in turn and plays its sound, then says the word. Off: it just says the word. Tapping a sound button always plays that sound.'],
-        ].map(([key, title, about]) => `
-          <button class="switchrow" data-setting="${key}" role="switch" aria-checked="${!!prefs[key]}">
-            <span><b>${title}</b><span class="muted">${about}</span></span>
-            <span class="switch ${prefs[key] ? 'on' : ''}"></span>
-          </button>`).join('')}
       </section>`,
     agents: () => `
       <section class="panel">
@@ -883,12 +981,6 @@ function renderGrownups(tab) {
     on('.try', (b) => {
       unlockAudio();
       sayWord('dragon', b, b.dataset.voice);
-    });
-    on('[data-setting]', (b) => {
-      const key = b.dataset.setting;
-      prefs[key] = !prefs[key];
-      rerender();
-      api('settings', { method: 'PUT', body: { [key]: prefs[key] } }).catch(failed);
     });
     on('.pick', (b) => {
       prefs.voice = b.dataset.voice;

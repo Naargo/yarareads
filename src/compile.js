@@ -8,7 +8,7 @@ export function compileStory(story, inv, pronunciations) {
   const unknown = new Map();
   let count = 0;
   story.pages.forEach((page, n) => {
-    for (const t of tokenize(page.text).filter(isWord)) {
+    for (const t of tokenize(`${page.chapter || ''} ${page.text}`).filter(isWord)) {
       count++;
       const w = normalize(t);
       words[w] = pronunciations(t);

@@ -1,0 +1,3 @@
+# Encrypted with git-crypt (the repo is public): books from home are other people's books.
+# The key is the shared git-crypt key in 1Password (see CLAUDE.md).
+content/home/** filter=git-crypt diff=git-crypt

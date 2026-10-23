@@ -7,7 +7,7 @@
 // the sound is the piece just before it. Stray taps and noises at either end don't matter, and a fumbled sound said
 // again is fine (the take just before the word wins). Each sound is trimmed, faded, levelled, encoded as MP3, and
 // uploaded to R2 as sounds/recorded/<who>/<id>.mp3, its word as sounds/recorded/<who>/words/<word>.mp3.
-// Local copies go to content/sounds/recorded/<who>/ (gitignored: the repo is public, these are family voices).
+// Local copies go to content/sounds/recorded/<who>/ (in git, public: Eli's call, Oct 23).
 // Ids are the sound in lower-case ARPAbet-ish names (s, sh, th, dh, ng, ...).
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';

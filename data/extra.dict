@@ -1,12 +1,13 @@
 ;;; Pronunciations added on top of CMU, same format (ARPAbet, stress digits). Entries here are tried
-;;; alongside CMU's, so a British pronunciation sits next to the American one.
+;;; alongside CMU's. American English throughout (Eli, Oct 23: the voices are American too).
 ;;; Characters' names CMU doesn't know:
 yara Y AA1 R AH0
 mittu M IH1 T UW0
-;;; British pronunciations of words CMU only has in American:
-from F R AA1 M
-been B IY1 N
-parrot P AE1 R AH0 T
 ;;; Julia and Toby (Tom's series):
 julia JH UW1 L IY0 AH0
 toby T OW1 B IY0
+;;; "frahm": CMU has only the "frum" from, but this one is American too, and Yara can read it:
+from F R AA1 M
+;;; Words in Dragon Masters 1 CMU lacks:
+tingly T IH1 NG G L IY0
+lowercase L OW1 ER0 K EY2 S
