@@ -302,7 +302,7 @@ async function showLibrary() {
                 ? `<span class="art photo"><img src="${pictureUrl(s.coverImage, 640)}" alt=""></span>`
                 : `<span class="art" style="background: var(--cover-${esc(s.cover || 'egg')})">${cover(s.cover)}</span>`}
               <span class="meta">
-                <span class="num">${s.bookSeries ? `${esc(s.bookSeries)}${s.bookNumber ? ` ${s.bookNumber}` : ''}` : s.kind === 'book' ? 'From home' : `Book ${s.number}`}</span>
+                <span class="num">${s.bookSeries ? `${esc(s.bookSeries)}${s.bookNumber ? `&nbsp;${s.bookNumber}` : ''}` : s.kind === 'book' ? 'From home' : `Book ${s.number}`}</span>
                 <span class="title">${esc(s.title)}</span>
                 <span class="times">${s.spot ? (s.chapters ? `On chapter ${s.chapters.filter((start) => start <= s.spot).length}` : `On page ${s.spot + 1}`) : s.finished ? (s.finished === 1 ? 'Read once' : `Read ${s.finished} times`) : ''}</span>
               </span>
@@ -359,8 +359,8 @@ async function showReader(id, pageIndex) {
     pages: story.pages.map((p, i) => ({ i, image: !!p.image, length: (p.chapter || '').length + 30 * !!p.chapter + p.text.length }))
       .filter((p) => p.image === !!page.image).sort((a, b) => b.length - a.length).slice(0, 6).map((p) => pageHtml(p.i)),
   } : null;
-  const next = story.pages[pageIndex + 1];
-  if (next?.image) new Image().src = pictureUrl(next.image);
+  // The next two pages' pictures load while she reads this one (a new picture can take a second or two to arrive).
+  for (const p of story.pages.slice(pageIndex + 1, pageIndex + 3)) if (p.image) new Image().src = pictureUrl(p.image);
   const last = pageIndex === story.pages.length - 1;
   const chapterEnd = ch && pageIndex === to - 1 && !last;
 
@@ -371,7 +371,7 @@ async function showReader(id, pageIndex) {
         <div class="title">${esc(story.title)}</div>
         ${parts.length ? `<button class="round press" data-act="contents" aria-label="Chapters">${ICONS.contents}</button>` : '<span class="spacer"></span>'}
       </div>
-      <div class="sheet ${page.image ? 'with-picture' : ''}">
+      <div class="sheet ${page.image ? 'with-picture' : ''} ${story.fit === 'book' ? 'book-fit' : ''}">
         ${page.image ? `<div class="picture"><img src="${pictureUrl(page.image)}" alt=""></div>` : ''}
         <div class="text">${pageHtml(pageIndex)}</div>
       </div>
@@ -419,8 +419,8 @@ const bookSizes = new Map();
 function fitPage() {
   const sheet = app.querySelector('.sheet'), text = app.querySelector('.text');
   if (!sheet || !text) return;
-  const fit = (text) => {
-    text.style.fontSize = '';
+  const fit = (text, start) => {
+    text.style.fontSize = start ? `${start}px` : '';
     sheet.classList.remove('tight');
     let size = parseFloat(getComputedStyle(text).fontSize);
     const over = () => sheet.scrollHeight > sheet.clientHeight + 1;
@@ -451,11 +451,11 @@ function fitPage() {
   const size = Math.min(bookSizes.get(key), parseFloat(getComputedStyle(text).fontSize));
   text.style.fontSize = `${size}px`;
   // the size fits the fullest pages; this one may still need the picture cropped a little more, as they did
-  if (sheet.scrollHeight > sheet.clientHeight + 1 && sheet.classList.contains('with-picture') && size < 34) sheet.classList.add('tight');
-  if (sheet.scrollHeight > sheet.clientHeight + 1) fit(text);
+  if (sheet.scrollHeight > sheet.clientHeight + 1 && sheet.classList.contains('with-picture')) sheet.classList.add('tight');
+  if (sheet.scrollHeight > sheet.clientHeight + 1) fit(text, size); // never bigger than the book's size
 }
 addEventListener('resize', fitPage);
-document.fonts?.ready.then(fitPage);
+document.fonts?.ready.then(() => { bookSizes.clear(); fitPage(); }); // a size measured in the fallback font is wrong
 
 // ---------- Word card: the hint lives right on the word ----------
 
@@ -655,7 +655,7 @@ async function showCover(id) {
           ? `<img src="${pictureUrl(story.coverImage)}" alt="">`
           : `<span class="art" style="background: var(--cover-${esc(story.cover || 'egg')})">${cover(story.cover)}</span>`}</div>
         <div class="title-text">
-          ${series ? `<div class="title-series">${esc(series)}</div>` : ''}
+          ${series ? `<div class="title-series">${esc(series).replace(/ (\d+)$/, '&nbsp;$1')}</div>` : ''}
           <h1 class="text">${tokenize(story.title).map((t) => (isWord(t) ? `<span class="w ${known(t) ? '' : 'new'}" data-word="${esc(t)}">${esc(t)}</span>` : esc(t))).join('')}</h1>
           ${story.author ? `<div class="byline">by ${esc(story.author)}</div>` : ''}
           ${story.illustrator ? `<div class="byline">illustrated by ${esc(story.illustrator)}</div>` : ''}
@@ -666,7 +666,7 @@ async function showCover(id) {
         <button class="round press ember" data-act="next" aria-label="Start reading">${ICONS.next}</button>
       </div>
     </div>`;
-  if (story.pages[0]?.image) new Image().src = pictureUrl(story.pages[0].image);
+  for (const p of story.pages.slice(0, 2)) if (p.image) new Image().src = pictureUrl(p.image);
   app.querySelector('[data-act=home]').onclick = () => (location.hash = '#/');
   app.querySelector('[data-act=next]').onclick = () => (location.hash = `#/read/${id}/0`);
   app.querySelectorAll('.w').forEach((el) => (el.onclick = (e) => { e.stopPropagation(); openPop(el, story, inv); }));

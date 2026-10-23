@@ -39,6 +39,9 @@ Never loosen the inventory to make a story pass.
   Everything that existed before accounts is held by the placeholder account `'family'`; the secret `FAMILY_EMAIL` (Yara's Google
   account, kept out of the public repo) makes the worker hand it all over the first time that account signs in (`adoptFamily`).
   `push.mjs` / `pull.mjs` take `--owner <email or id>` (or `$OWNER_EMAIL`); the account must have signed in once so it's in `accounts`.
+  A book from home has one owner but can be shared with the rest of the family: `story_readers` (story_id, sub) rows,
+  written by `push.mjs --share <email or id,...>` (Oct 23). Both books from home are Yara's, shared with Eli's account.
+  A book with no owner is visible to every signed-in account, so a book from home must always have one.
   The public site (PUBLIC_HOST) is unchanged: no login, state on the device.
 - **Agents (MCP)** (Oct 19). The reusable pattern is the `mcp-server` skill and the pwa kit item `mcp`; this app is a reference implementation of it. A parent's own agent (Claude, ChatGPT...) adds books to their account through `/mcp` (`src/mcp.js`,
   Streamable HTTP with JSON replies). Auth is OAuth 2.1 as the MCP spec asks, ported from the Accountant's `functions/_mcp-auth.ts`
@@ -123,6 +126,11 @@ Never loosen the inventory to make a story pass.
   with the Images binding (WebP, or JPEG for a browser without WebP; never enlarged; the original if that's smaller) and keeps it
   in R2 under `sized/`. 1600 because a 10.9" iPad in portrait shows a page picture about 1560 pixels wide: ours are 1024 and stay
   so, agents' uploads can be bigger. To reset every picture cache (devices and R2 copies), bump `PICTURE_GEN` in app.js and deploy.
+  **D1 and R2 are in eastern North America** (ENAM) and the worker runs at the edge near the reader (Sofia for Eli,
+  ~130 ms a round trip): a picture nobody had viewed took ~1.75 s (Oct 23). So sized copies are keyed by the URL's
+  `v` (`sized/<g>/<w>/<key>.<v>.<webp|jpg>`, no lookup of the original), `push.mjs --images` makes them ahead of time
+  with sharp, the worker stores a copy it had to make after responding (`ctx.waitUntil`), and the reader fetches the
+  next two pages' pictures while she reads.
   The browser keeps each for a year, and the worker keeps sized copies in Cloudflare's edge cache (`caches.default`, keyed by
   v and g, after the sign-in check), so a repeat request skips the R2 reads: ~0.2 s, like a static file (was ~0.45 s).
 - `public/`: the app (no build step). `art.js` holds the icons, logo and cover motifs; `fonts/` are self-hosted Andika (reading) and Fredoka (UI).

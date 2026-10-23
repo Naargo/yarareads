@@ -78,7 +78,11 @@ async function setting(env, sub, key, fallback) {
 // 1600 on a page (a 10.9" iPad in portrait shows the picture about 1560 pixels wide; ours are 1024 and stay so),
 // 640 for a cover in the library (about 250 points wide at 2x).
 const PICTURE_WIDTHS = [640, 1600];
-async function servePicture(env, request, key, url, scope) {
+// D1 and R2 live in eastern North America and the worker runs at the edge near the reader (Sofia for Eli, ~130 ms
+// each way), so every storage call on this path costs a round trip (Oct 23: a new picture took ~1.75 s). Sized copies
+// are keyed by the picture's version (v, the file hash push.mjs puts in its URL), so there's no lookup of the original
+// first; push.mjs makes them ahead of time; and copies are stored after the response, not before it.
+async function servePicture(env, request, key, url, scope, ctx) {
   const cacheControl = url.searchParams.has('v') ? `${scope}, max-age=31536000, immutable` : `${scope}, no-cache`;
   const width = Number(url.searchParams.get('w'));
   if (PICTURE_WIDTHS.includes(width) && env.IMAGES) {
@@ -89,32 +93,35 @@ async function servePicture(env, request, key, url, scope) {
     const edgeKey = new Request(`${url.origin}/__edge/${key}?v=${url.searchParams.get('v')}&w=${width}&g=${url.searchParams.get('g')}&${webp ? 'webp' : 'jpg'}`);
     const edge = url.searchParams.has('v') && (await caches.default.match(edgeKey).catch(() => null));
     if (edge) return new Response(edge.body, { headers: { 'content-type': edge.headers.get('content-type'), 'cache-control': cacheControl, etag: edge.headers.get('etag') || '', vary: 'accept' } });
-    const original = await env.PICTURES.head(key);
-    if (!original) return json({ error: 'not found' }, { status: 404 });
     const gen = (url.searchParams.get('g') || '0').replace(/\D/g, '').slice(0, 4) || '0'; // PICTURE_GEN in app.js
-    const sizedKey = `sized/${gen}/${width}/${key}.${original.etag}.${webp ? 'webp' : 'jpg'}`;
-    let sized = await env.PICTURES.get(sizedKey);
-    if (sized) type = sized.httpMetadata?.contentType || type;
-    else {
-      try {
-        const source = await env.PICTURES.get(key);
-        const out = await env.IMAGES.input(source.body).transform({ width, fit: 'scale-down' }).output({ format: type, quality: 78 });
-        let bytes = await out.response().arrayBuffer();
-        if (bytes.byteLength >= original.size) { // already small: keep the original (same type, so no surprises)
-          bytes = await (await env.PICTURES.get(key)).arrayBuffer();
-          type = original.httpMetadata?.contentType || 'image/jpeg';
-        }
-        await env.PICTURES.put(sizedKey, bytes, { httpMetadata: { contentType: type } });
-        sized = { body: bytes, httpEtag: `"${width}-${original.etag}"` };
-      } catch (e) {
-        console.log('picture resize failed', key, e.message); // fall through to the original
-      }
-    }
+    const v = (url.searchParams.get('v') || '').replace(/\W/g, '').slice(0, 20);
+    const version = v || (await env.PICTURES.head(key))?.etag; // an unversioned URL (rare) costs one more lookup
+    if (!version) return json({ error: 'not found' }, { status: 404 });
+    const sizedKey = `sized/${gen}/${width}/${key}.${version}.${webp ? 'webp' : 'jpg'}`;
+    let bytes;
+    const sized = await env.PICTURES.get(sizedKey);
     if (sized) {
-      const bytes = await new Response(sized.body).arrayBuffer();
-      if (url.searchParams.has('v')) await caches.default.put(edgeKey, new Response(bytes, { headers: { 'content-type': type, etag: sized.httpEtag, 'cache-control': 'public, max-age=2592000' } })).catch(() => {});
-      return new Response(bytes, { headers: { 'content-type': type, 'cache-control': cacheControl, etag: sized.httpEtag, vary: 'accept' } });
+      type = sized.httpMetadata?.contentType || type;
+      bytes = await sized.arrayBuffer();
+    } else {
+      const source = await env.PICTURES.get(key);
+      if (!source) return json({ error: 'not found' }, { status: 404 });
+      const original = await source.arrayBuffer();
+      try {
+        const out = await env.IMAGES.input(new Response(original).body).transform({ width, fit: 'scale-down' }).output({ format: type, quality: 78 });
+        bytes = await out.response().arrayBuffer();
+      } catch (e) {
+        console.log('picture resize failed', key, e.message);
+      }
+      if (!bytes || bytes.byteLength >= original.byteLength) { // already small (or no resize): the original, same type
+        bytes = original;
+        type = source.httpMetadata?.contentType || 'image/jpeg';
+      }
+      ctx.waitUntil(env.PICTURES.put(sizedKey, bytes, { httpMetadata: { contentType: type } }));
     }
+    const etag = `"${width}-${version}"`;
+    if (url.searchParams.has('v')) ctx.waitUntil(caches.default.put(edgeKey, new Response(bytes, { headers: { 'content-type': type, etag, 'cache-control': 'public, max-age=2592000' } })).catch(() => {}));
+    return new Response(bytes, { headers: { 'content-type': type, 'cache-control': cacheControl, etag, vary: 'accept' } });
   }
   const obj = await env.PICTURES.get(key);
   if (!obj) return json({ error: 'not found' }, { status: 404 });
@@ -166,11 +173,12 @@ async function adoptFamily(env, sub) {
 }
 
 // A story this account may see: the shared library, or its own books.
-const VISIBLE = '(owner IS NULL OR owner = ?)';
+// An account sees our stories (no owner), its own books, and books shared with it (story_readers). Binds sub twice.
+const VISIBLE = '(owner IS NULL OR owner = ? OR id IN (SELECT story_id FROM story_readers WHERE sub = ?))';
 
 // The public site's API: the reader's routes, limited to our stories. Everything else (grown-ups' tools,
 // Yara's settings and progress) is refused.
-async function publicApi(request, env, url, path) {
+async function publicApi(request, env, url, path, ctx) {
   const get = request.method === 'GET';
   if (path === '/api/stories' && get) {
     const { results } = await env.DB.prepare(
@@ -192,7 +200,7 @@ async function publicApi(request, env, url, path) {
     const used = await env.DB.prepare(`SELECT 1 FROM stories WHERE ${OUR_STORIES} AND instr(body, ?) > 0 LIMIT 1`)
       .bind(`"${picture[1]}`).first();
     if (!used) return json({ error: 'not found' }, { status: 404 });
-    return servePicture(env, request, picture[1], url, 'public');
+    return servePicture(env, request, picture[1], url, 'public', ctx);
   }
   // The phonics sounds the tiles play (Eli's recordings; he chose to share them, Oct 16). Only those: not the
   // AI takes, nor the example words recorded with them.
@@ -232,7 +240,7 @@ async function publicApi(request, env, url, path) {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const path = url.pathname;
 
@@ -259,7 +267,7 @@ export default {
     if (!path.startsWith('/api/')) return env.ASSETS.fetch(request);
 
     if (pub) {
-      return publicApi(request, env, url, path);
+      return publicApi(request, env, url, path, ctx);
     }
 
     // Sign-in leaves its token in a cookie too, for pictures. Signing out clears it.
@@ -275,7 +283,7 @@ export default {
 
     const who = await account(request, env);
     // Not signed in: the free version, the same as the public site (our own books; progress stays on the device).
-    if (!who) return publicApi(request, env, url, path);
+    if (!who) return publicApi(request, env, url, path, ctx);
     const sub = who.sub;
     // A preview looks and nothing else: no saving, and it leaves no reading history.
     if (who.readOnly && request.method !== 'GET') {
@@ -292,7 +300,7 @@ export default {
            json_extract(body, '$.bookSeries') AS bookSeries, json_extract(body, '$.bookNumber') AS bookNumber,
            (SELECT json_group_array(key) FROM json_each(body, '$.pages') WHERE json_extract(value, '$.chapter') IS NOT NULL) AS chapters
          FROM stories WHERE ${VISIBLE} ORDER BY kind = 'book', series, number`,
-      ).bind(sub).all();
+      ).bind(sub, sub).all();
       const { results: done } = await env.DB.prepare(
         "SELECT story_id, COUNT(*) AS times FROM events WHERE type = 'finish' AND sub = ? GROUP BY story_id",
       ).bind(sub).all();
@@ -311,7 +319,7 @@ export default {
 
     const storyMatch = path.match(/^\/api\/stories\/([\w-]+)$/);
     if (storyMatch && request.method === 'GET') {
-      const row = await env.DB.prepare(`SELECT body FROM stories WHERE id = ? AND ${VISIBLE}`).bind(storyMatch[1], sub).first();
+      const row = await env.DB.prepare(`SELECT body FROM stories WHERE id = ? AND ${VISIBLE}`).bind(storyMatch[1], sub, sub).first();
       if (!row) return json({ error: 'not found' }, { status: 404 });
       return new Response(row.body, { headers: { 'content-type': 'application/json' } });
     }
@@ -321,9 +329,9 @@ export default {
     const picture = path.match(/^\/api\/pictures\/([\w-]+\/[\w.-]+)$/);
     if (picture && request.method === 'GET') {
       const used = await env.DB.prepare(`SELECT 1 FROM stories WHERE ${VISIBLE} AND instr(body, ?) > 0 LIMIT 1`)
-        .bind(sub, `"${picture[1]}`).first();
+        .bind(sub, sub, `"${picture[1]}`).first();
       if (!used) return json({ error: 'not found' }, { status: 404 });
-      return servePicture(env, request, picture[1], url, 'private');
+      return servePicture(env, request, picture[1], url, 'private', ctx);
     }
 
     // Phonics sound audio (recordings), also in R2, under sounds/.
@@ -420,6 +428,7 @@ export default {
         }
       }
       await env.DB.batch([
+        env.DB.prepare('DELETE FROM story_readers WHERE sub = ? OR story_id IN (SELECT id FROM stories WHERE owner = ?)').bind(sub, sub),
         env.DB.prepare('DELETE FROM stories WHERE owner = ?').bind(sub),
         env.DB.prepare('DELETE FROM account_inventory WHERE sub = ?').bind(sub),
         env.DB.prepare('DELETE FROM account_settings WHERE sub = ?').bind(sub),

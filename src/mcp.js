@@ -241,7 +241,10 @@ async function callTool(name, args, ctx) {
         if (list.objects.length) await env.PICTURES.delete(list.objects.map((o) => o.key));
         if (!list.truncated) break;
       }
-      await env.DB.prepare('DELETE FROM stories WHERE id = ? AND owner = ?').bind(story.id, sub).run();
+      await env.DB.batch([
+        env.DB.prepare('DELETE FROM story_readers WHERE story_id = ?').bind(story.id),
+        env.DB.prepare('DELETE FROM stories WHERE id = ? AND owner = ?').bind(story.id, sub),
+      ]);
       return text({ deleted: story.id });
     }
 
