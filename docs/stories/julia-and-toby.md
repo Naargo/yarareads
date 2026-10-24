@@ -30,7 +30,7 @@ After this part of the story, it could go anywhere.
 Every word has to pass `npm run check`. What that means for this story, measured against her
 inventory (TYM + silent e, Oct 2026):
 
-- **Present tense.** -ed endings aren't hers yet (jumped, floated), so chapters are told in the present,
+- **Present tense.** -ed endings weren't hers when the first chapters were written (jumped, floated), so chapters are told in the present (-ed switched on Oct 24, first used for "smashed" in chapter 4; past tense is now possible, Tom's call),
   like the Fizz books: "Julia hears a yelp."
 - **Works:** float, floats, scooter, dragon, cave, peak, wheel, broke, yelp, backyard, shine, white, spin,
   zoom, cool, whoa, and the feelings glad, mad, sad, fear, joy.

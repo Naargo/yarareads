@@ -43,6 +43,7 @@ export const CATALOG_GROUPS = [
   ]],
 ];
 export const CATALOG = CATALOG_GROUPS.flatMap(([, entries]) => entries);
+const ENDINGS = ['ed (jumped)', 'd (liked)', 'ed (lived)', 'ed (wanted)'];
 const SOUNDS = Object.fromEntries(CATALOG);
 
 export function normalize(word) {
@@ -108,6 +109,8 @@ export function decode(word, graphemes, pronunciation) {
       if (found || !w.startsWith(letters(g), i)) continue;
       // le (little), se (house), ce (voice) end a word (or a word plus s, d): not the le in "learn", the se in "searched"
       if (['le', 'se', 'ce'].includes(letters(g)) && !['', 's', 'd'].includes(w.slice(i + 2))) continue;
+      // -ed endings (jumped, lived, wanted, liked) only at a word's end: not the ed in "edge" or "red".
+      if (ENDINGS.includes(g) && i + letters(g).length !== w.length) continue;
       for (const n of matches(g, j)) {
         const rest = go(i + letters(g).length, j + n);
         if (rest) { found = [{ text: letters(g), g, sound: said(j, n) }, ...rest]; break; }

@@ -72,6 +72,9 @@ Never loosen the inventory to make a story pass.
   The list stays; adjust it as she reads. "Coming later" gained the 15 spellings that unlocked the most of Dragon Masters' unbreakable words
   (or in word, ar in wizard, ou in touch, ve, a in any, o in do, gu, ture, oor, ough, al, all, oul, ge, urr; about 75
   words); rarer ones (eigh, stle, eau...) are left as sight words. le / se / ce only count at a word's end.
+- **-ed endings** (Oct 24, Eli): `ed (jumped)` /t/, `ed (lived)` /d/, `ed (wanted)` /id/ and `d (liked)` /t/ are switched on in the seed
+  inventory (and so on the public site and for new accounts). They only count at a word's end (`ENDINGS` in phonics.js), not
+  the ed in "red" or "bedtime". First use: "Her best cup is smashed on the grass" (book 4). The stories are still told in the present tense.
 - `public/phonics.js#CATALOG_GROUPS`: every grapheme with its ARPAbet sounds, grouped (TYM, Silent e, Coming later). The inventory lists only grapheme names.
   Silent e is a split digraph (a_e, i_e...): `decode` returns parts in spelling order, `{ text, g }`, so "make" is m, a (g a_e), k, e (g a_e, silent).
   The word card links the vowel and its e with an arc under the consonant, as taught in class, and sounds them out together.
