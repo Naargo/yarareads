@@ -1,0 +1,12 @@
+{
+  "_note": "What's been posted to Pinterest (account efiner2169, via Composio PINTEREST_CREATE_PIN). The scheduled task reads `queue`, posts the next two not in `posted`, and appends them here. Images are fetched from raw.githubusercontent.com/finereli/yarareads/main/marketing/pinterest/pins/<id>.jpg, so a new pin must be committed to main before it's posted. Every pin is labelled ai_disclosure_values: [\"AI_MODIFIED\"] (the pictures are AI-drawn).",
+  "boards": {
+    "Julia and Toby: early chapter books": "897975681892083219",
+    "Dragon chapter books for kids": "897975681892083220"
+  },
+  "queue": ["01-read-it-themselves", "02-loves-dragon-masters", "20-video", "03-one-more-chapter", "11-book-1", "05-written-by-tom", "04-tap-a-word", "06-when-toby-gets-mad", "12-book-2", "13-book-3", "14-book-4", "15-book-5", "16-book-6", "17-book-7"],
+  "posted": [
+    { "id": "01-read-it-themselves", "pin": "897975613226299199", "board": "897975681892083219", "at": "2026-10-25" },
+    { "id": "02-loves-dragon-masters", "pin": "897975613226299198", "board": "897975681892083220", "at": "2026-10-25" }
+  ]
+}
