@@ -20,6 +20,9 @@
 //   node tools/illustrate.mjs preview <board>                 numbered preview: boards/<board>-numbered.jpg
 //   node tools/illustrate.mjs pick <story-id> <page>=<panel> ...   use panel (1-16, row by row) as the page's picture;
 //                                                            <page>=<edit>:<panel> takes it from an edit (7=2:6)
+//   node tools/illustrate.mjs redraw <story-id> <page>=<panel> [takes]   redraw a page on its own, with its panel as the plan
+//                                                            -> content/art/<series>/redraws/<story-id>-p<page>-<k>.jpg
+//   node tools/illustrate.mjs use <story-id> <page> <k>      put redraw k on the page
 //
 // Then `node tools/push.mjs --images` uploads them.
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
@@ -97,6 +100,39 @@ async function preview(dir, stem) {
 const sheetsFor = (art, dir, chapterText) => Object.entries(art.cast)
   .filter(([c, v]) => existsSync(join(dir, `${c}.jpg`)) && (!v.sheetWhenNamed || v.match.some((m) => chapterText.includes(` ${m} `))))
   .map(([c]) => c);
+
+// Find the 4x4 grid along the white gutters of a board (the original, or an edit).
+const grid = async (board) => {
+  const { data, info } = await sharp(board).greyscale().raw().toBuffer({ resolveWithObject: true });
+  const W = info.width, H = info.height;
+  const white = (v) => v > 235;
+  // A gutter column/row is one that's almost all white.
+  const colWhite = (x) => { let n = 0; for (let y = 0; y < H; y += 4) n += white(data[y * W + x]); return n / (H / 4) > 0.97; };
+  const rowWhite = (y) => { let n = 0; for (let x = 0; x < W; x += 4) n += white(data[y * W + x]); return n / (W / 4) > 0.97; };
+  const spans = (len, isWhite) => {
+    const out = []; let start = null;
+    for (let i = 0; i <= len; i++) {
+      const w = i === len || isWhite(i);
+      if (!w && start === null) start = i;
+      if (w && start !== null) { if (i - start > len / 10) out.push([start, i]); start = null; }
+    }
+    return out;
+  };
+  const cols = spans(W, colWhite), rows = spans(H, rowWhite);
+  if (cols.length !== 4 || rows.length !== 4) throw new Error(`${board}: expected a 4x4 grid, found ${cols.length}x${rows.length}`);
+  return { cols, rows };
+};
+
+// One panel of a board ("6", or "2:6" for panel 6 of edit 2), cut along the gutters and scaled to the page size.
+async function cutPanel(dir, id, from, size) {
+  const [edit, panel] = from.includes(':') ? from.split(':').map(Number) : [null, Number(from)];
+  const board = join(dir, 'boards', edit ? `${id}.${edit}.jpg` : `${id}.jpg`);
+  const { cols, rows } = await grid(board);
+  const [x0, x1] = cols[(panel - 1) % 4], [y0, y1] = rows[Math.floor((panel - 1) / 4)];
+  const inset = 3; // trims any anti-aliased gutter edge
+  return sharp(board).extract({ left: x0 + inset, top: y0 + inset, width: x1 - x0 - 2 * inset, height: y1 - y0 - 2 * inset })
+    .resize(size[0], size[1], { fit: 'cover' }).toBuffer();
+}
 
 const [cmd, ...args] = process.argv.slice(2);
 
@@ -224,45 +260,54 @@ ${story.pages.map((p, i) => `Page ${i + 1}: ${p.text}`).join('\n')}`;
   const file = join(root, 'content/stories', `${id}.json`);
   const story = JSON.parse(readFileSync(file, 'utf8'));
   const { art, dir } = loadArt(story.series);
-  // Find the 4x4 grid along the white gutters of a board (the original, or an edit).
-  const grid = async (board) => {
-    const { data, info } = await sharp(board).greyscale().raw().toBuffer({ resolveWithObject: true });
-    const W = info.width, H = info.height;
-    const white = (v) => v > 235;
-    // A gutter column/row is one that's almost all white.
-    const colWhite = (x) => { let n = 0; for (let y = 0; y < H; y += 4) n += white(data[y * W + x]); return n / (H / 4) > 0.97; };
-    const rowWhite = (y) => { let n = 0; for (let x = 0; x < W; x += 4) n += white(data[y * W + x]); return n / (W / 4) > 0.97; };
-    const spans = (len, isWhite) => {
-      const out = []; let start = null;
-      for (let i = 0; i <= len; i++) {
-        const w = i === len || isWhite(i);
-        if (!w && start === null) start = i;
-        if (w && start !== null) { if (i - start > len / 10) out.push([start, i]); start = null; }
-      }
-      return out;
-    };
-    const cols = spans(W, colWhite), rows = spans(H, rowWhite);
-    if (cols.length !== 4 || rows.length !== 4) throw new Error(`${board}: expected a 4x4 grid, found ${cols.length}x${rows.length}`);
-    return { cols, rows };
-  };
   const out = join(root, 'content/pictures', id);
   mkdirSync(out, { recursive: true });
   for (const pick of picks) {
     const [pageStr, from] = pick.split('=');
-    const [edit, panel] = from.includes(':') ? from.split(':').map(Number) : [null, Number(from)];
     const page = Number(pageStr);
-    const board = join(dir, 'boards', edit ? `${id}.${edit}.jpg` : `${id}.jpg`);
-    const { cols, rows } = await grid(board);
-    const [x0, x1] = cols[(panel - 1) % 4], [y0, y1] = rows[Math.floor((panel - 1) / 4)];
-    const inset = 3; // trims any anti-aliased gutter edge
-    const cut = await sharp(board).extract({ left: x0 + inset, top: y0 + inset, width: x1 - x0 - 2 * inset, height: y1 - y0 - 2 * inset })
-      .resize(art.size[0], art.size[1], { fit: 'cover' }).toBuffer();
+    const cut = await cutPanel(dir, id, from, art.size);
     writeFileSync(join(out, `${page}.jpg`), await webJpeg(cut, art.size[0]));
     story.pages[page - 1].image = `${id}/${page}.jpg`;
     story.pages[page - 1].panel = from; // "6", or "2:6" for panel 6 of edit 2
     console.log(`${id} page ${page} = panel ${from}`);
   }
   writeFileSync(file, JSON.stringify(story, null, 2) + '\n');
+} else if (cmd === 'redraw') {
+  // A board panel as the plan, drawn again on its own at full size: the board keeps places and continuity, a page of
+  // its own gets the anatomy right (small panels grow extra limbs and doubles). Writes candidates; `use` picks one.
+  const [id, spec, takes = 2] = args;
+  const [pageStr, from] = spec.split('=');
+  const n = Number(pageStr);
+  const story = JSON.parse(readFileSync(join(root, 'content/stories', `${id}.json`), 'utf8'));
+  const { art, dir } = loadArt(story.series);
+  const page = story.pages[n - 1];
+  const redraws = join(dir, 'redraws');
+  mkdirSync(redraws, { recursive: true });
+  const plan = join(redraws, `${id}-p${n}-plan.jpg`);
+  writeFileSync(plan, await webJpeg(await cutPanel(dir, id, from, art.size), art.size[0]));
+  const cast = castFor(page, art).filter((c) => existsSync(join(dir, `${c}.jpg`)));
+  const refs = [plan, ...cast.map((c) => join(dir, `${c}.jpg`))];
+  const who = cast.map((c, i) => `Image ${i + 2} is the reference for ${art.cast[c].look} Keep this exact design, colours and outfit.`).join(' ');
+  const prompt = `${art.style} Image 1 is a small sketch of this page. Draw it again as a finished full-page illustration: the same place, the same
+moment, the same characters in the same spots. Draw each character once, with natural, correct anatomy. ${who}
+The words on this page of the story are: "${page.text}"`.replace(/\s+/g, ' ');
+  for (let k = 1; k <= Number(takes); k++) {
+    writeFileSync(join(redraws, `${id}-p${n}-${k}.jpg`), await webJpeg(await draw(prompt, refs, art.size), art.size[0]));
+    console.log(`${id} page ${n} redraw ${k} from panel ${from}  $${spent.toFixed(2)} so far`);
+  }
+} else if (cmd === 'use') {
+  // Put a redraw on the page: node tools/illustrate.mjs use toby-1 10 2  (redraws/toby-1-p10-2.jpg)
+  const [id, n, k] = args;
+  const file = join(root, 'content/stories', `${id}.json`);
+  const story = JSON.parse(readFileSync(file, 'utf8'));
+  const { dir } = loadArt(story.series);
+  mkdirSync(join(root, 'content/pictures', id), { recursive: true });
+  writeFileSync(join(root, 'content/pictures', id, `${n}.jpg`), readFileSync(join(dir, 'redraws', `${id}-p${n}-${k}.jpg`)));
+  const page = story.pages[Number(n) - 1];
+  page.image = `${id}/${n}.jpg`;
+  page.panel = `redraw ${k}`;
+  writeFileSync(file, JSON.stringify(story, null, 2) + '\n');
+  console.log(`${id} page ${n} = redraw ${k}`);
 } else if (cmd === 'cover') {
   const [id, n] = args;
   const file = join(root, 'content/stories', `${id}.json`);
