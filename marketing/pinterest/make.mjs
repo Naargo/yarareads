@@ -62,4 +62,4 @@ writeFileSync(`${here}pins.md`, `# Pinterest pins\n\nMade by make.mjs from pins.
   pins.map((p) => `## ${p.id}\n\n**Title:** ${p.title}\n\n**Description:** ${p.description}\n\n**Link:** ${p.link}\n\n**Board:** ${p.board}\n`).join('\n') +
   `\n## 20-video (video.sh)\n\n**Title:** Julia and Toby, book 1: a dragon story new readers can read themselves\n\n` +
   `**Description:** Page through book 1 of Julia and Toby, a fantasy series for kids who have just learned to read. Julia finds a runaway dragon crying under a tree, and a new reader can read every word. Stuck on one? Tap it and its sounds appear. Free to read on any tablet, phone or computer. No ads, no account.\n\n` +
-  `**Link:** https://yarareads.finereli.com/#/read/toby-1/0\n\n**Board:** ${pins[0].board}\n`);
+  `**Link:** https://yarareads.finereli.com/?from=pinterest#/read/toby-1/0\n\n**Board:** ${pins[0].board}\n`);

@@ -12,7 +12,7 @@ Post one or two a day, story first: 01, 02, 20 (video), 03, 11, 05, 04, 06, 12, 
 
 **Description:** Julia finds a runaway dragon crying under a tree, and a beginning reader can read every word. Julia and Toby is a series of early chapter books for kids who have just learned to read, kindergarten to 2nd grade: a real fantasy story they can read on their own, with help on any word they get stuck on. Books for 6 year olds to read themselves, written with phonics and sight words. Free to read on any tablet, phone or computer. No ads, no account.
 
-**Link:** https://yarareads.finereli.com/#/read/toby-1/0
+**Link:** https://yarareads.finereli.com/?from=pinterest#/read/toby-1/0
 
 **Board:** Julia and Toby: early chapter books
 
@@ -22,7 +22,7 @@ Post one or two a day, story first: 01, 02, 20 (video), 03, 11, 05, 04, 06, 12, 
 
 **Description:** Loves Dragon Masters or Beast Quest but can only read "the cat sat on the mat"? Julia and Toby is a dragon chapter book series for beginning readers: a real fantasy story with a villain and cliffhangers, in words a 5 to 7 year old can sound out alone. Books for kids who like Dragon Masters, a step younger. Free to read on any tablet, phone or computer. No ads, no account.
 
-**Link:** https://yarareads.finereli.com/#/read/toby-1/0
+**Link:** https://yarareads.finereli.com/?from=pinterest#/read/toby-1/0
 
 **Board:** Dragon chapter books for kids
 
@@ -32,7 +32,7 @@ Post one or two a day, story first: 01, 02, 20 (video), 03, 11, 05, 04, 06, 12, 
 
 **Description:** Julia and Toby is a fantasy series of early chapter books for 1st grade and kindergarten readers: a girl, a runaway dragon whose feelings make things float, and a villain waking up far away. Every chapter ends with them wanting the next one, and every word is one they can read. Chapter books for beginning readers and reluctant readers. Free to read on any tablet, phone or computer. No ads, no account.
 
-**Link:** https://yarareads.finereli.com/#/read/toby-1/0
+**Link:** https://yarareads.finereli.com/?from=pinterest#/read/toby-1/0
 
 **Board:** Julia and Toby: early chapter books
 
@@ -42,7 +42,7 @@ Post one or two a day, story first: 01, 02, 20 (video), 03, 11, 05, 04, 06, 12, 
 
 **Description:** In Julia and Toby, a beginning reader taps any word they are stuck on and its sounds appear in place: a dot under one letter, a bar under letter pairs like oo and er, just like phonics in class. Then they keep reading. It never reads the story to them. Decodable stories for kindergarten and 1st grade, with phonics and sight words. Free to read on any tablet, phone or computer. No ads, no account.
 
-**Link:** https://yarareads.finereli.com/#/read/toby-1/0
+**Link:** https://yarareads.finereli.com/?from=pinterest#/read/toby-1/0
 
 **Board:** Julia and Toby: early chapter books
 
@@ -52,7 +52,7 @@ Post one or two a day, story first: 01, 02, 20 (video), 03, 11, 05, 04, 06, 12, 
 
 **Description:** Tom, 12, loves fantasy books. His sister Yara, 6, loves dragons but could only read baby books. So Tom wrote Julia and Toby: a real fantasy series with a magic system and a villain, in words a beginning reader can sound out. Now any kid who just learned to read can read it too. Early chapter books for kids, free. Free to read on any tablet, phone or computer. No ads, no account.
 
-**Link:** https://yarareads.finereli.com/#/read/toby-1/0
+**Link:** https://yarareads.finereli.com/?from=pinterest#/read/toby-1/0
 
 **Board:** Julia and Toby: early chapter books
 
@@ -62,7 +62,7 @@ Post one or two a day, story first: 01, 02, 20 (video), 03, 11, 05, 04, 06, 12, 
 
 **Description:** From book 4 of Julia and Toby: a bee buzzes at Toby, he gets mad, and everything in the play house zooms up. Real excitement, in words a kid who just learned to read can sound out alone. Dragon chapter books for kids ages 5 to 7, early chapter books for 1st grade. Free to read on any tablet, phone or computer. No ads, no account.
 
-**Link:** https://yarareads.finereli.com/#/read/toby-4/0
+**Link:** https://yarareads.finereli.com/?from=pinterest#/read/toby-4/0
 
 **Board:** Dragon chapter books for kids
 
@@ -72,7 +72,7 @@ Post one or two a day, story first: 01, 02, 20 (video), 03, 11, 05, 04, 06, 12, 
 
 **Description:** Julia hears a yelp in the woods. Under a tree sits a crying dragon. Book 1 of Julia and Toby, a fantasy series of early chapter books for kids who have just learned to read: a real dragon story, in words they can read by themselves, with help on any word they get stuck on. Books for 6 year olds to read themselves. Free to read on any tablet, phone or computer. No ads, no account.
 
-**Link:** https://yarareads.finereli.com/#/read/toby-1/0
+**Link:** https://yarareads.finereli.com/?from=pinterest#/read/toby-1/0
 
 **Board:** Julia and Toby: early chapter books
 
@@ -82,7 +82,7 @@ Post one or two a day, story first: 01, 02, 20 (video), 03, 11, 05, 04, 06, 12, 
 
 **Description:** Julia hides Toby in her play house. Then her scooter turns up broken. Book 2 of Julia and Toby, a fantasy series of early chapter books for kids who have just learned to read: a real dragon story, in words they can read by themselves, with help on any word they get stuck on. Books for 6 year olds to read themselves. Free to read on any tablet, phone or computer. No ads, no account.
 
-**Link:** https://yarareads.finereli.com/#/read/toby-2/0
+**Link:** https://yarareads.finereli.com/?from=pinterest#/read/toby-2/0
 
 **Board:** Julia and Toby: early chapter books
 
@@ -92,7 +92,7 @@ Post one or two a day, story first: 01, 02, 20 (video), 03, 11, 05, 04, 06, 12, 
 
 **Description:** Julia paints Toby. She steps away for one minute. Book 3 of Julia and Toby, a fantasy series of early chapter books for kids who have just learned to read: a real dragon story, in words they can read by themselves, with help on any word they get stuck on. Books for 6 year olds to read themselves. Free to read on any tablet, phone or computer. No ads, no account.
 
-**Link:** https://yarareads.finereli.com/#/read/toby-3/0
+**Link:** https://yarareads.finereli.com/?from=pinterest#/read/toby-3/0
 
 **Board:** Julia and Toby: early chapter books
 
@@ -102,7 +102,7 @@ Post one or two a day, story first: 01, 02, 20 (video), 03, 11, 05, 04, 06, 12, 
 
 **Description:** Things keep breaking. Today Julia finally sees how. Book 4 of Julia and Toby, a fantasy series of early chapter books for kids who have just learned to read: a real dragon story, in words they can read by themselves, with help on any word they get stuck on. Books for 6 year olds to read themselves. Free to read on any tablet, phone or computer. No ads, no account.
 
-**Link:** https://yarareads.finereli.com/#/read/toby-4/0
+**Link:** https://yarareads.finereli.com/?from=pinterest#/read/toby-4/0
 
 **Board:** Julia and Toby: early chapter books
 
@@ -112,7 +112,7 @@ Post one or two a day, story first: 01, 02, 20 (video), 03, 11, 05, 04, 06, 12, 
 
 **Description:** Julia sets out to teach Toby his power. It does not go well. Book 5 of Julia and Toby, a fantasy series of early chapter books for kids who have just learned to read: a real dragon story, in words they can read by themselves, with help on any word they get stuck on. Books for 6 year olds to read themselves. Free to read on any tablet, phone or computer. No ads, no account.
 
-**Link:** https://yarareads.finereli.com/#/read/toby-5/0
+**Link:** https://yarareads.finereli.com/?from=pinterest#/read/toby-5/0
 
 **Board:** Julia and Toby: early chapter books
 
@@ -122,7 +122,7 @@ Post one or two a day, story first: 01, 02, 20 (video), 03, 11, 05, 04, 06, 12, 
 
 **Description:** Ten days of lessons that go wrong. Then, at dusk, something changes. Book 6 of Julia and Toby, a fantasy series of early chapter books for kids who have just learned to read: a real dragon story, in words they can read by themselves, with help on any word they get stuck on. Books for 6 year olds to read themselves. Free to read on any tablet, phone or computer. No ads, no account.
 
-**Link:** https://yarareads.finereli.com/#/read/toby-6/0
+**Link:** https://yarareads.finereli.com/?from=pinterest#/read/toby-6/0
 
 **Board:** Julia and Toby: early chapter books
 
@@ -132,7 +132,7 @@ Post one or two a day, story first: 01, 02, 20 (video), 03, 11, 05, 04, 06, 12, 
 
 **Description:** Julia finally floats. And far away, something wakes up. Book 7 of Julia and Toby, a fantasy series of early chapter books for kids who have just learned to read: a real dragon story, in words they can read by themselves, with help on any word they get stuck on. Books for 6 year olds to read themselves. Free to read on any tablet, phone or computer. No ads, no account.
 
-**Link:** https://yarareads.finereli.com/#/read/toby-7/0
+**Link:** https://yarareads.finereli.com/?from=pinterest#/read/toby-7/0
 
 **Board:** Julia and Toby: early chapter books
 
@@ -142,6 +142,6 @@ Post one or two a day, story first: 01, 02, 20 (video), 03, 11, 05, 04, 06, 12, 
 
 **Description:** Page through book 1 of Julia and Toby, a fantasy series for kids who have just learned to read. Julia finds a runaway dragon crying under a tree, and a new reader can read every word. Stuck on one? Tap it and its sounds appear. Free to read on any tablet, phone or computer. No ads, no account.
 
-**Link:** https://yarareads.finereli.com/#/read/toby-1/0
+**Link:** https://yarareads.finereli.com/?from=pinterest#/read/toby-1/0
 
 **Board:** Julia and Toby: early chapter books

@@ -231,8 +231,9 @@ async function publicApi(request, env, url, path, ctx) {
   if (path === '/api/events' && request.method === 'POST') {
     const e = await request.json().catch(() => ({}));
     if (['open', 'page', 'finish'].includes(e.type)) {
-      await env.DB.prepare('INSERT INTO public_events (type, story_id, page) VALUES (?, ?, ?)')
-        .bind(e.type, typeof e.storyId === 'string' ? e.storyId.slice(0, 40) : null, Number.isInteger(e.page) ? e.page : null).run();
+      const source = typeof e.from === 'string' && /^[a-z]{1,20}$/.test(e.from) ? e.from : null; // ?from= on the first visit
+      await env.DB.prepare('INSERT INTO public_events (type, story_id, page, source) VALUES (?, ?, ?, ?)')
+        .bind(e.type, typeof e.storyId === 'string' ? e.storyId.slice(0, 40) : null, Number.isInteger(e.page) ? e.page : null, source).run();
     }
     return json({ ok: true });
   }

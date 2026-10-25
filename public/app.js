@@ -52,8 +52,18 @@ const local = {
   set: (k, v) => { try { localStorage.setItem('yr.' + k, JSON.stringify(v)); } catch {} },
 };
 
+// Where a visitor came from, when the link says (?from=pinterest on our pins). Kept from the first visit on this
+// device and sent with the anonymous public events, so a channel is counted in readers, not just clicks.
+{
+  const from = (new URLSearchParams(location.search).get('from') || '').toLowerCase().replace(/[^a-z]/g, '').slice(0, 20);
+  if (from) {
+    if (!local.get('from')) local.set('from', from);
+    history.replaceState(null, '', location.pathname + location.hash); // keep the address clean
+  }
+}
+
 function log(type, data = {}) {
-  api('events', { method: 'POST', body: { type, ...data } }).catch(() => {});
+  api('events', { method: 'POST', body: { type, ...data, from: local.get('from') || undefined } }).catch(() => {});
 }
 
 // Books and the sounds list are cached while she reads, and dropped every time the library shows,
