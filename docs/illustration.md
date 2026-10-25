@@ -5,9 +5,12 @@ or a new series. Tool: `tools/illustrate.mjs`. Everything it needs is in the rep
 
 ## The short version: illustrating a new chapter
 
-Chapters are drawn as **boards**: the whole chapter as one 4x4 grid of 16 panels, and then the best panel is picked
-for each page. Drawn together, the panels keep their own continuity (light, props, places); earlier boards passed
-in as references carry it from chapter to chapter. Details in "Boards" below.
+**The method (Oct 25): the board is the plan, every page is drawn on its own.** The whole chapter is drawn as one 4x4
+board of 16 panels, which settles the scenes, places, light and props; earlier boards passed in as references carry them
+from chapter to chapter. Then **each page is redrawn on its own at full size, with its panel as the plan** (`redraw`).
+Why both: a board panel is only ~768x576 of a shared image, and small figures go wrong (two Julias on the gate, a wing
+that reads as a clawed leg, a leg vanishing into a gate). Pages drawn alone (Oct 6) had good bodies but drifted in
+scenery. The redraw keeps the panel's place and moment and gets the bodies right. Details in "Boards" below.
 
 1. Write the chapter (it must pass `npm run check`) in `content/stories/toby-N.json`.
 2. Draw its board, with the earlier boards it needs as references: always the previous chapter, plus any
@@ -15,21 +18,40 @@ in as references carry it from chapter to chapter. Details in "Boards" below.
    ```
    node tools/illustrate.mjs board toby-8 toby-7 toby-1      # ~2 min, ~$0.15
    ```
-3. Look at `content/art/julia-and-toby/boards/toby-8-numbered.jpg` and choose a panel for each page. Panels the
-   story doesn't need are just spares. If the board is wrong (a character off-model, the wrong place), draw it again:
-   each run is different.
+3. Look at `content/art/julia-and-toby/boards/toby-8-numbered.jpg` and choose a panel for each page: the one whose
+   moment and composition fit the page best (ignore small anatomy slips, the redraw fixes those). Spare panels are fine.
+   If the board is wrong as a plan (the wrong place, a scene missing), draw it again or edit it (short instruction, below).
+4. Redraw each page from its panel, two takes each, then look at every take at full size (see "Check every picture"):
    ```
-   node tools/illustrate.mjs pick toby-8 1=1 2=3 3=4 4=6 ...  # page=panel
-   node tools/illustrate.mjs cover toby-8 3                  # optional: page 3's picture as the library cover
-   node tools/push.mjs --images                              # upload and publish
+   node tools/illustrate.mjs redraw toby-8 1=1 2              # page 1 from panel 1, 2 takes: ~$0.15
+   node tools/illustrate.mjs redraw toby-8 2=3 2              #   -> content/art/<series>/redraws/toby-8-p2-1.jpg, -2.jpg (+ -plan.jpg)
+   node tools/illustrate.mjs use toby-8 1 2                   # put take 2 on page 1
+   node tools/illustrate.mjs cover toby-8 3                   # optional: page 3's picture as the library cover
+   node tools/push.mjs --only toby-8 --images                 # upload and publish
    ```
-   **Before pushing, check every picked picture** (see "Check every picture" below). Look at each one at full size, not
-   only on the board.
-4. Commit the board, its numbered preview, the pictures and the story JSON (which records each page's `panel`).
-5. Tell Eli which panels went where (send the numbered board); he and Tom review in the app.
+   The redraw prompt (in illustrate.mjs) is deliberately short: "Image 1 is a small sketch of this page. Draw it again as
+   a finished full-page illustration: the same place, the same moment, the same characters in the same spots. Draw each
+   character once, with natural, correct anatomy", plus the character sheets and the page's words. Don't add pose
+   instructions unless a take fails, and then keep them short (see "Fixing one picture").
+   About $0.75 a chapter on top of the board.
+5. **Before pushing, send Eli the takes** (or the chosen ones) and get his OK. Check every picture yourself first.
+6. Commit the board, the redraws, the pictures and the story JSON (each page's `panel` says "redraw <k>", or the panel it was cut from).
 
 A new recurring character needs a sheet first (`illustrate.mjs sheet`, below) and a `cast` entry in the art file,
 so every board draws them the same way. A new recurring place doesn't: the first board that shows it becomes its reference.
+
+## Fixing one picture
+
+- **Change only the page that's wrong.** `pick` and `use` replace one page's file; every other page stays byte for byte
+  (push re-uploads them, same hash, same URL). An edit or a redraw never touches other pages unless you pick them.
+- **Prefer `redraw` from the best panel** (the page's own, or another panel that fits the words better: book 1 page 10
+  moved from panel 12, Toby wedged in with a wing like a leg, to panel 15, Julia and Toby at the window).
+- **Keep instructions short and let the model choose the pose.** Book 1 page 3 (Oct 25), two Julias on the gate: a long
+  instruction ("mid-jump, both feet in the air, arms out...") gave a stiff, strange jump; "Julia appears only once: she is
+  climbing over the gate" lost a leg inside the gate; "Julia appears only once: she runs down the path into the woods,
+  with the garden gate behind her" was right. Ask for the simplest pose that tells the moment (running, standing, looking)
+  rather than a hard one (mid-climb, mid-jump).
+- **Get Eli's OK before pushing a replacement.** A picture he hasn't seen shouldn't go live.
 
 ## Check every picture
 
@@ -42,6 +64,8 @@ No picture goes live unchecked. Look at each one at full size (crop and zoom on 
   normal number of fingers, the pose is one a child's body can make. (Oct 20: Julia's bent feet in the loop.)
 - **Not what the page says.** The action reads at a glance (she flies the loop, not sits inside a ring).
 - **Off-model.** Characters match their sheets; places match earlier chapters.
+- **Doubles and swaps.** A character drawn twice (two moments of one action in one picture), or a body part that reads as
+  another (a wing like a clawed leg), or a limb disappearing into an object. These are the board's typical mistakes (Oct 25).
 
 A failure gets a clearer `picture` and another run (draw 2-3 takes and pick the best, about 7 cents each), or a board
 edit. Spell out the pose when anatomy goes wrong ("legs straight and together, feet pointing back").

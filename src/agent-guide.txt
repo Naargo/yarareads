@@ -52,24 +52,28 @@ Keeping characters the same on every page
   No text anywhere in the image.") and a fixed description of each character, object and place. Reuse them word for word.
 - If your image tool takes reference images, first draw a character sheet for each recurring character (full body, plain
   background), pick the best, and pass it with every picture they appear in.
-The method that worked best for us: one board per chapter
+The method that worked best for us: a board per chapter as the plan, then each page drawn on its own
 - Ask for the whole chapter as ONE image: a 4x4 grid of 16 panels separated by thin white gutters, given the chapter's full
-  text, the style line and the character sheets. Then cut out the best panel for each page; the spare panels are the point,
-  they give you choices. Panels drawn together keep their own continuity (light, props, the same garden).
-- Draw it as large as your tool allows (we use 3072x2304, so each panel is 768x576 or more; upscale panels to at least
-  1024 wide if needed).
-- Pass the previous chapter's board as a reference for the next, plus any earlier board whose places or characters come back.
-- If a panel is wrong, ask the tool to redraw the whole board with that panel changed (an edit with the board as the
-  reference), rather than drawing one picture on its own: it stays in the same style.
+  text, the style line and the character sheets. Panels drawn together keep their continuity (light, props, the same garden).
+  Draw it as large as your tool allows (we use 3072x2304). Pass the previous chapter's board as a reference for the next.
+- Choose the panel whose moment fits each page best. Spare panels are the point: they give you choices.
+- Don't use the panels as the pictures. They're small, and small figures go wrong: a character drawn twice, a wing that
+  looks like a leg, a leg vanishing into a gate. Instead, redraw each page on its own at full size with its panel as a
+  reference: "Image 1 is a small sketch of this page. Draw it again as a finished full-page illustration: the same place,
+  the same moment, the same characters in the same spots. Draw each character once, with natural, correct anatomy",
+  plus the character sheets and the page's words. Draw two takes and keep the better one.
+- Keep instructions short and let the model choose the pose. When a take fails, ask for the simplest pose that tells the
+  moment (running past the gate, not mid-jump over it). Long, detailed pose instructions made things worse for us.
 - If your tool can't do boards, draw page by page with the same style line, descriptions and sheets every time.
 Check every picture before set_image
 - Look at each one at full size, zoomed in on the characters. Reject it if:
   - it isn't fine for any five-year-old: no fangs, snarls, gore or realistic horror; the style stays soft (a picture that
     slides into dark-fantasy realism is wrong even if the content is mild);
   - the anatomy is wrong: count arms, legs, hands, feet and fingers; knees and elbows bend the right way;
+  - a character appears twice, or a body part reads as another, or a limb disappears into an object;
   - it doesn't show what the page says at a glance;
   - a character is off-model (different colours, clothes, size) or a place doesn't match earlier pages.
-- A failure gets a clearer description and another take. Spell out the pose when anatomy goes wrong.
+- A failure gets another take, or a clearer, shorter description of a simpler pose.
 The cover
 - Use one of the book's own pictures. Choose one that is distinct for this chapter but doesn't give the plot away:
   not the twist, not the villain's big moment.

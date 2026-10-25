@@ -119,8 +119,8 @@ Never loosen the inventory to make a story pass.
   characters, a DP over sentence breaks that prefers paragraph ends), so one long page doesn't shrink the whole book. Julia and Toby stay separate books for now; later the first
   seven may become chapters of one book.
 - Page pictures: **read docs/illustration.md** before making any. Check every picture before pushing it: age appropriate for any
-  five-year-old (no fangs or horror) and correct anatomy (count limbs, joints bend the right way). `node tools/illustrate.mjs` (gpt-image-2 via OpenRouter; a chapter is drawn as one 4x4 board, then a panel picked per page; approved
-  character sheets in content/art/ as references) writes web-quality JPEGs (~60 KB); `node tools/shrink.mjs` for others.
+  five-year-old (no fangs or horror) and correct anatomy (count limbs, joints bend the right way). `node tools/illustrate.mjs` (gpt-image-2 via OpenRouter; a chapter is drawn as one 4x4 board as the plan, a panel chosen per page, then **each page redrawn on its own
+  from its panel** (`redraw`, `use`: board panels are too small for good anatomy, Oct 25); approved character sheets in content/art/ as references) writes web-quality JPEGs (~60 KB); `node tools/shrink.mjs` for others.
 - Page pictures are served from R2 (bucket `yara-reads-pictures`) at `/api/pictures/<key>`: our own stories' pictures to anyone, an account's private pictures only to that account.
   `push.mjs` stores each picture in the story as `<key>?v=<hash of the file>`, and versioned URLs are cached for a year
   (immutable): a redrawn picture keeps its R2 key but gets a new URL, so every device shows the new one. Always re-push
