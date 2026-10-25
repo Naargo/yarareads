@@ -89,6 +89,10 @@ node tools/push.mjs --images
   node tools/illustrate.mjs edit toby-4 6,7 "In panel 6, the toys shoot up OUT of the playhouse into the open sky..."
   node tools/illustrate.mjs pick toby-4 6=2:6 7=2:7         # panels 6 and 7 of edit 2 (boards/toby-4.2.jpg)
   ```
+  An edit redraws the whole board (the model needs to see it all), but `pick` takes only the panels you name: every other page
+  keeps its picture, byte for byte (push re-uploads them, same hash, same URL). Keep the change short and let the model choose
+  the pose: a long, specific instruction gave a stiff, odd jump (Oct 25, book 1 page 3: two Julias on the gate; the fix that
+  worked was "Julia appears only once: she runs down the path into the woods, with the garden gate behind her").
   The endpoint has no masks, so `edit` passes the board itself as the reference and asks for the same board with only
   those panels changed. It works like inpainting: on Oct 7 the other panels came back almost identical, and the new
   panels match the chapter because the model sees all of it. ~$0.15 an edit. Describe the change in full sentences,
