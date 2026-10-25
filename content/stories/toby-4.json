@@ -90,7 +90,7 @@
         "playhouse",
         "toys"
       ],
-      "panel": "2:6"
+      "panel": "redraw 2"
     },
     {
       "text": "Crash! Bang! Smash! They all come down.",
@@ -104,7 +104,7 @@
         "playhouse",
         "toys"
       ],
-      "panel": "2:7"
+      "panel": "redraw 2"
     },
     {
       "text": "Julia's chin drops. \"Whoa!\"",
