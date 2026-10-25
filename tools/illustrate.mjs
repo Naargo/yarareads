@@ -20,7 +20,7 @@
 //   node tools/illustrate.mjs preview <board>                 numbered preview: boards/<board>-numbered.jpg
 //   node tools/illustrate.mjs pick <story-id> <page>=<panel> ...   use panel (1-16, row by row) as the page's picture;
 //                                                            <page>=<edit>:<panel> takes it from an edit (7=2:6)
-//   node tools/illustrate.mjs redraw <story-id> <page>=<panel> [takes]   redraw a page on its own, with its panel as the plan
+//   node tools/illustrate.mjs redraw <story-id> <page>=<panel> [takes] ["note"]   redraw a page on its own, with its panel as the plan
 //                                                            -> content/art/<series>/redraws/<story-id>-p<page>-<k>.jpg
 //   node tools/illustrate.mjs use <story-id> <page> <k>      put redraw k on the page
 //
@@ -275,7 +275,7 @@ ${story.pages.map((p, i) => `Page ${i + 1}: ${p.text}`).join('\n')}`;
 } else if (cmd === 'redraw') {
   // A board panel as the plan, drawn again on its own at full size: the board keeps places and continuity, a page of
   // its own gets the anatomy right (small panels grow extra limbs and doubles). Writes candidates; `use` picks one.
-  const [id, spec, takes = 2] = args;
+  const [id, spec, takes = 2, note = ''] = args; // note: one short correction, when the plan itself is wrong (keep it short)
   const [pageStr, from] = spec.split('=');
   const n = Number(pageStr);
   const story = JSON.parse(readFileSync(join(root, 'content/stories', `${id}.json`), 'utf8'));
@@ -290,7 +290,7 @@ ${story.pages.map((p, i) => `Page ${i + 1}: ${p.text}`).join('\n')}`;
   const who = cast.map((c, i) => `Image ${i + 2} is the reference for ${art.cast[c].look} Keep this exact design, colours and outfit.`).join(' ');
   const prompt = `${art.style} Image 1 is a small sketch of this page. Draw it again as a finished full-page illustration: the same place, the same
 moment, the same characters in the same spots. Draw each character once, with natural, correct anatomy. ${who}
-The words on this page of the story are: "${page.text}"`.replace(/\s+/g, ' ');
+The words on this page of the story are: "${page.text}" ${note}`.replace(/\s+/g, ' ');
   for (let k = 1; k <= Number(takes); k++) {
     writeFileSync(join(redraws, `${id}-p${n}-${k}.jpg`), await webJpeg(await draw(prompt, refs, art.size), art.size[0]));
     console.log(`${id} page ${n} redraw ${k} from panel ${from}  $${spent.toFixed(2)} so far`);
