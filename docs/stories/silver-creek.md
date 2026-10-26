@@ -127,3 +127,9 @@ A year after Julia floated. The grey dragon has been searching since he woke.
 - Who or what really destroyed the grey dragon's heartgem, and what caused the Collapse?
 - Why is rainbow thought of as bad?
 - Is Toby's tribe the levitation tribe on Super-Tall Peak, and what is its colour?
+
+## Tom's calls on wording (Oct 26)
+
+- "Secret" stays ("Can you keep a secret?", chapter 1), even though the checker fails it for now. To be figured out.
+- The fox turns into a **crow** when the reveal comes. "Crow" stays; "a black bird" wrecks the reveal.
+- Don't report readability swaps to Tom; just make good ones. Never "hush-hush".
