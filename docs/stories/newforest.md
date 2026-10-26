@@ -79,35 +79,37 @@ Calm is also how he floated Julia in the origin books. Calm is his shield agains
 - **Past tense** (she has -ed now). Same rule as always: every word must pass `npm run check`.
 - Tribe, power and character names should be decodable where possible, so she can read them.
 
-## Names (proposed, Tom to pick)
+## Names
 
-- Town: Ember Hollow, Kindle Creek, Heartwell, Drake's Hollow.
-- The friend: **Dash** (decodable, and it's what he does), Max, Jack.
-- The shapeshifter classmate: **Kit** (a kit is a baby fox, and that's his favourite shape), Pip, Wren.
-- The grey dragon: **Vex** (decodable, and it's what he does to feelings), Ashgrim, Morrow.
+Everyone has human names, dragons too (like Toby).
+
+- The friend: **Max** (Tom, Oct 26).
+- The shapeshifter classmate: Leo, Sam, Ben, Owen (proposed; Leo is the placeholder below).
+- The grey dragon, an old-fashioned name for an ancient dragon: Silas, Victor, Edgar, Ambrose (proposed).
+- The town, a real-sounding mountain town: Pine Hollow, Cedar Ridge, Silver Creek, Granite Falls (proposed).
 
 ## Arc 1: The Shapeshifters (outline draft, for Tom)
 
 A year after Julia floated. The grey dragon has been searching since he woke.
 
-1. **Up in the Trees.** A new boy next door, Dash, sees a sparkle in the woods and goes after it straight over the
-   fence. Toby gets a fright and Dash shoots up to the treetops, then drifts down soft. "Again!" Julia has to decide
+1. **Up in the Trees.** A new boy next door, Max, sees a sparkle in the woods and goes after it straight over the
+   fence. Toby gets a fright and Max shoots up to the treetops, then drifts down soft. "Again!" Julia has to decide
    whether to trust him. Somewhere, a fox with a rainbow glint in its fur is watching. *Presentation:* Julia presents
-   Dash ("He knows now"). Dad asks: "And the fox?"
-2. **The New Kid.** Kit, new at class: hungry all the time, gone every recess. Julia notices a rainbow glint in his
-   hair, the same one the fox had. Dash wants to chase the fox; Julia wants to wait and watch. The reveal: Kit is a
+   Max ("He knows now"). Dad asks: "And the fox?"
+2. **The New Kid.** Leo, new at class: hungry all the time, gone every recess. Julia notices a rainbow glint in his
+   hair, the same one the fox had. Max wants to chase the fox; Julia wants to wait and watch. The reveal: Leo is a
    young shapeshifter dragon, and his shapes follow his feelings (scared: a fox; mad: something huge). He's hiding
-   among humans because rainbow is bad in his tribe. *Presentation:* Kit himself, nervous, as a fox on the rug.
-3. **Rainbow Is Bad.** Why would sparkles be bad? Grandma's old dragon book has an answer, and missing pages. Kit's
-   tribe is looking for him, and they're angry: someone told them a floating dragon is after their heartgem. Kit is
+   among humans because rainbow is bad in his tribe. *Presentation:* Leo himself, nervous, as a fox on the rug.
+3. **Rainbow Is Bad.** Why would sparkles be bad? Grandma's old dragon book has an answer, and missing pages. Leo's
+   tribe is looking for him, and they're angry: someone told them a floating dragon is after their heartgem. Leo is
    scared of going home.
 4. **Who Is Who?** A "Toby" is breaking things near the shapeshifters' heartgem, and the tribe blames Toby's tribe from
    Super-Tall Peak. A feud starts. Julia solves it with the magic system: the real Toby's things float when he feels,
    so make "Toby" laugh. Nothing bounces. It's a shapeshifter whose grudge the grey dragon stoked.
 5. **The Shapeshifters' Heartgem.** Finale at the gem. The grey dragon (see-through, grey) stokes the elders' fear of
    rainbow until the cave shakes. Toby stays calm, and calm gives the grey dragon nothing to grab. The heartgem glows at
-   Kit's sparkles, a hint that rainbow isn't bad at all. The grey dragon gets away a little more solid, a flicker of
-   colour in his scales. Kit stays in town, for now.
+   Leo's sparkles, a hint that rainbow isn't bad at all. The grey dragon gets away a little more solid, a flicker of
+   colour in his scales. Leo stays in town, for now.
 
 ## To fix in the origin books
 
