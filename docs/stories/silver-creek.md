@@ -64,14 +64,16 @@ Calm is also how he floated Julia in the origin books. Calm is his shield agains
 
 ## The shape of each book
 
-- **Each book:** a dragon from a tribe, usually a True Magic misfit whose power swings with its feelings, needs help,
+Words: a **book** is one tribe's story, read in **chapters** (the app's `chapter` pages). The series is many books.
+
+- **Each chapter:** a dragon from a tribe, usually a True Magic misfit whose power swings with its feelings, needs help,
   and Julia has to work out its rules. The grey dragon is after the same dragon.
-- **Each arc (4-6 books):** one tribe, rotating kinds of book (mystery, rescue, journey, silly, feud), and the grey
+- **Each book (4-6 chapters):** one tribe, rotating kinds of book (mystery, rescue, journey, silly, feud), and the grey
   dragon pushing in at the end.
-- **Every book ends with Julia presenting to Mom and Dad** what she found: a page of her own Dragon Book (her drawing
+- **Every chapter ends with Julia presenting to Mom and Dad** what she found: a page of her own Dragon Book (her drawing
   of the tribe, its power, what she figured out). Keep it fresh: Toby gives a demo and it goes wrong, the friend acts it
   out, the new dragon turns up, the parents ask so much it becomes a row, and once Mom presents something back. What Julia
-  leaves out (the dangerous bits) is its own tension. A parent's question at the end can seed the next book. Break
+  leaves out (the dangerous bits) is its own tension. A parent's question at the end can seed the next chapter. Break
   the ritual on purpose at a big moment (no presentation, because it went too wrong to tell).
 
 ## Writing it for Yara
@@ -88,12 +90,14 @@ Everyone has human names, dragons too (like Toby).
 - The grey dragon: **Victor**.
 - The town: **Silver Creek** (Tom: the street his family lived on in Canada was Creek Street).
 
-## Arc 1: The Shapeshifters (outline draft, for Tom)
+## Book 1: The Shapeshifters (outline draft, for Tom)
 
 A year after Julia floated. The grey dragon has been searching since he woke.
 
-1. **Up in the Trees.** A new boy next door, Max, sees a sparkle in the woods and goes after it straight over the
-   fence. Toby gets a fright and Max shoots up to the treetops, then drifts down soft. "Again!" Julia has to decide
+1. **The Fox That Was Not a Fox.** A shimmering fox steals Julia's snack; new neighbour Max chases it over the
+   fence, runs into Toby and gets a fright-float to the treetops ("Again!"). The three chase the fox to the pond, where it
+   turns into a crow. (Leo: curious = fox, scared = crow, Tom to confirm.) Mom: a new kid starts in class tomorrow.
+   Old draft of this chapter: Toby gets a fright and Max shoots up to the treetops, then drifts down soft. "Again!" Julia has to decide
    whether to trust him. Somewhere, a fox with a rainbow glint in its fur is watching. *Presentation:* Julia presents
    Max ("He knows now"). Dad asks: "And the fox?"
 2. **The New Kid.** Leo, new at class: hungry all the time, gone every recess. Julia notices a rainbow glint in his
