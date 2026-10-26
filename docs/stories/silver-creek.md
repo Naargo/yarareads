@@ -1,18 +1,18 @@
-# Newforest (series brief)
+# Silver Creek (series brief)
 
 Tom's new series, Oct 26 2026, worked out with Claude. Julia and Toby books 1-7 become the origin story;
 this series starts a year later, with Julia at 7. It's meant to run as long as Beast Quest or Dragon Masters.
 Why: Yara wanted shapeshifting ("levitation with feelings isn't cool enough"), so Tom gave her a whole world.
 
-"Newforest" is a working name for the town; see Names.
+The town is Silver Creek (it was "Newforest" while we brainstormed).
 
 ## The world
 
-- **Newforest** is a small valley town hidden in a remote mountain range (Rockies-like), home to many species and
+- **Silver Creek** is a small valley town hidden in a remote mountain range (Rockies-like), home to many species and
   things of ancient origin. It's ringed by the **last surviving dragon heartgems**.
 - **Heartgems** are pure True Magic, and they give dragons their power. A heartgem **chooses** dragons one at a time.
   Dragons are somehow born from heartgems *and* parents (to be worked out).
-- **The Collapse:** long ago, the heartgems died **all at once**, apart from the ones around Newforest.
+- **The Collapse:** long ago, the heartgems died **all at once**, apart from the ones around Silver Creek.
 - **Tribes:** as many as the series needs, and they come back (tribes are reused, not one-and-done). Each one looks
   different, acts different and has a different power: levitation (Toby's), shapeshifting, fire, earth (20-ton tails)...
   **Every tribe has its own colour, and no colour repeats.**
@@ -36,7 +36,7 @@ His levitation follows what he feels. It's never "solved": over the series he le
 
 Calm is also how he floated Julia in the origin books. Calm is his shield against the grey dragon (see below).
 
-## The villain: the grey dragon (name to come)
+## The villain: Victor, the grey dragon
 
 - **Looks:** grey and slightly see-through. He's fading. Draw him grand and misty, not a spooky ghost.
 - **Was:** rainbow, the colour of True Magic, which he had a ton of. An emotion dragon: once great, now grumpy. Ancient.
@@ -58,7 +58,7 @@ Calm is also how he floated Julia in the origin books. Calm is his shield agains
 - **Her best friend:** a boy, a year or two older (8-9), her neighbour. Physical, bold, inspiring: climbs first, thinks
   later. He finds out about dragons in book 1, when Toby gets scared and he suddenly ends up at the height of the treetops.
 - **A classmate who's secretly a young shapeshifter dragon** (with True Magic).
-- **Mom and Dad both know.** Grandma grew up in Newforest, like Julia; Mom moved away and moved back when Grandma got older.
+- **Mom and Dad both know.** Grandma grew up in Silver Creek, like Julia; Mom moved away and moved back when Grandma got older.
 - **Grandma** isn't one of the main cast (too old for adventures), but now and then she steps in, and she's powerful:
   a dragon mage. There's a **book**: Grandma's old dragon book.
 
@@ -84,9 +84,9 @@ Calm is also how he floated Julia in the origin books. Calm is his shield agains
 Everyone has human names, dragons too (like Toby).
 
 - The friend: **Max** (Tom, Oct 26).
-- The shapeshifter classmate: Leo, Sam, Ben, Owen (proposed; Leo is the placeholder below).
-- The grey dragon, an old-fashioned name for an ancient dragon: Silas, Victor, Edgar, Ambrose (proposed).
-- The town, a real-sounding mountain town: Pine Hollow, Cedar Ridge, Silver Creek, Granite Falls (proposed).
+- The shapeshifter classmate: **Leo**. A dragon living as a human kid.
+- The grey dragon: **Victor**.
+- The town: **Silver Creek** (Tom: the street his family lived on in Canada was Creek Street).
 
 ## Arc 1: The Shapeshifters (outline draft, for Tom)
 
