@@ -1,5 +1,5 @@
 // Pinterest pins (1000x1500, 2:3) from the book's own pictures, in the app's fonts and colours.
-// node marketing/pinterest/make.mjs  ->  marketing/pinterest/pins/*.jpg
+// node marketing/pinterest/make.mjs [id prefixes]  ->  marketing/pinterest/pins/*.jpg
 // The copy for each pin (title, description, link) is in pins.json; src/ holds app screenshots.
 import { chromium } from 'playwright';
 import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
@@ -32,6 +32,8 @@ h1 { font-size: 78px; line-height: 1.04; font-weight: 700; letter-spacing: -.01e
 .spread { display: flex; background: #fffdf8; border-radius: 28px; overflow: hidden; box-shadow: 0 12px 30px rgba(42,36,64,.14); height: 330px; }
 .spread img { width: 440px; height: 100%; object-fit: cover; flex: none; }
 .spread p { font-family: Andika; font-size: 34px; line-height: 1.38; padding: 0 34px; align-self: center; }
+.points { margin: 34px 70px 0; padding-left: 44px; font-size: 38px; line-height: 1.3; font-weight: 500; }
+.points li { margin-bottom: 14px; }
 .line { font-family: Andika; font-size: 40px; line-height: 1.35; margin: 34px 70px 0; }
 footer { display: flex; align-items: center; gap: 18px; padding: 34px 70px 56px; font-size: 34px; font-weight: 600; }
 footer svg { width: 64px; height: 64px; }
@@ -43,12 +45,15 @@ const page = (p) => `<!doctype html><meta charset="utf-8"><style>${css}</style>
 ${p.pages ? `<div class="strip">${p.pages.map((g) => `<div class="spread"><img src="${uri(`${root}${g.image}`, 'image/jpeg')}"><p>${esc(g.text)}</p></div>`).join('')}</div>`
   : `<div class="pic${p.shot ? ' shot' : ''}"><img src="${uri(`${root}${p.image}`, p.image.endsWith('.png') ? 'image/png' : 'image/jpeg')}"></div>`}
 ${p.line ? `<p class="line">${esc(p.line)}</p>` : ''}
+${p.points ? `<ul class="points">${p.points.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}
 <footer>${logo}<span>Read it free</span><span class="url">yarareads.finereli.com</span></footer>`;
 
 mkdirSync(`${here}pins`, { recursive: true });
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || '/opt/pw-browsers/chromium' });
 const tab = await browser.newPage({ viewport: { width: 1000, height: 1500 } });
+const only = process.argv.slice(2);
 for (const p of pins) {
+  if (only.length && !only.some((o) => p.id.startsWith(o))) continue;
   await tab.setContent(page(p), { waitUntil: 'load' });
   await tab.evaluate(() => document.fonts.ready);
   const png = await tab.screenshot({ type: 'png' });
@@ -58,7 +63,7 @@ for (const p of pins) {
 await browser.close();
 writeFileSync(`${here}pins.md`, `# Pinterest pins\n\nMade by make.mjs from pins.json (the video by video.sh). Upload pins/<id> with the title, description, link and board below.\n\n` +
   `The positioning they follow: finereli/claude-skills, promote/apps/yarareads/positioning.md. Story first, American English, no "decodable" or "app" in headlines (those words live in descriptions, for search).\n\n` +
-  `Post one or two a day, story first: 01, 02, 20 (video), 03, 11, 05, 04, 06, 12, 13, 14, 15, 16, 17. Two boards: "${pins[0].board}" and "${pins[1].board}".\n\n` +
+  `The posting order is the queue in posted.json (the scheduled task posts two every couple of days). Two boards: "${pins[0].board}" and "${pins[1].board}".\n\n` +
   pins.map((p) => `## ${p.id}\n\n**Title:** ${p.title}\n\n**Description:** ${p.description}\n\n**Link:** ${p.link}\n\n**Board:** ${p.board}\n`).join('\n') +
   `\n## 20-video (video.sh)\n\n**Title:** Julia and Toby, book 1: a dragon story new readers can read themselves\n\n` +
   `**Description:** Page through book 1 of Julia and Toby, a fantasy series for kids who have just learned to read. Julia finds a runaway dragon crying under a tree, and a new reader can read every word. Stuck on one? Tap it and its sounds appear. Free to read on any tablet, phone or computer. No ads, no account.\n\n` +

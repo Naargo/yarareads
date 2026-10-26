@@ -4,7 +4,7 @@ Made by make.mjs from pins.json (the video by video.sh). Upload pins/<id> with t
 
 The positioning they follow: finereli/claude-skills, promote/apps/yarareads/positioning.md. Story first, American English, no "decodable" or "app" in headlines (those words live in descriptions, for search).
 
-Post one or two a day, story first: 01, 02, 20 (video), 03, 11, 05, 04, 06, 12, 13, 14, 15, 16, 17. Two boards: "Julia and Toby: early chapter books" and "Dragon chapter books for kids".
+The posting order is the queue in posted.json (the scheduled task posts two every couple of days). Two boards: "Julia and Toby: early chapter books" and "Dragon chapter books for kids".
 
 ## 01-read-it-themselves
 
@@ -133,6 +133,46 @@ Post one or two a day, story first: 01, 02, 20 (video), 03, 11, 05, 04, 06, 12, 
 **Description:** Julia finally floats. And far away, something wakes up. Book 7 of Julia and Toby, a fantasy series of early chapter books for kids who have just learned to read: a real dragon story, in words they can read by themselves, with help on any word they get stuck on. Books for 6 year olds to read themselves. Free to read on any tablet, phone or computer. No ads, no account.
 
 **Link:** https://yarareads.finereli.com/?from=pinterest#/read/toby-7/0
+
+**Board:** Julia and Toby: early chapter books
+
+## 21-dad-and-son
+
+**Title:** My son wrote a dragon chapter book for his little sister, and I built the app so she can read it herself
+
+**Description:** Tom is 12 and reads fantasy. His sister Yara is 6, loves dragons, and had just learned to read. So Tom wrote her Julia and Toby, a real fantasy series with a runaway dragon, a magic system and a villain, and I built the app that helps her sound out any word she gets stuck on. Now she gets lost in a story by herself. Early chapter books for kids who just learned to read, books for 6 year olds to read themselves. Free to read on any tablet, phone or computer. No ads, no account.
+
+**Link:** https://yarareads.finereli.com/?from=pinterest#/read/toby-1/0
+
+**Board:** Julia and Toby: early chapter books
+
+## 22-magic-rule
+
+**Title:** A dragon whose feelings make things float: a fantasy chapter book for beginning readers
+
+**Description:** Tom, 12, gave his dragon one magic rule: Toby's feelings make things float. Sad, and they drift up slow. Mad, and everything zooms up and crashes. Happy, and nothing floats, or so Toby thinks. That's Julia and Toby, a fantasy series of early chapter books a kid who just learned to read can read alone. Dragon chapter books for kids, ages 5 to 7, kindergarten to 2nd grade. Free to read on any tablet, phone or computer. No ads, no account.
+
+**Link:** https://yarareads.finereli.com/?from=pinterest#/read/toby-1/0
+
+**Board:** Dragon chapter books for kids
+
+## 23-big-brother
+
+**Title:** Her big brother writes the dragon books, and she reads them herself: a chapter book series for new readers
+
+**Description:** Tom, 12, is writing a dragon series for his sister Yara, 6, one chapter at a time, in words she can sound out. Seven chapters of Julia and Toby are out, with more on the way. A fantasy serial of early chapter books for kids who just learned to read: a girl, a runaway dragon, and a villain waking up far away. Chapter books for beginning readers, kindergarten and 1st grade. Free to read on any tablet, phone or computer. No ads, no account.
+
+**Link:** https://yarareads.finereli.com/?from=pinterest#/read/toby-1/0
+
+**Board:** Julia and Toby: early chapter books
+
+## 24-big-kid-writes
+
+**Title:** Have your older kid write a story for the younger one: how our 12-year-old wrote a dragon series for his sister
+
+**Description:** Our son Tom, 12, wrote a dragon series for his little sister, Yara, who had just learned to read. What worked: one magic rule (feelings make things float), only words she could sound out, and a hook at the end of every chapter. A great writing project for big kids and a reading project for little ones. Read the result, Julia and Toby, early chapter books for beginning readers. Free to read on any tablet, phone or computer. No ads, no account.
+
+**Link:** https://yarareads.finereli.com/?from=pinterest#/read/toby-1/0
 
 **Board:** Julia and Toby: early chapter books
 

@@ -4,9 +4,38 @@
     "Julia and Toby: early chapter books": "897975681892083219",
     "Dragon chapter books for kids": "897975681892083220"
   },
-  "queue": ["01-read-it-themselves", "02-loves-dragon-masters", "20-video", "03-one-more-chapter", "11-book-1", "05-written-by-tom", "04-tap-a-word", "06-when-toby-gets-mad", "12-book-2", "13-book-3", "14-book-4", "15-book-5", "16-book-6", "17-book-7"],
+  "queue": [
+    "01-read-it-themselves",
+    "02-loves-dragon-masters",
+    "21-dad-and-son",
+    "20-video",
+    "22-magic-rule",
+    "03-one-more-chapter",
+    "11-book-1",
+    "23-big-brother",
+    "04-tap-a-word",
+    "06-when-toby-gets-mad",
+    "24-big-kid-writes",
+    "05-written-by-tom",
+    "12-book-2",
+    "13-book-3",
+    "14-book-4",
+    "15-book-5",
+    "16-book-6",
+    "17-book-7"
+  ],
   "posted": [
-    { "id": "01-read-it-themselves", "pin": "897975613226299199", "board": "897975681892083219", "at": "2026-10-25" },
-    { "id": "02-loves-dragon-masters", "pin": "897975613226299198", "board": "897975681892083220", "at": "2026-10-25" }
+    {
+      "id": "01-read-it-themselves",
+      "pin": "897975613226299199",
+      "board": "897975681892083219",
+      "at": "2026-10-25"
+    },
+    {
+      "id": "02-loves-dragon-masters",
+      "pin": "897975613226299198",
+      "board": "897975681892083220",
+      "at": "2026-10-25"
+    }
   ]
 }
