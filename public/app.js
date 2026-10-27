@@ -39,11 +39,13 @@ async function api(path, options = {}) {
 // Signed out, the worker gives the free version (our own books, no sign-in): a child's sounds and finished books stay on
 // this device. Signed in, they're kept on the account.
 let PUBLIC = false;
+let GATE_YEAR = 0; // a copy of the app can also open grown-ups with this one year (the worker's GATE_YEAR)
 const modeReady = loginReady
   .then(() => fetch('/api/settings', { headers: authToken() ? { authorization: `Bearer ${authToken()}` } : {} }))
   .then((r) => (r.ok ? r.json() : {}))
   .then((s) => {
     PUBLIC = !!s.public;
+    GATE_YEAR = Number(s.gateYear) || 0;
     if (PUBLIC && !previewToken()) login.handleUnauthorized(); // a token the worker no longer accepts
   })
   .catch(() => {});
@@ -279,7 +281,7 @@ function showGate() {
     onCancel: () => (location.hash = '#/'),
     onDone: (year) => {
       const age = new Date().getFullYear() - Number(year);
-      if (age < 18 || age > 100) return false;
+      if ((age < 18 || age > 100) && !(GATE_YEAR && Number(year) === GATE_YEAR)) return false;
       grownUp = true;
       session.set('grownUp', '1');
       route();

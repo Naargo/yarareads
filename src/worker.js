@@ -221,7 +221,8 @@ async function publicApi(request, env, url, path, ctx) {
     return new Response(obj.body, { headers: { 'content-type': 'audio/mpeg', 'cache-control': 'public, max-age=86400' } });
   }
   if (path === '/api/settings' && get) {
-    return json({ voice: DEFAULT_VOICE, voices: {}, public: true });
+    // GATE_YEAR: a copy of the app (Tom's) can also open grown-ups with that one year.
+    return json({ voice: DEFAULT_VOICE, voices: {}, public: true, gateYear: Number(env.GATE_YEAR) || undefined });
   }
   // The starting sounds: Teach Your Monster to Read's, which the stories are written for. Edits stay on the device.
   if (path === '/api/inventory' && get) {
